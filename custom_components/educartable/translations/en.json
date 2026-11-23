@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Sign in with your Educartable family-portal username (often your email) and password, given by the school.",
+        "data": {
+          "username": "Username",
+          "username_secret": "Username secret",
+          "password": "Password",
+          "password_secret": "Password secret",
+          "totp": "One-time code"
+        },
+        "data_description": {
+          "username": "Leave empty to read it from secrets.yaml instead.",
+          "username_secret": "Name of the secrets.yaml entry holding the username, for example educartable_username.",
+          "password": "Leave empty to read it from secrets.yaml instead.",
+          "password_secret": "Name of the secrets.yaml entry holding the password, for example educartable_password. It is read again at every update: after a password change, editing the secret is enough.",
+          "totp": "Only if your account has two-factor authentication enabled."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable refused the credentials of {username}. Enter the current ones.",
+        "data": {
+          "username": "Username",
+          "username_secret": "Username secret",
+          "password": "Password",
+          "password_secret": "Password secret",
+          "totp": "One-time code"
+        },
+        "data_description": {
+          "username": "Leave empty to read it from secrets.yaml instead.",
+          "password": "Leave empty to read it from secrets.yaml instead.",
+          "totp": "Only if your account has two-factor authentication enabled."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid username or password.",
+      "otp_required": "A one-time code is required. Enter the current code from your authenticator.",
+      "cannot_connect": "Cannot reach Educartable. Try again.",
+      "password_or_secret": "Enter either a password or a secret name.",
+      "username_or_secret": "Enter either a username or a secret name.",
+      "secret_not_found": "This entry is missing from secrets.yaml.",
+      "wrong_account": "These credentials belong to another account."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "reauth_successful": "Credentials updated.",
+      "wrong_account": "These credentials belong to another account."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable options",
+        "data": {
+          "scan_interval": "Update interval",
+          "homework_days": "Homework window"
+        },
+        "data_description": {
+          "scan_interval": "Educartable is shared by the whole school: 10 minutes minimum.",
+          "homework_days": "Homework due within this many days is shown."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Liaison book to sign"
+      },
+      "news": {
+        "name": "News"
+      },
+      "homework": {
+        "name": "Homework to do"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh",
+      "description": "Fetch the latest data from Educartable right away.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account to refresh. Leave empty when only one is configured."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Could not refresh Educartable: {error}"
+    },
+    "no_account": {
+      "message": "No Educartable account is configured."
+    },
+    "several_accounts": {
+      "message": "Several Educartable accounts are configured: name the one to use."
+    }
+  }
+}

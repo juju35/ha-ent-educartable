@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Connectez-vous avec l'identifiant du portail familles Educartable (souvent votre e-mail) et le mot de passe fournis par l'école.",
+        "data": {
+          "username": "Identifiant",
+          "username_secret": "Secret de l'identifiant",
+          "password": "Mot de passe",
+          "password_secret": "Secret du mot de passe",
+          "totp": "Code à usage unique"
+        },
+        "data_description": {
+          "username": "Laissez vide pour le lire depuis secrets.yaml.",
+          "username_secret": "Nom de l'entrée secrets.yaml contenant l'identifiant, par exemple educartable_username.",
+          "password": "Laissez vide pour le lire depuis secrets.yaml.",
+          "password_secret": "Nom de l'entrée secrets.yaml contenant le mot de passe, par exemple educartable_password. Il est relu à chaque mise à jour : après un changement de mot de passe, il suffit de modifier le secret.",
+          "totp": "Uniquement si votre compte a la double authentification activée."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable a refusé les identifiants de {username}. Saisissez ceux en cours.",
+        "data": {
+          "username": "Identifiant",
+          "username_secret": "Secret de l'identifiant",
+          "password": "Mot de passe",
+          "password_secret": "Secret du mot de passe",
+          "totp": "Code à usage unique"
+        },
+        "data_description": {
+          "username": "Laissez vide pour le lire depuis secrets.yaml.",
+          "password": "Laissez vide pour le lire depuis secrets.yaml.",
+          "totp": "Uniquement si votre compte a la double authentification activée."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Identifiant ou mot de passe invalide.",
+      "otp_required": "Un code à usage unique est requis. Saisissez le code courant de votre application d'authentification.",
+      "cannot_connect": "Impossible de joindre Educartable. Réessayez.",
+      "password_or_secret": "Saisissez soit un mot de passe, soit un nom de secret.",
+      "username_or_secret": "Saisissez soit un identifiant, soit un nom de secret.",
+      "secret_not_found": "Cette entrée est absente de secrets.yaml.",
+      "wrong_account": "Ces identifiants appartiennent à un autre compte."
+    },
+    "abort": {
+      "already_configured": "Ce compte est déjà configuré.",
+      "reauth_successful": "Identifiants mis à jour.",
+      "wrong_account": "Ces identifiants appartiennent à un autre compte."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Educartable",
+        "data": {
+          "scan_interval": "Intervalle de mise à jour",
+          "homework_days": "Fenêtre des devoirs"
+        },
+        "data_description": {
+          "scan_interval": "Educartable est partagé par toute l'école : 10 minutes minimum.",
+          "homework_days": "Les devoirs à rendre dans ce nombre de jours sont affichés."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Carnet de liaison à signer"
+      },
+      "news": {
+        "name": "Actualités"
+      },
+      "homework": {
+        "name": "Devoirs à faire"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Actualiser",
+      "description": "Récupère immédiatement les dernières données d'Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable à actualiser. Laissez vide si un seul est configuré."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Impossible d'actualiser Educartable : {error}"
+    },
+    "no_account": {
+      "message": "Aucun compte Educartable n'est configuré."
+    },
+    "several_accounts": {
+      "message": "Plusieurs comptes Educartable sont configurés : précisez celui à utiliser."
+    }
+  }
+}

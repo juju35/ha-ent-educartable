@@ -1,0 +1,73 @@
+name: Release
+
+# Publishes a GitHub release whenever main carries a version that has no tag yet:
+# bump the version in manifest.json and CHANGELOG.md, push, and the release follows.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+    permissions:
+      contents: read
+
+  validate:
+    name: Validate
+    uses: ./.github/workflows/validate.yml
+    permissions:
+      contents: read
+
+  hacs:
+    name: HACS Validation
+    uses: ./.github/workflows/hacs.yml
+    permissions:
+      contents: read
+
+  release:
+    needs: [lint, validate, hacs]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION="$(jq -r .version custom_components/educartable/manifest.json)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build zip and notes
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          (cd custom_components/educartable && zip -r ../../educartable.zip . -x "__pycache__/*")
+          .github/scripts/release-notes.sh "${{ steps.version.outputs.version }}" > notes.md
+          test -s notes.md
+
+      - name: Publish release
+        if: steps.version.outputs.exists == 'false'
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          files: educartable.zip
+          body_path: notes.md
+          make_latest: true

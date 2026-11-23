@@ -1,0 +1,42 @@
+"""Constants for the Educartable integration."""
+
+from __future__ import annotations
+
+from typing import Final
+
+DOMAIN: Final = "educartable"
+
+# Unofficial API, reverse-engineered from the mobile web app — it can change without notice.
+ACCOUNTS_BASE: Final = "https://accounts.edumoov.com/auth/realms/edumoov"
+TOKEN_URL: Final = f"{ACCOUNTS_BASE}/protocol/openid-connect/token"
+CLIENT_ID: Final = "educlasse"
+SCOPE: Final = "openid"
+
+API_BASE: Final = "https://app.educartable.com/api/1.0"
+API_EDUCORE: Final = f"{API_BASE}/educore"
+API_EDUCARTABLE: Final = f"{API_BASE}/educartable"
+
+# The unified "message" object is discriminated by its `type`.
+LESSON_TYPES: Final = ("lesson", "activity")  # homework / cahier de textes (per pupil)
+CARNET_TYPES: Final = ("info", "alert")  # liaison book (to sign)
+NEWS_TYPES: Final = ("event", "advert", "meeting")  # news / events / parent meetings
+
+# Names of secrets.yaml entries holding the credentials, read again at every update (instead of storing them).
+CONF_PASSWORD_SECRET: Final = "password_secret"
+CONF_USERNAME_SECRET: Final = "username_secret"
+SECRETS_FILE: Final = "secrets.yaml"
+
+CONF_SCAN_INTERVAL: Final = "scan_interval"
+CONF_HOMEWORK_DAYS: Final = "homework_days"
+
+# The ENT is a school server shared by many families: never poll it faster than every 10 minutes.
+DEFAULT_SCAN_INTERVAL: Final = 30
+MIN_SCAN_INTERVAL: Final = 10
+DEFAULT_HOMEWORK_DAYS: Final = 14
+
+# Items kept in the attributes: enough for a card, small enough for the state machine.
+MESSAGES_KEPT: Final = 10
+NEWS_KEPT: Final = 5
+
+SERVICE_REFRESH: Final = "refresh"
+ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
