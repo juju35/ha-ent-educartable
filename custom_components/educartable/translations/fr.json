@@ -57,11 +57,15 @@
         "title": "Options Educartable",
         "data": {
           "scan_interval": "Intervalle de mise à jour",
-          "homework_days": "Fenêtre des devoirs"
+          "homework_days": "Fenêtre des devoirs",
+          "show_panel": "Afficher le panneau Educartable dans la barre latérale",
+          "panel_tabs": "Onglets affichés dans le panneau",
+          "hide_header": "Masquer la barre du haut"
         },
         "data_description": {
           "scan_interval": "Educartable est partagé par toute l'école : 10 minutes minimum.",
-          "homework_days": "Les devoirs à rendre dans ce nombre de jours sont affichés."
+          "homework_days": "Les devoirs à rendre dans ce nombre de jours sont affichés.",
+          "hide_header": "L’en-tête illustré au-dessus des onglets ; les onglets restent, et sur un téléphone le bouton de menu passe à côté d’eux."
         }
       }
     }
@@ -76,6 +80,9 @@
       },
       "homework": {
         "name": "Devoirs à faire"
+      },
+      "last_update": {
+        "name": "Dernière mise à jour"
       }
     }
   },
@@ -100,6 +107,22 @@
     },
     "several_accounts": {
       "message": "Plusieurs comptes Educartable sont configurés : précisez celui à utiliser."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Devoirs",
+        "words": "Cahier de liaison",
+        "news": "Actualités"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Non",
+        "all": "Pour tout le monde",
+        "non_admin": "Pour les non-administrateurs"
+      }
     }
   }
 }

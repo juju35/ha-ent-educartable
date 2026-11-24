@@ -47,6 +47,8 @@ class EducartableData:
     news: list[dict[str, Any]] = field(default_factory=list)
     # Sections whose last read failed: their content is the one of the update before.
     stale: list[str] = field(default_factory=list)
+    # When this update read the portal.
+    updated: datetime | None = None
 
 
 def _str(value: Any) -> str:
@@ -149,7 +151,8 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         if not parent_id:
             raise UpdateFailed("no parent id in the account")
         data = EducartableData(
-            account={"parent_id": parent_id, "name": _str(info.get("name") or info.get("firstname"))}
+            account={"parent_id": parent_id, "name": _str(info.get("name") or info.get("firstname"))},
+            updated=dt_util.utcnow(),
         )
         today = dt_util.now().date()
         start = today.isoformat()

@@ -1,11 +1,15 @@
-"""Sensors for Educartable: the family account and one device per pupil."""
+"""Sensors for Educartable: the family account (liaison book, news, last update) and one homework sensor per pupil."""
 
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from datetime import datetime
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .config_flow import hide_header, panel_tabs
 from .const import MESSAGES_KEPT, NEWS_KEPT
 from .coordinator import EducartableConfigEntry, EducartableCoordinator
 from .entity import EducartableEntity, EducartablePupilEntity
@@ -20,6 +24,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = [
         CarnetToSignSensor(coordinator),
         NewsSensor(coordinator),
+        LastUpdateSensor(coordinator),
     ]
     known: set[str] = set()
 
@@ -91,4 +96,38 @@ class HomeworkSensor(EducartablePupilEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict:
-        return {"homework": self._items[:MESSAGES_KEPT]}
+        pupil = next((p for p in self.coordinator.data.pupils if p["id"] == self._pupil_id), {})
+        # The card and the panel group the homework of every child: each sensor says whose it is.
+        return {
+            "config_entry_id": self.coordinator.config_entry.entry_id,
+            "child_id": self._pupil_id,
+            "child": pupil.get("firstname") or pupil.get("name", ""),
+            "homework": self._items[:MESSAGES_KEPT],
+        }
+
+
+class LastUpdateSensor(EducartableEntity, SensorEntity):
+    """When the portal was last read, with the children and the options the card and the panel follow."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _unrecorded_attributes = frozenset({"account", "children", "panel_tabs", "hide_header"})
+
+    def __init__(self, coordinator: EducartableCoordinator) -> None:
+        super().__init__(coordinator, "last_update")
+
+    @property
+    def native_value(self) -> datetime | None:
+        return self.coordinator.data.updated
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        data = self.coordinator.data
+        options = self.coordinator.config_entry.options
+        return {
+            **self.base_attributes,
+            "account": {"name": data.account.get("name", "")},
+            "children": data.pupils,
+            "panel_tabs": panel_tabs(options),
+            "hide_header": hide_header(options),
+        }

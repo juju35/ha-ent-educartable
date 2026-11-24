@@ -1,14 +1,23 @@
 {
   "domain": "educartable",
   "name": "Educartable",
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@juju35"
   ],
   "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom",
+    "websocket_api"
+  ],
   "documentation": "https://github.com/juju35/ha-ent-educartable",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/juju35/ha-ent-educartable/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Войдите с именем пользователя (часто это ваш e-mail) и паролем семейного портала Educartable, выданными школой.",
+        "data": {
+          "username": "Имя пользователя",
+          "username_secret": "Секрет имени пользователя",
+          "password": "Пароль",
+          "password_secret": "Секрет пароля",
+          "totp": "Одноразовый код"
+        },
+        "data_description": {
+          "username": "Оставьте пустым, чтобы читать его из secrets.yaml.",
+          "username_secret": "Имя записи в secrets.yaml с именем пользователя, например educartable_username.",
+          "password": "Оставьте пустым, чтобы читать его из secrets.yaml.",
+          "password_secret": "Имя записи в secrets.yaml с паролем, например educartable_password. Он заново читается при каждом обновлении: после смены пароля достаточно изменить секрет.",
+          "totp": "Только если для вашей учётной записи включена двухфакторная аутентификация."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable отклонил учётные данные {username}. Введите действующие.",
+        "data": {
+          "username": "Имя пользователя",
+          "username_secret": "Секрет имени пользователя",
+          "password": "Пароль",
+          "password_secret": "Секрет пароля",
+          "totp": "Одноразовый код"
+        },
+        "data_description": {
+          "username": "Оставьте пустым, чтобы читать его из secrets.yaml.",
+          "password": "Оставьте пустым, чтобы читать его из secrets.yaml.",
+          "totp": "Только если для вашей учётной записи включена двухфакторная аутентификация."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неверное имя пользователя или пароль.",
+      "otp_required": "Нужен одноразовый код. Введите текущий код из приложения-аутентификатора.",
+      "cannot_connect": "Не удаётся связаться с Educartable. Попробуйте ещё раз.",
+      "password_or_secret": "Введите либо пароль, либо имя секрета.",
+      "username_or_secret": "Введите либо имя пользователя, либо имя секрета.",
+      "secret_not_found": "Эта запись отсутствует в secrets.yaml.",
+      "wrong_account": "Эти учётные данные принадлежат другой учётной записи."
+    },
+    "abort": {
+      "already_configured": "Эта учётная запись уже настроена.",
+      "reauth_successful": "Учётные данные обновлены.",
+      "wrong_account": "Эти учётные данные принадлежат другой учётной записи."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметры Educartable",
+        "data": {
+          "scan_interval": "Интервал обновления",
+          "homework_days": "Период домашних заданий",
+          "show_panel": "Показывать эту панель на боковой панели",
+          "panel_tabs": "Вкладки на панели",
+          "hide_header": "Скрыть верхнюю панель"
+        },
+        "data_description": {
+          "scan_interval": "Educartable используется всей школой: минимум 10 минут.",
+          "homework_days": "Показываются домашние задания со сроком в пределах этого числа дней.",
+          "hide_header": "Иллюстрированный заголовок над вкладками; вкладки остаются, а на телефоне кнопка меню переходит к ним."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Дневник на подпись"
+      },
+      "news": {
+        "name": "Новости"
+      },
+      "homework": {
+        "name": "Домашние задания"
+      },
+      "last_update": {
+        "name": "Последнее обновление"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Обновить",
+      "description": "Сразу получить свежие данные из Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Учётная запись",
+          "description": "Учётная запись Educartable для обновления. Оставьте пустым, если настроена только одна."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Не удалось обновить Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Не настроено ни одной учётной записи Educartable."
+    },
+    "several_accounts": {
+      "message": "Настроено несколько учётных записей Educartable: укажите, какую использовать."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Домашние задания",
+        "words": "Дневник",
+        "news": "Новости"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Нет",
+        "all": "Для всех",
+        "non_admin": "Для не-администраторов"
+      }
+    }
+  }
+}

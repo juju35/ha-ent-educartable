@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Accedi con il nome utente (spesso la tua email) e la password del portale famiglie Educartable forniti dalla scuola.",
+        "data": {
+          "username": "Nome utente",
+          "username_secret": "Segreto del nome utente",
+          "password": "Password",
+          "password_secret": "Segreto della password",
+          "totp": "Codice monouso"
+        },
+        "data_description": {
+          "username": "Lascia vuoto per leggerlo da secrets.yaml.",
+          "username_secret": "Nome della voce di secrets.yaml che contiene il nome utente, per esempio educartable_username.",
+          "password": "Lascia vuoto per leggerla da secrets.yaml.",
+          "password_secret": "Nome della voce di secrets.yaml che contiene la password, per esempio educartable_password. Viene riletta a ogni aggiornamento: dopo un cambio di password basta modificare il secret.",
+          "totp": "Solo se il tuo account ha l'autenticazione a due fattori attiva."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable ha rifiutato le credenziali di {username}. Inserisci quelle attuali.",
+        "data": {
+          "username": "Nome utente",
+          "username_secret": "Segreto del nome utente",
+          "password": "Password",
+          "password_secret": "Segreto della password",
+          "totp": "Codice monouso"
+        },
+        "data_description": {
+          "username": "Lascia vuoto per leggerlo da secrets.yaml.",
+          "password": "Lascia vuoto per leggerlo da secrets.yaml.",
+          "totp": "Solo se il tuo account ha l'autenticazione a due fattori attiva."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nome utente o password non validi.",
+      "otp_required": "È richiesto un codice monouso. Inserisci il codice attuale della tua app di autenticazione.",
+      "cannot_connect": "Impossibile raggiungere Educartable. Riprova.",
+      "password_or_secret": "Inserisci una password oppure il nome di un segreto.",
+      "username_or_secret": "Inserisci un nome utente oppure il nome di un segreto.",
+      "secret_not_found": "Questa voce manca in secrets.yaml.",
+      "wrong_account": "Queste credenziali appartengono a un altro account."
+    },
+    "abort": {
+      "already_configured": "Questo account è già configurato.",
+      "reauth_successful": "Credenziali aggiornate.",
+      "wrong_account": "Queste credenziali appartengono a un altro account."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni Educartable",
+        "data": {
+          "scan_interval": "Intervallo di aggiornamento",
+          "homework_days": "Finestra dei compiti",
+          "show_panel": "Mostra questo pannello nella barra laterale",
+          "panel_tabs": "Schede mostrate nel pannello",
+          "hide_header": "Nascondi la barra superiore"
+        },
+        "data_description": {
+          "scan_interval": "Educartable è condiviso da tutta la scuola: almeno 10 minuti.",
+          "homework_days": "Vengono mostrati i compiti in scadenza entro questo numero di giorni.",
+          "hide_header": "L’intestazione illustrata sopra le schede; le schede restano e, sul telefono, il pulsante del menu passa accanto a esse."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Diario da firmare"
+      },
+      "news": {
+        "name": "Notizie"
+      },
+      "homework": {
+        "name": "Compiti"
+      },
+      "last_update": {
+        "name": "Ultimo aggiornamento"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Aggiorna",
+      "description": "Recupera subito i dati più recenti da Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable da aggiornare. Lascia vuoto se ne è configurato uno solo."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Impossibile aggiornare Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Nessun account Educartable configurato."
+    },
+    "several_accounts": {
+      "message": "Sono configurati più account Educartable: indica quale usare."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Compiti",
+        "words": "Diario",
+        "news": "Notizie"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "No",
+        "all": "Per tutti",
+        "non_admin": "Per i non amministratori"
+      }
+    }
+  }
+}

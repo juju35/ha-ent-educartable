@@ -8,11 +8,16 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+  # Called by Release, so that a version is published only once these checks pass.
   workflow_call:
 
 permissions:
   contents: read
 
+# github.workflow is "Release" when called from Release: the group then stays distinct from this
+# workflow's own push run on main, so neither cancels the other. The event too: the checks the screenshot commit
+# dispatches on a pull request's branch have their own group, so a dispatched run stuck on GitHub's side (queued
+# with no job, impossible to cancel) cannot hold the pull request's own runs, nor theirs.
 concurrency:
   group: validate-${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -25,9 +30,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Same version in the manifest and the changelog
+      # The checks the release makes, before merging: a version bumped in one file only fails the release on main.
+      - name: Same version everywhere, and in the changelog
         run: |
           VERSION="$(jq -r .version custom_components/educartable/manifest.json)"
+          grep -q "EDUCARTABLE_CARD_VERSION = '$VERSION'" src/educartable-card/card-picker.js || { echo "::error file=src/educartable-card/card-picker.js::version $VERSION not found in src/educartable-card/card-picker.js"; exit 1; }
           grep -q "^## $VERSION " CHANGELOG.md || { echo "::error file=CHANGELOG.md::no '## $VERSION' entry in CHANGELOG.md"; exit 1; }
           echo "Version $VERSION everywhere"
 
@@ -48,6 +55,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Latest Home Assistant: releases since 2026.3 need Python 3.14 (3.13 would resolve to 2026.2).
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -59,8 +67,21 @@ jobs:
       - name: Home Assistant version
         run: python -c 'from homeassistant.const import __version__; print(f"::notice::Home Assistant {__version__}")'
 
+      # The frontend files are assembled from their ES modules in src/ (build output, not committed).
+      - name: Build the frontend
+        uses: ./.github/actions/build-frontend
+
       - name: Run tests
         run: pytest
+        env:
+          DEPRECATIONS_LOG: ${{ runner.temp }}/deprecations.log
+
+      - name: Annotate deprecated calls
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/deprecations.log" ]; then
+            sort -u "$RUNNER_TEMP/deprecations.log" | head -n 20 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
 
   pytest-min-ha:
     name: Tests (minimum Home Assistant, 2026.6.0)
@@ -78,5 +99,39 @@ jobs:
       - name: Install dependencies
         run: pip install pytest-homeassistant-custom-component==0.13.336
 
+      # The frontend files are assembled from their ES modules in src/ (build output, not committed).
+      - name: Build the frontend
+        uses: ./.github/actions/build-frontend
+
       - name: Run tests
         run: pytest
+
+  card-tests:
+    name: Card tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The frontend files are assembled from their ES modules in src/ (build output, not committed).
+      - name: Build the frontend
+        uses: ./.github/actions/build-frontend
+
+      - name: Run card tests
+        run: node --test test/*.test.mjs
+
+  translation-split:
+    name: Translation split
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The frontend files are assembled from their ES modules in src/ (build output, not committed).
+      - name: Build the frontend
+        uses: ./.github/actions/build-frontend
+
+      # Splits a copy of the frontend as the release does, and rebuilds every table to check it.
+      - name: Check the translation split
+        run: |
+          node scripts/split-frontend.mjs --check

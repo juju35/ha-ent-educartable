@@ -12,9 +12,13 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
@@ -22,14 +26,21 @@ from homeassistant.helpers.selector import (
 
 from .api import EducartableApi, EducartableAuthError, EducartableError, EducartableOTPRequired
 from .const import (
+    CONF_HIDE_HEADER,
     CONF_HOMEWORK_DAYS,
+    CONF_PANEL_TABS,
     CONF_PASSWORD_SECRET,
     CONF_SCAN_INTERVAL,
+    CONF_SHOW_PANEL,
     CONF_USERNAME_SECRET,
     DEFAULT_HOMEWORK_DAYS,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SHOW_PANEL,
     DOMAIN,
+    HIDE_HEADER_CHOICES,
+    HIDE_HEADER_OFF,
     MIN_SCAN_INTERVAL,
+    PANEL_TABS,
 )
 from .secret import SecretNotFoundError, async_credentials
 
@@ -173,33 +184,64 @@ class EducartableConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class EducartableOptionsFlow(OptionsFlow):
-    """Polling interval and homework window."""
+    """Polling interval, homework window and sidebar panel."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(data=clean_options(user_input))
-        options = self.config_entry.options
-        schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-                ): NumberSelector(
-                    NumberSelectorConfig(
-                        min=MIN_SCAN_INTERVAL, max=360, step=5, unit_of_measurement="min", mode=NumberSelectorMode.BOX
-                    )
-                ),
-                vol.Required(
-                    CONF_HOMEWORK_DAYS, default=options.get(CONF_HOMEWORK_DAYS, DEFAULT_HOMEWORK_DAYS)
-                ): NumberSelector(
-                    NumberSelectorConfig(min=1, max=60, step=1, unit_of_measurement="d", mode=NumberSelectorMode.BOX)
-                ),
-            }
-        )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=options_schema(self.config_entry.options))
 
 
-def clean_options(options: dict[str, Any]) -> dict[str, Any]:
+def clean_options(options: Mapping[str, Any]) -> dict[str, Any]:
     return {
         CONF_SCAN_INTERVAL: max(MIN_SCAN_INTERVAL, int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))),
         CONF_HOMEWORK_DAYS: min(60, max(1, int(options.get(CONF_HOMEWORK_DAYS, DEFAULT_HOMEWORK_DAYS)))),
+        CONF_SHOW_PANEL: bool(options.get(CONF_SHOW_PANEL, DEFAULT_SHOW_PANEL)),
+        CONF_PANEL_TABS: panel_tabs(options),
+        CONF_HIDE_HEADER: hide_header(options),
     }
+
+
+def hide_header(options: Mapping[str, Any]) -> str:
+    """Who the panel's top bar is hidden for: off (no one, the default), all, or non_admin."""
+    value = options.get(CONF_HIDE_HEADER)
+    return value if value in HIDE_HEADER_CHOICES else HIDE_HEADER_OFF
+
+
+def panel_tabs(options: Mapping[str, Any]) -> list[str]:
+    """Tabs shown in the panel, in the panel's order; all of them when the option was never set."""
+    chosen = options.get(CONF_PANEL_TABS)
+    return list(PANEL_TABS) if chosen is None else [t for t in PANEL_TABS if t in chosen]
+
+
+def options_schema(options: Mapping[str, Any]) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=MIN_SCAN_INTERVAL, max=360, step=5, unit_of_measurement="min", mode=NumberSelectorMode.BOX
+                )
+            ),
+            vol.Required(
+                CONF_HOMEWORK_DAYS, default=options.get(CONF_HOMEWORK_DAYS, DEFAULT_HOMEWORK_DAYS)
+            ): NumberSelector(
+                NumberSelectorConfig(min=1, max=60, step=1, unit_of_measurement="d", mode=NumberSelectorMode.BOX)
+            ),
+            vol.Required(CONF_SHOW_PANEL, default=options.get(CONF_SHOW_PANEL, DEFAULT_SHOW_PANEL)): BooleanSelector(),
+            vol.Optional(CONF_PANEL_TABS, default=panel_tabs(options)): SelectSelector(
+                SelectSelectorConfig(
+                    options=list(PANEL_TABS),
+                    multiple=True,
+                    translation_key=CONF_PANEL_TABS,
+                    mode=SelectSelectorMode.LIST,
+                )
+            ),
+            vol.Required(CONF_HIDE_HEADER, default=hide_header(options)): SelectSelector(
+                SelectSelectorConfig(
+                    options=list(HIDE_HEADER_CHOICES), translation_key=CONF_HIDE_HEADER, mode=SelectSelectorMode.LIST
+                )
+            ),
+        }
+    )

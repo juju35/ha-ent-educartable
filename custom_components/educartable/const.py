@@ -40,3 +40,20 @@ NEWS_KEPT: Final = 5
 
 SERVICE_REFRESH: Final = "refresh"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
+
+CONF_SHOW_PANEL: Final = "show_panel"
+DEFAULT_SHOW_PANEL: Final = True
+# Tabs of the panel (and sections of its home page) shown; Home and Settings always are.
+CONF_PANEL_TABS: Final = "panel_tabs"
+PANEL_TABS: Final = ("homework", "words", "news")
+# Who the panel's top bar (the illustrated header) is hidden for; the tabs stay.
+CONF_HIDE_HEADER: Final = "hide_header"
+HIDE_HEADER_OFF: Final = "off"
+HIDE_HEADER_CHOICES: Final = (HIDE_HEADER_OFF, "all", "non_admin")
+
+FRONTEND_URL: Final = "/educartable_static"
+CARD_FILENAME: Final = "educartable-card.js"
+PANEL_FILENAME: Final = "educartable-panel.js"
+BADGE_FILENAME: Final = "educartable-badge.js"
+PANEL_ICON: Final = "mdi:book-open-variant"
+PANEL_URL_PATH: Final = "educartable"

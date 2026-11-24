@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Prijavite se z uporabniškim imenom (pogosto vaš e-naslov) in geslom družinskega portala Educartable, ki ste ju dobili od šole.",
+        "data": {
+          "username": "Uporabniško ime",
+          "username_secret": "Skrivnost uporabniškega imena",
+          "password": "Geslo",
+          "password_secret": "Skrivnost gesla",
+          "totp": "Enkratna koda"
+        },
+        "data_description": {
+          "username": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "username_secret": "Ime vnosa v secrets.yaml z uporabniškim imenom, na primer educartable_username.",
+          "password": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "password_secret": "Ime vnosa v secrets.yaml z geslom, na primer educartable_password. Prebere se ob vsaki posodobitvi: po spremembi gesla je dovolj urediti skrivnost.",
+          "totp": "Samo če ima vaš račun vklopljeno dvostopenjsko preverjanje."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable je zavrnil poverilnice za {username}. Vnesite trenutne.",
+        "data": {
+          "username": "Uporabniško ime",
+          "username_secret": "Skrivnost uporabniškega imena",
+          "password": "Geslo",
+          "password_secret": "Skrivnost gesla",
+          "totp": "Enkratna koda"
+        },
+        "data_description": {
+          "username": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "password": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "totp": "Samo če ima vaš račun vklopljeno dvostopenjsko preverjanje."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neveljavno uporabniško ime ali geslo.",
+      "otp_required": "Potrebna je enkratna koda. Vnesite trenutno kodo iz aplikacije za preverjanje.",
+      "cannot_connect": "Educartable ni dosegljiv. Poskusite znova.",
+      "password_or_secret": "Vnesite geslo ali ime skrivnosti.",
+      "username_or_secret": "Vnesite uporabniško ime ali ime skrivnosti.",
+      "secret_not_found": "Tega vnosa ni v secrets.yaml.",
+      "wrong_account": "Te poverilnice pripadajo drugemu računu."
+    },
+    "abort": {
+      "already_configured": "Ta račun je že nastavljen.",
+      "reauth_successful": "Poverilnice so posodobljene.",
+      "wrong_account": "Te poverilnice pripadajo drugemu računu."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Educartable",
+        "data": {
+          "scan_interval": "Interval posodabljanja",
+          "homework_days": "Obdobje nalog",
+          "show_panel": "Prikaži ta panel v stranski vrstici",
+          "panel_tabs": "Zavihki na plošči",
+          "hide_header": "Skrij zgornjo vrstico"
+        },
+        "data_description": {
+          "scan_interval": "Educartable uporablja vsa šola: najmanj 10 minut.",
+          "homework_days": "Prikazane so naloge z rokom v tem številu dni.",
+          "hide_header": "Ilustrirana glava nad zavihki; zavihki ostanejo, na telefonu pa se gumb menija premakne poleg njih."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Beležka za podpis"
+      },
+      "news": {
+        "name": "Novice"
+      },
+      "homework": {
+        "name": "Domače naloge"
+      },
+      "last_update": {
+        "name": "Zadnja posodobitev"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Osveži",
+      "description": "Takoj pridobi najnovejše podatke iz Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable za osvežitev. Pustite prazno, če je nastavljen samo eden."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Educartable ni bilo mogoče osvežiti: {error}"
+    },
+    "no_account": {
+      "message": "Noben račun Educartable ni nastavljen."
+    },
+    "several_accounts": {
+      "message": "Nastavljenih je več računov Educartable: navedite, katerega uporabiti."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Domače naloge",
+        "words": "Beležka",
+        "news": "Novice"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Ne",
+        "all": "Za vse",
+        "non_admin": "Za neskrbnike"
+      }
+    }
+  }
+}

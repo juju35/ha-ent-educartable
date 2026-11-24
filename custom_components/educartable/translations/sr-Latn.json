@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Prijavite se korisničkim imenom (često vašom e-adresom) i lozinkom za porodični portal Educartable koje ste dobili od škole.",
+        "data": {
+          "username": "Korisničko ime",
+          "username_secret": "Tajna korisničkog imena",
+          "password": "Lozinka",
+          "password_secret": "Tajna lozinke",
+          "totp": "Jednokratni kod"
+        },
+        "data_description": {
+          "username": "Ostavite prazno da bi se čitalo iz secrets.yaml.",
+          "username_secret": "Naziv stavke u secrets.yaml koja sadrži korisničko ime, na primer educartable_username.",
+          "password": "Ostavite prazno da bi se čitala iz secrets.yaml.",
+          "password_secret": "Naziv stavke u secrets.yaml koja sadrži lozinku, na primer educartable_password. Čita se ponovo pri svakom ažuriranju: posle promene lozinke dovoljno je izmeniti tajnu.",
+          "totp": "Samo ako je na vašem nalogu uključena dvofaktorska autentifikacija."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable je odbio podatke za prijavu za {username}. Unesite trenutne.",
+        "data": {
+          "username": "Korisničko ime",
+          "username_secret": "Tajna korisničkog imena",
+          "password": "Lozinka",
+          "password_secret": "Tajna lozinke",
+          "totp": "Jednokratni kod"
+        },
+        "data_description": {
+          "username": "Ostavite prazno da bi se čitalo iz secrets.yaml.",
+          "password": "Ostavite prazno da bi se čitalo iz secrets.yaml.",
+          "totp": "Samo ako je na vašem nalogu uključena dvofaktorska autentifikacija."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nevažeće korisničko ime ili lozinka.",
+      "otp_required": "Potreban je jednokratni kod. Unesite trenutni kod iz aplikacije za autentifikaciju.",
+      "cannot_connect": "Educartable nije dostupan. Pokušajte ponovo.",
+      "password_or_secret": "Unesite ili lozinku ili naziv tajne.",
+      "username_or_secret": "Unesite ili korisničko ime ili naziv tajne.",
+      "secret_not_found": "Ovaj unos nedostaje u secrets.yaml.",
+      "wrong_account": "Ovi podaci za prijavu pripadaju drugom nalogu."
+    },
+    "abort": {
+      "already_configured": "Ovaj nalog je već podešen.",
+      "reauth_successful": "Podaci za prijavu su ažurirani.",
+      "wrong_account": "Ovi podaci za prijavu pripadaju drugom nalogu."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcije Educartable",
+        "data": {
+          "scan_interval": "Interval ažuriranja",
+          "homework_days": "Period domaćih zadataka",
+          "show_panel": "Prikaži ovaj panel na bočnoj traci",
+          "panel_tabs": "Kartice prikazane na panelu",
+          "hide_header": "Sakrij gornju traku"
+        },
+        "data_description": {
+          "scan_interval": "Educartable koristi cela škola: najmanje 10 minuta.",
+          "homework_days": "Prikazuju se domaći zadaci sa rokom u okviru ovog broja dana.",
+          "hide_header": "Ilustrovano zaglavlje iznad kartica; kartice ostaju, a na telefonu dugme menija prelazi pored njih."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Đačka knjižica za potpisivanje"
+      },
+      "news": {
+        "name": "Vesti"
+      },
+      "homework": {
+        "name": "Domaći zadaci"
+      },
+      "last_update": {
+        "name": "Poslednje ažuriranje"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Osveži",
+      "description": "Odmah preuzmi najnovije podatke sa Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog za osvežavanje. Ostavite prazno kada je podešen samo jedan."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Osvežavanje Educartable nije uspelo: {error}"
+    },
+    "no_account": {
+      "message": "Nije podešen nijedan Educartable nalog."
+    },
+    "several_accounts": {
+      "message": "Podešeno je više Educartable naloga: navedite koji da se koristi."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Domaći",
+        "words": "Đačka knjižica",
+        "news": "Vesti"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Ne",
+        "all": "Za sve",
+        "non_admin": "Za korisnike koji nisu administratori"
+      }
+    }
+  }
+}

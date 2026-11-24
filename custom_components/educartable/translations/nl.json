@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Meld je aan met de gebruikersnaam (vaak je e-mailadres) en het wachtwoord van het Educartable-ouderportaal die je van school hebt gekregen.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "username_secret": "Gebruikersnaamgeheim",
+          "password": "Wachtwoord",
+          "password_secret": "Wachtwoordgeheim",
+          "totp": "Eenmalige code"
+        },
+        "data_description": {
+          "username": "Laat leeg om hem uit secrets.yaml te lezen.",
+          "username_secret": "Naam van de vermelding in secrets.yaml met de gebruikersnaam, bijvoorbeeld educartable_username.",
+          "password": "Laat leeg om het uit secrets.yaml te lezen.",
+          "password_secret": "Naam van de vermelding in secrets.yaml met het wachtwoord, bijvoorbeeld educartable_password. Het wordt bij elke update opnieuw gelezen: na een wachtwoordwijziging volstaat het om het secret aan te passen.",
+          "totp": "Alleen als tweestapsverificatie voor je account is ingeschakeld."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable heeft de inloggegevens van {username} geweigerd. Voer de huidige in.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "username_secret": "Gebruikersnaamgeheim",
+          "password": "Wachtwoord",
+          "password_secret": "Wachtwoordgeheim",
+          "totp": "Eenmalige code"
+        },
+        "data_description": {
+          "username": "Laat leeg om hem uit secrets.yaml te lezen.",
+          "password": "Laat leeg om hem uit secrets.yaml te lezen.",
+          "totp": "Alleen als tweestapsverificatie voor je account is ingeschakeld."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord.",
+      "otp_required": "Er is een eenmalige code nodig. Voer de huidige code uit je authenticator-app in.",
+      "cannot_connect": "Educartable is niet bereikbaar. Probeer het opnieuw.",
+      "password_or_secret": "Vul een wachtwoord of een geheimnaam in.",
+      "username_or_secret": "Vul een gebruikersnaam of een geheimnaam in.",
+      "secret_not_found": "Deze vermelding ontbreekt in secrets.yaml.",
+      "wrong_account": "Deze inloggegevens horen bij een ander account."
+    },
+    "abort": {
+      "already_configured": "Dit account is al ingesteld.",
+      "reauth_successful": "Inloggegevens bijgewerkt.",
+      "wrong_account": "Deze inloggegevens horen bij een ander account."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable-opties",
+        "data": {
+          "scan_interval": "Update-interval",
+          "homework_days": "Huiswerkperiode",
+          "show_panel": "Dit paneel in de zijbalk tonen",
+          "panel_tabs": "Tabbladen in het paneel",
+          "hide_header": "Bovenste balk verbergen"
+        },
+        "data_description": {
+          "scan_interval": "Educartable wordt door de hele school gedeeld: minimaal 10 minuten.",
+          "homework_days": "Huiswerk dat binnen zoveel dagen af moet, wordt getoond.",
+          "hide_header": "De geïllustreerde kop boven de tabbladen; de tabbladen blijven en op een telefoon komt de menuknop ernaast."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Heen-en-weerschrift te ondertekenen"
+      },
+      "news": {
+        "name": "Nieuws"
+      },
+      "homework": {
+        "name": "Huiswerk"
+      },
+      "last_update": {
+        "name": "Laatste update"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Vernieuwen",
+      "description": "Haal meteen de nieuwste gegevens op bij Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account om te vernieuwen. Laat leeg als er maar één is ingesteld."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Kon Educartable niet vernieuwen: {error}"
+    },
+    "no_account": {
+      "message": "Er is geen Educartable-account ingesteld."
+    },
+    "several_accounts": {
+      "message": "Er zijn meerdere Educartable-accounts ingesteld: geef aan welk je wilt gebruiken."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Huiswerk",
+        "words": "Heen-en-weerschrift",
+        "news": "Nieuws"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nee",
+        "all": "Voor iedereen",
+        "non_admin": "Voor niet-beheerders"
+      }
+    }
+  }
+}

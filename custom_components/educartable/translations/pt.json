@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Inicie sessão com o nome de utilizador (muitas vezes o seu email) e a palavra-passe do portal das famílias Educartable fornecidos pela escola.",
+        "data": {
+          "username": "Utilizador",
+          "username_secret": "Segredo do utilizador",
+          "password": "Palavra-passe",
+          "password_secret": "Segredo da palavra-passe",
+          "totp": "Código de utilização única"
+        },
+        "data_description": {
+          "username": "Deixe vazio para o ler de secrets.yaml.",
+          "username_secret": "Nome da entrada de secrets.yaml com o nome de utilizador, por exemplo educartable_username.",
+          "password": "Deixe vazio para a ler de secrets.yaml.",
+          "password_secret": "Nome da entrada de secrets.yaml com a palavra-passe, por exemplo educartable_password. É lida de novo em cada atualização: após uma mudança de palavra-passe, basta editar o segredo.",
+          "totp": "Apenas se a sua conta tiver a autenticação de dois fatores ativada."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "O Educartable recusou as credenciais de {username}. Introduza as atuais.",
+        "data": {
+          "username": "Utilizador",
+          "username_secret": "Segredo do utilizador",
+          "password": "Palavra-passe",
+          "password_secret": "Segredo da palavra-passe",
+          "totp": "Código de utilização única"
+        },
+        "data_description": {
+          "username": "Deixe vazio para o ler de secrets.yaml.",
+          "password": "Deixe vazio para o ler de secrets.yaml.",
+          "totp": "Apenas se a sua conta tiver a autenticação de dois fatores ativada."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Utilizador ou palavra-passe inválidos.",
+      "otp_required": "É necessário um código de utilização única. Introduza o código atual da sua aplicação de autenticação.",
+      "cannot_connect": "Não é possível contactar o Educartable. Tente novamente.",
+      "password_or_secret": "Introduza uma palavra-passe ou o nome de um segredo.",
+      "username_or_secret": "Introduza um utilizador ou o nome de um segredo.",
+      "secret_not_found": "Esta entrada não existe em secrets.yaml.",
+      "wrong_account": "Estas credenciais pertencem a outra conta."
+    },
+    "abort": {
+      "already_configured": "Esta conta já está configurada.",
+      "reauth_successful": "Credenciais atualizadas.",
+      "wrong_account": "Estas credenciais pertencem a outra conta."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções do Educartable",
+        "data": {
+          "scan_interval": "Intervalo de atualização",
+          "homework_days": "Janela dos trabalhos",
+          "show_panel": "Mostrar este painel na barra lateral",
+          "panel_tabs": "Separadores mostrados no painel",
+          "hide_header": "Ocultar a barra superior"
+        },
+        "data_description": {
+          "scan_interval": "O Educartable é partilhado por toda a escola: 10 minutos no mínimo.",
+          "homework_days": "São mostrados os trabalhos de casa para dentro deste número de dias.",
+          "hide_header": "O cabeçalho ilustrado acima dos separadores; os separadores ficam e, no telemóvel, o botão de menu passa para junto deles."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Caderneta por assinar"
+      },
+      "news": {
+        "name": "Notícias"
+      },
+      "homework": {
+        "name": "Trabalhos de casa"
+      },
+      "last_update": {
+        "name": "Última atualização"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Atualizar",
+      "description": "Obter já os dados mais recentes do Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable a atualizar. Deixe vazio quando só houver uma configurada."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Não foi possível atualizar o Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Nenhuma conta Educartable configurada."
+    },
+    "several_accounts": {
+      "message": "Há várias contas Educartable configuradas: indique qual usar."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Trabalhos de casa",
+        "words": "Caderneta",
+        "news": "Notícias"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Não",
+        "all": "Para todos",
+        "non_admin": "Para não administradores"
+      }
+    }
+  }
+}

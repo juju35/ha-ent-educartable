@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 - 2026-11-24
+
+### Features
+- `custom:educartable-card`, shipped with the integration and added to the dashboard resources: the illustrated school-corner header (the envelope of the liaison book to sign, the pen of the homework left), counts of homework, messages to sign and news, then the liaison book to sign, the homework of every child and the news (events and parent meetings told apart).
+- `custom:educartable-mini-card`: the counts, with a button to open the full card in place.
+- Educartable sidebar panel: Home (child filter, school week, tiles, To do and news), Homework (one box per due day with its progress), Liaison book, News and Settings tabs; the top bar folds on scroll.
+- A badge on the panel's sidebar entry: messages to sign and homework to do, summed over every account.
+- New options, also set from the panel: show the panel, the tabs it shows and who its top bar is hidden for.
+- A **Last update** sensor carrying the children and the panel options; each homework sensor now says whose homework it is.
+- The integration is translated into the 22 languages of the other ha-* projects (only English and French before).
+
 ## 0.1.0 - 2026-11-23
 
 ### Features

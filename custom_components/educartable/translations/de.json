@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Melde dich mit dem Benutzernamen (oft deine E-Mail) und dem Passwort des Educartable-Familienportals an, die du von der Schule erhalten hast.",
+        "data": {
+          "username": "Benutzername",
+          "username_secret": "Benutzernamen-Secret",
+          "password": "Passwort",
+          "password_secret": "Passwort-Secret",
+          "totp": "Einmalcode"
+        },
+        "data_description": {
+          "username": "Leer lassen, um ihn stattdessen aus secrets.yaml zu lesen.",
+          "username_secret": "Name des Eintrags in secrets.yaml mit dem Benutzernamen, zum Beispiel educartable_username.",
+          "password": "Leer lassen, um es stattdessen aus secrets.yaml zu lesen.",
+          "password_secret": "Name des Eintrags in secrets.yaml mit dem Passwort, zum Beispiel educartable_password. Er wird bei jeder Aktualisierung neu gelesen: Nach einer Passwortänderung genügt es, das Secret anzupassen.",
+          "totp": "Nur wenn für dein Konto die Zwei-Faktor-Authentifizierung aktiviert ist."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable hat die Zugangsdaten von {username} abgelehnt. Gib die aktuellen ein.",
+        "data": {
+          "username": "Benutzername",
+          "username_secret": "Benutzernamen-Secret",
+          "password": "Passwort",
+          "password_secret": "Passwort-Secret",
+          "totp": "Einmalcode"
+        },
+        "data_description": {
+          "username": "Leer lassen, um ihn stattdessen aus secrets.yaml zu lesen.",
+          "password": "Leer lassen, um ihn stattdessen aus secrets.yaml zu lesen.",
+          "totp": "Nur wenn für dein Konto die Zwei-Faktor-Authentifizierung aktiviert ist."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ungültiger Benutzername oder ungültiges Passwort.",
+      "otp_required": "Ein Einmalcode ist erforderlich. Gib den aktuellen Code aus deiner Authenticator-App ein.",
+      "cannot_connect": "Educartable ist nicht erreichbar. Versuche es erneut.",
+      "password_or_secret": "Gib entweder ein Passwort oder einen Secret-Namen ein.",
+      "username_or_secret": "Gib entweder einen Benutzernamen oder einen Secret-Namen ein.",
+      "secret_not_found": "Dieser Eintrag fehlt in secrets.yaml.",
+      "wrong_account": "Diese Zugangsdaten gehören zu einem anderen Konto."
+    },
+    "abort": {
+      "already_configured": "Dieses Konto ist bereits eingerichtet.",
+      "reauth_successful": "Zugangsdaten aktualisiert.",
+      "wrong_account": "Diese Zugangsdaten gehören zu einem anderen Konto."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable-Optionen",
+        "data": {
+          "scan_interval": "Aktualisierungsintervall",
+          "homework_days": "Zeitraum für Hausaufgaben",
+          "show_panel": "Dieses Panel in der Seitenleiste anzeigen",
+          "panel_tabs": "Im Panel angezeigte Reiter",
+          "hide_header": "Obere Leiste ausblenden"
+        },
+        "data_description": {
+          "scan_interval": "Educartable wird von der ganzen Schule genutzt: mindestens 10 Minuten.",
+          "homework_days": "Hausaufgaben, die innerhalb so vieler Tage fällig sind, werden angezeigt.",
+          "hide_header": "Der illustrierte Kopfbereich über den Tabs; die Tabs bleiben, auf dem Telefon rückt die Menütaste neben sie."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Zu unterschreibendes Mitteilungsheft"
+      },
+      "news": {
+        "name": "Neuigkeiten"
+      },
+      "homework": {
+        "name": "Hausaufgaben"
+      },
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Aktualisieren",
+      "description": "Die neuesten Daten sofort von Educartable abrufen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das zu aktualisierende Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Educartable konnte nicht aktualisiert werden: {error}"
+    },
+    "no_account": {
+      "message": "Kein Educartable-Konto eingerichtet."
+    },
+    "several_accounts": {
+      "message": "Mehrere Educartable-Konten sind eingerichtet: Gib das zu verwendende an."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Hausaufgaben",
+        "words": "Mitteilungsheft",
+        "news": "Neuigkeiten"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nein",
+        "all": "Für alle",
+        "non_admin": "Für Nicht-Admins"
+      }
+    }
+  }
+}

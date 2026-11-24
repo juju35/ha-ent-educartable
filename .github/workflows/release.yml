@@ -1,7 +1,7 @@
 name: Release
 
 # Publishes a GitHub release whenever main carries a version that has no tag yet:
-# bump the version in manifest.json and CHANGELOG.md, push, and the release follows.
+# bump the version in manifest.json and the card, push, and the release follows.
 on:
   push:
     branches: [main]
@@ -15,6 +15,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The Lint, Validate and HACS Validation workflows run on this very commit:
+  # a commit whose checks fail is not released.
   lint:
     name: Lint
     uses: ./.github/workflows/lint.yml
@@ -35,6 +37,7 @@ jobs:
 
   release:
     needs: [lint, validate, hacs]
+    # A manual run on another branch would publish its unmerged commit as the latest release.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -47,12 +50,33 @@ jobs:
         id: version
         run: |
           VERSION="$(jq -r .version custom_components/educartable/manifest.json)"
+          grep -q "EDUCARTABLE_CARD_VERSION = '$VERSION'" src/educartable-card/card-picker.js
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
+
+      # The Marketplace installs educartable.zip (hacs.json: zip_release), built from the split frontend above.
+      - name: Set up Node
+        if: steps.version.outputs.exists == 'false'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      # The frontend files are assembled from their ES modules in src/ (build output, not committed).
+      - name: Build the frontend
+        if: steps.version.outputs.exists == 'false'
+        uses: ./.github/actions/build-frontend
+
+      # Only English stays in the frontend files of the zip; each other language is its own file next to them,
+      # fetched when needed (scripts/split-frontend.mjs). The repository keeps every language in the sources.
+      - name: Split the translations
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          npm install --no-save --no-package-lock acorn@8.19.0
+          node scripts/split-frontend.mjs
 
       - name: Build zip and notes
         if: steps.version.outputs.exists == 'false'

@@ -125,3 +125,82 @@ async def test_diagnostics_redacts_credentials(hass: HomeAssistant, api) -> None
     diag = await async_get_config_entry_diagnostics(hass, entry)
     assert diag["entry"]["data"][CONF_USERNAME] == "**REDACTED**"
     assert diag["entry"]["data"][CONF_PASSWORD] == "**REDACTED**"
+
+
+async def test_card_and_panel_attributes(hass: HomeAssistant, api) -> None:
+    entry = await _setup(hass)
+    homework = hass.states.get("sensor.alice_test_homework_to_do").attributes
+    # Each homework sensor says whose homework it is, for the card and the panel
+    assert homework["config_entry_id"] == entry.entry_id
+    assert homework["child_id"] == "e1"
+    assert homework["child"] == "Alice"
+    last = hass.states.get("sensor.educartable_parent_test_last_update")
+    assert last is not None and last.state not in ("unknown", "unavailable")
+    assert last.attributes["config_entry_id"] == entry.entry_id
+    assert [c["firstname"] for c in last.attributes["children"]] == ["Alice"]
+    assert last.attributes["account"] == {"name": "Parent Test"}
+    assert last.attributes["panel_tabs"] == ["homework", "words", "news"]
+    assert last.attributes["hide_header"] == "off"
+
+
+async def test_panel_follows_the_option(hass: HomeAssistant, api) -> None:
+    from homeassistant.components import frontend
+
+    entry = await _setup(hass)
+    assert "educartable" in hass.data.get(frontend.DATA_PANELS, {})
+    hass.config_entries.async_update_entry(entry, options={**entry.options, "show_panel": False})
+    await hass.async_block_till_done()
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=11))
+    await hass.async_block_till_done()
+    assert "educartable" not in hass.data.get(frontend.DATA_PANELS, {})
+
+
+async def test_settings_websocket(hass: HomeAssistant, api, hass_ws_client) -> None:
+    entry = await _setup(hass)
+    client = await hass_ws_client(hass)
+    await client.send_json({"id": 1, "type": "educartable/settings"})
+    res = await client.receive_json()
+    assert res["success"]
+    account = res["result"]["accounts"][0]
+    assert account["entry_id"] == entry.entry_id
+    assert account["options"]["panel_tabs"] == ["homework", "words", "news"]
+    await client.send_json(
+        {
+            "id": 2,
+            "type": "educartable/settings/update",
+            "entry_id": entry.entry_id,
+            "options": {"scan_interval": 5, "panel_tabs": ["news", "homework"], "hide_header": "all"},
+        }
+    )
+    res = await client.receive_json()
+    assert res["success"]
+    # Cleaned: never faster than the minimum, tabs in the panel's order
+    assert res["result"]["options"]["scan_interval"] == 10
+    assert res["result"]["options"]["panel_tabs"] == ["homework", "news"]
+    assert entry.options["hide_header"] == "all"
+    await client.send_json({"id": 3, "type": "educartable/settings/update", "entry_id": "nope", "options": {}})
+    res = await client.receive_json()
+    assert not res["success"]
+    assert res["error"]["code"] == "not_found"
+
+
+async def test_options_flow_has_the_panel_options(hass: HomeAssistant, api) -> None:
+    entry = await _setup(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "scan_interval": 60,
+            "homework_days": 7,
+            "show_panel": True,
+            "panel_tabs": ["words"],
+            "hide_header": "non_admin",
+        },
+    )
+    assert result["data"] == {
+        "scan_interval": 60,
+        "homework_days": 7,
+        "show_panel": True,
+        "panel_tabs": ["words"],
+        "hide_header": "non_admin",
+    }
