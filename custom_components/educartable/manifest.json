@@ -19,5 +19,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/juju35/ha-ent-educartable/issues",
   "requirements": [],
-  "version": "0.4.0"
+  "version": "0.5.0"
 }

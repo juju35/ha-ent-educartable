@@ -116,7 +116,7 @@ class EducartableConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Educartable."""
 
     VERSION = 1
-    MINOR_VERSION = 2
+    MINOR_VERSION = 3
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}

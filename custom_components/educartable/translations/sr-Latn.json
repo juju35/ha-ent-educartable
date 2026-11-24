@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Svedočanstva za potpisivanje"
+      },
+      "activities": {
+        "name": "Život odeljenja"
+      },
+      "notifications": {
+        "name": "Nepročitana obaveštenja"
+      },
+      "next_appointment": {
+        "name": "Sledeći termin"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Domaći"
+      },
+      "events_calendar": {
+        "name": "Školski događaji"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Ime koje se beleži uz potpis, najmanje 3 znaka, kao na portalu."
         }
       }
+    },
+    "like_activity": {
+      "name": "Sviđa mi se objava",
+      "description": "Označite objavu iz života odeljenja sa „sviđa mi se”, ili to povucite.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "activity_id": {
+          "name": "Objava",
+          "description": "ID objave, iz atributa activities senzora Život odeljenja."
+        },
+        "liked": {
+          "name": "Sviđa mi se",
+          "description": "Isključeno da se povuče."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Označi obaveštenja kao pročitana",
+      "description": "Označite obaveštenje portala kao pročitano, ili sva.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "notification_id": {
+          "name": "Obaveštenje",
+          "description": "ID obaveštenja, iz atributa notifications senzora Nepročitana obaveštenja; prazno za sva."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Obriši komentar",
+      "description": "Obrišite jedan svoj komentar u razgovoru o poruci sa učiteljem.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
+        },
+        "comment_id": {
+          "name": "Komentar",
+          "description": "ID jednog vašeg komentara u razgovoru."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Svedočanstvo za potpisivanje za {child}"
+    },
+    "notify_new_activity": {
+      "message": "Novo u životu odeljenja za {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Domaći",
         "words": "Đačka knjižica",
         "news": "Vesti",
-        "documents": "Svedočanstva"
+        "documents": "Svedočanstva",
+        "activities": "Život odeljenja"
       }
     },
     "hide_header": {

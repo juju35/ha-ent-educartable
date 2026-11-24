@@ -66,6 +66,11 @@ carries the new version, updated together in one commit:
   `deleteAnswerSurvey`, `parent.events.register` / `unregister`), the livret (`livret/…/notebooks` and
   `attestations_validations`, signed with `…/{id}/sign` {name}; PDFs at `core/cloudy_files/{file}/file/{hash}/educartable`
   and `livret/attestations_validations/pdf/{id}?hash=`). Every write is still to confirm on a real parent account (beta).
+- Also implemented (0.5.0): the cahier de vie (`type=activity` messages, never homework; likes `POST core/…/likes`
+  {key, model `HomeworkMessage`} → like id, `DELETE core/…/likes/{id}`), notifications (`educore/…/notifications?app=Educartable`,
+  unread family ones; read `PUT …/{id}` {read}, all `PUT …/close_all`), booked appointments
+  (`cartable.events.nextRegisteredEvents` {start, stop}), message links, `pupil_present`, `archived`, comment deletion
+  (`DELETE educore/…/comments/{id}/trash`). Events are dated by their `date`, other messages by `visibility`.
 - Not yet implemented: attachments in replies and new messages (upload through `core/…/medias/url`), translation, the
   pupil's skills.
 - New card or visual rework: **propose design options to choose from** before implementing.

@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Parakstāmās liecības"
+      },
+      "activities": {
+        "name": "Klases dzīve"
+      },
+      "notifications": {
+        "name": "Neizlasītie paziņojumi"
+      },
+      "next_appointment": {
+        "name": "Nākamā tikšanās"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Mājasdarbi"
+      },
+      "events_calendar": {
+        "name": "Skolas pasākumi"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Vārds, kas tiek saglabāts ar parakstu, vismaz 3 rakstzīmes, kā portālā."
         }
       }
+    },
+    "like_activity": {
+      "name": "Atzīmēt ierakstu ar patīk",
+      "description": "Atzīmēt klases dzīves ierakstu ar patīk vai atsaukt to.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "activity_id": {
+          "name": "Ieraksts",
+          "description": "Ieraksta ID no sensora Klases dzīve atribūta activities."
+        },
+        "liked": {
+          "name": "Patīk",
+          "description": "Izslēgts — atsaukt."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Atzīmēt paziņojumus kā izlasītus",
+      "description": "Atzīmēt portāla paziņojumu kā izlasītu vai visus.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "notification_id": {
+          "name": "Paziņojums",
+          "description": "Paziņojuma ID no sensora Neizlasītie paziņojumi atribūta notifications; tukšs — visi."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Dzēst komentāru",
+      "description": "Dzēst vienu no saviem komentāriem saziņā par ziņu ar skolotāju.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
+        },
+        "comment_id": {
+          "name": "Komentārs",
+          "description": "Viena jūsu komentāra ID saziņā."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Parakstāma liecība: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Jaunums klases dzīvē: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Mājasdarbi",
         "words": "Dienasgrāmata",
         "news": "Jaunumi",
-        "documents": "Liecības"
+        "documents": "Liecības",
+        "activities": "Klases dzīve"
       }
     },
     "hide_header": {

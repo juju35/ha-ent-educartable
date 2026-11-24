@@ -20,7 +20,7 @@ const context = {
   Intl,
 };
 vm.createContext(context);
-vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableDocumentRow, educartableFileUrl, educartableAnswerSurvey, educartableBook, educartableReply, educartableWrite, educartableSignDocument, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
+vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableDocumentRow, educartableFileUrl, educartableAnswerSurvey, educartableBook, educartableReply, educartableWrite, educartableSignDocument, educartableActivityRow, educartableLinks, educartableLike, educartableReadNotifications, educartableDeleteComment, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
 const E = context.e;
 
 const sensor = (id, state, attrs) => ({ entity_id: id, state: String(state), attributes: { config_entry_id: 'abc', ...attrs } });
@@ -31,6 +31,9 @@ const states = {
   'sensor.edu_sam': sensor('sensor.edu_sam', 0, { child_id: 'p2', child: 'Sam', homework: [{ id: 'h2', title: 'Box', subject: 'Art', due: '2026-11-27', done: true }] }),
   'sensor.edu_last': sensor('sensor.edu_last', '2026-11-16T08:00:00+00:00', { stale: [], account: { name: 'Parent' }, children: [{ id: 'p1', firstname: 'Alex', name: 'Alex Doe' }, { id: 'p2', firstname: 'Sam', name: 'Sam Doe' }], panel_tabs: ['homework', 'news'], hide_header: 'off' }),
   'sensor.edu_docs': sensor('sensor.edu_docs', 1, { stale: [], documents: [{ id: 'notebook:3', kind: 'notebook', title: 'Report', year: '2026', child: 'Alex', child_id: 'p1', to_sign: true, signed: false, file: true }] }),
+  'sensor.edu_life': sensor('sensor.edu_life', 1, { stale: [], activities: [{ id: 'a1', title: 'Soup', likes: 2, like_id: '', child: 'Alex', medias: [], links: [{ url: 'https://v.example/1', title: 'Video', type: 'video' }] }] }),
+  'sensor.edu_notifs': sensor('sensor.edu_notifs', 1, { stale: [], notifications: [{ id: '1', type: 'message', text: 'New message' }] }),
+  'sensor.edu_rdv': sensor('sensor.edu_rdv', '2099-01-10T16:00:00+00:00', { stale: [], appointments: [{ id: '77', start: '2099-01-10T17:00:00+01:00', title: 'Meeting' }] }),
   'sensor.other': { entity_id: 'sensor.other', state: '3', attributes: { config_entry_id: 'zzz', messages: [] } },
 };
 // Values made in the card's context are compared as plain JSON (another realm's arrays are not deepEqual).
@@ -456,5 +459,37 @@ test('replies, new messages, surveys, appointments and livret signatures call th
     ['educartable', 'answer_survey', { config_entry_id: 'abc', message_id: 'c5', answers: { q1: ['a'] } }],
     ['educartable', 'book_appointment', { config_entry_id: 'abc', slot_id: '51' }],
     ['educartable', 'sign_document', { config_entry_id: 'abc', document_id: 'notebook:3', name: 'Pat Doe' }],
+  ]);
+});
+
+test('class life, notifications and appointments are read from their sensors', () => {
+  const d = E.educartableData({ states, entities: registry() }, 'abc');
+  assert.deepEqual(plain(d.activities.map((x) => x.id)), ['a1']);
+  assert.deepEqual(plain(d.notifications.map((x) => x.id)), ['1']);
+  assert.deepEqual(plain(d.appointments.map((x) => x.id)), ['77']);
+  const t = E.educartableT({});
+  const row = E.educartableActivityRow(d.activities[0], t, 'en', { full: true, canAct: true, entryId: 'abc' });
+  assert.match(row, /data-action="like" data-id="a1" aria-pressed="false"/);
+  assert.match(row, /href="https:\/\/v\.example\/1" target="_blank" rel="noopener noreferrer"/);
+  assert.match(E.educartableActivityRow(d.activities[0], t, 'en', { full: true, canAct: false }), /aria-pressed="false"[^>]*disabled/);
+});
+
+test('only http(s) links are drawn', () => {
+  assert.equal(E.educartableLinks([{ url: 'javascript:alert(1)', title: 'x' }]), '');
+  assert.match(E.educartableLinks([{ url: 'http://a.example', title: '<b>' }]), /&lt;b&gt;/);
+});
+
+test('like, notifications and deleting a comment call their actions', async () => {
+  const calls = [];
+  const hass = { callService: (d, s, data) => { calls.push([d, s, data]); return Promise.resolve(); } };
+  await E.educartableLike(hass, 'abc', 'a1', false);
+  await E.educartableReadNotifications(hass, 'abc', '');
+  await E.educartableReadNotifications(hass, 'abc', 4);
+  await E.educartableDeleteComment(hass, 'abc', 'c6', 90);
+  assert.deepEqual(plain(calls), [
+    ['educartable', 'like_activity', { config_entry_id: 'abc', activity_id: 'a1', liked: false }],
+    ['educartable', 'mark_notifications_read', { config_entry_id: 'abc' }],
+    ['educartable', 'mark_notifications_read', { config_entry_id: 'abc', notification_id: '4' }],
+    ['educartable', 'delete_comment', { config_entry_id: 'abc', message_id: 'c6', comment_id: '90' }],
   ]);
 });

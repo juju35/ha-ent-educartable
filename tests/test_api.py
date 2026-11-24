@@ -216,3 +216,11 @@ def test_documents_to_sign() -> None:
     assert not old["to_sign"]  # the portal does not ask for those
     attestation = _document({"id": 4, "type": "APER", "date": "2026-06-01", "signatures": [{"id": 1}]}, "attestation")
     assert attestation["title"] == "APER" and attestation["signed"] and attestation["year"] == "2026"
+
+
+def test_event_on_its_own_day_and_meeting_presence() -> None:
+    event = _message({"id": "e", "type": "event", "date": "2026-12-12", "visibility": "2026-11-20 08:00:00"})
+    assert event["date"].startswith("2026-12-12")
+    info = _message({"id": "i", "type": "info", "date": "2026-12-12", "visibility": "2026-11-20 08:00:00"})
+    assert info["date"].startswith("2026-11-20")
+    assert _message({"id": "m", "type": "meeting", "pupil_present": True})["presence"]

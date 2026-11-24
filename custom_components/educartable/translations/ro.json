@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Rapoarte școlare de semnat"
+      },
+      "activities": {
+        "name": "Viața clasei"
+      },
+      "notifications": {
+        "name": "Notificări necitite"
+      },
+      "next_appointment": {
+        "name": "Următoarea programare"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Teme"
+      },
+      "events_calendar": {
+        "name": "Evenimentele școlii"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Numele înregistrat cu semnătura, cel puțin 3 caractere, ca în portal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Apreciază o postare",
+      "description": "Apreciază o postare din viața clasei sau retrage aprecierea.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "activity_id": {
+          "name": "Postare",
+          "description": "ID-ul postării, din atributul activities al senzorului Viața clasei."
+        },
+        "liked": {
+          "name": "Apreciat",
+          "description": "Dezactivat pentru a retrage aprecierea."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Marchează notificările ca citite",
+      "description": "Marchează ca citită o notificare a portalului sau pe toate.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "notification_id": {
+          "name": "Notificare",
+          "description": "ID-ul notificării, din atributul notifications al senzorului Notificări necitite; toate dacă e gol."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Șterge un comentariu",
+      "description": "Șterge unul dintre comentariile tale din conversația unui mesaj cu profesorul.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
+        },
+        "comment_id": {
+          "name": "Comentariu",
+          "description": "ID-ul unuia dintre comentariile tale din conversație."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Raport școlar de semnat pentru {child}"
+    },
+    "notify_new_activity": {
+      "message": "Noutate în viața clasei pentru {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Teme",
         "words": "Carnet de corespondență",
         "news": "Noutăți",
-        "documents": "Rapoarte școlare"
+        "documents": "Rapoarte școlare",
+        "activities": "Viața clasei"
       }
     },
     "hide_header": {

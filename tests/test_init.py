@@ -156,6 +156,72 @@ class FakeApi:
     async def cancel_booking(self, *args: Any) -> None:
         self.calls.append(("cancel_booking", *args))
 
+    async def activities(self, parent_id: str, limit: int) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": "a1",
+                "type": "activity",
+                "title": "Pumpkin soup",
+                "body": "<p>We cooked</p>",
+                "date": "2026-11-20 10:00:00",
+                "targetChildren": {"e1": True},
+                "likes_count": 3,
+                "liked": 0,
+                "commentable": True,
+                "comments_count": 0,
+                "medias": [{"id": "m9", "name": "soup", "extension": "jpg"}],
+                "links": [{"url": "https://video.example/1", "title": "The video"}, {"url": "javascript:x"}],
+            }
+        ]
+
+    async def notifications(self, parent_id: str) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": 1,
+                "read": False,
+                "app": "EducartableFamily",
+                "type": "message.parents",
+                "payload": {"content": "New message", "subject_type": "message", "subject_id": "c1"},
+            },
+            {
+                "id": 2,
+                "read": False,
+                "app": "Educartable",
+                "type": "message-event_canceled.parents",
+                "payload": {"author": {"firstname": "Mme", "name": "Prof"}, "start": 1795000000, "stop": 1795000900},
+            },
+            {"id": 3, "read": True, "app": "EducartableFamily", "type": "message.parents", "payload": {}},
+            {"id": 4, "read": False, "app": "Educlasse", "type": "message", "payload": {}},
+        ]
+
+    async def next_appointments(self, start: str, stop: str) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": 77,
+                "start": "2099-01-10T17:00:00+01:00",
+                "stop": "2099-01-10T17:15:00+01:00",
+                "location": "Room 4",
+                "registrations": [{"pupil_id": "e1"}],
+                "message": {"id": "n9", "title": "Parents' evening"},
+            }
+        ]
+
+    async def like(self, *args: Any) -> str:
+        self.calls.append(("like", *args))
+        return "55"
+
+    async def unlike(self, *args: Any) -> None:
+        self.calls.append(("unlike", *args))
+
+    async def read_notification(self, *args: Any) -> None:
+        self.calls.append(("read_notification", *args))
+
+    async def read_all_notifications(self, *args: Any) -> None:
+        self.calls.append(("read_all_notifications", *args))
+
+    async def delete_comment(self, *args: Any) -> None:
+        self.calls.append(("delete_comment", *args))
+
 
 @pytest.fixture
 def api():
@@ -234,7 +300,7 @@ async def test_card_and_panel_attributes(hass: HomeAssistant, api) -> None:
     assert last.attributes["config_entry_id"] == entry.entry_id
     assert [c["firstname"] for c in last.attributes["children"]] == ["Alice"]
     assert last.attributes["account"] == {"name": "Parent Test"}
-    assert last.attributes["panel_tabs"] == ["homework", "words", "news", "documents"]
+    assert last.attributes["panel_tabs"] == ["homework", "words", "news", "activities", "documents"]
     assert last.attributes["hide_header"] == "off"
 
 
@@ -258,7 +324,7 @@ async def test_settings_websocket(hass: HomeAssistant, api, hass_ws_client) -> N
     assert res["success"]
     account = res["result"]["accounts"][0]
     assert account["entry_id"] == entry.entry_id
-    assert account["options"]["panel_tabs"] == ["homework", "words", "news", "documents"]
+    assert account["options"]["panel_tabs"] == ["homework", "words", "news", "activities", "documents"]
     await client.send_json(
         {
             "id": 2,
@@ -605,5 +671,68 @@ async def test_migration_adds_the_documents_tab(hass: HomeAssistant, api) -> Non
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert entry.minor_version == 2
-    assert entry.options["panel_tabs"] == ["homework", "words", "documents"]
+    assert entry.minor_version == 3
+    assert entry.options["panel_tabs"] == ["homework", "words", "documents", "activities"]
+
+
+async def test_class_life_like_and_links(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    state = hass.states.get("sensor.educartable_parent_test_class_life")
+    assert state.state == "1"
+    post = state.attributes["activities"][0]
+    assert post["child"] == "Alice" and post["likes"] == 3 and post["like_id"] == ""
+    assert post["links"] == [{"url": "https://video.example/1", "title": "The video", "type": ""}]
+    await hass.services.async_call(DOMAIN, "like_activity", {"activity_id": "a1"}, blocking=True)
+    assert ("like", "p1", "a1") in api["api"].calls
+    post = hass.states.get("sensor.educartable_parent_test_class_life").attributes["activities"][0]
+    assert post["likes"] == 4 and post["like_id"] == "55"
+    await hass.services.async_call(DOMAIN, "like_activity", {"activity_id": "a1", "liked": False}, blocking=True)
+    assert ("unlike", "p1", "55") in api["api"].calls
+
+
+async def test_notifications_unread_and_read(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    state = hass.states.get("sensor.educartable_parent_test_unread_notifications")
+    assert state.state == "2"  # read ones and the teacher app's ones are left out
+    cancelled = state.attributes["notifications"][1]
+    assert cancelled["type"] == "message-event_canceled" and cancelled["author"] == "Mme Prof" and cancelled["start"]
+    await hass.services.async_call(DOMAIN, "mark_notifications_read", {"notification_id": "1"}, blocking=True)
+    assert ("read_notification", "p1", "1") in api["api"].calls
+    assert hass.states.get("sensor.educartable_parent_test_unread_notifications").state == "1"
+    await hass.services.async_call(DOMAIN, "mark_notifications_read", {}, blocking=True)
+    assert ("read_all_notifications", "p1") in api["api"].calls
+    assert hass.states.get("sensor.educartable_parent_test_unread_notifications").state == "0"
+
+
+async def test_next_appointment_and_events_calendar(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    state = hass.states.get("sensor.educartable_parent_test_next_appointment")
+    assert state.state.startswith("2099-01-10T16:00:00")
+    assert state.attributes["appointments"][0]["child"] == "Alice"
+    events = await hass.services.async_call(
+        "calendar",
+        "get_events",
+        {
+            "entity_id": "calendar.educartable_parent_test_school_events",
+            "start_date_time": "2026-11-01T00:00:00",
+            "end_date_time": "2099-12-31T00:00:00",
+        },
+        blocking=True,
+        return_response=True,
+    )
+    summaries = [e["summary"] for e in events["calendar.educartable_parent_test_school_events"]["events"]]
+    assert summaries == ["Kermesse", "Alice · Parents' evening"]
+
+
+async def test_delete_only_your_own_comment(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    api["api"].comment_list = [
+        {"id": 90, "user_id": "p1", "body": "Mine", "user": {"firstname": "P", "name": "T"}},
+        {"id": 91, "user_id": "t1", "body": "Theirs", "user": {"firstname": "M", "name": "P"}},
+    ]
+    await hass.services.async_call(DOMAIN, "delete_comment", {"message_id": "a1", "comment_id": "90"}, blocking=True)
+    assert ("delete_comment", "p1", "90") in api["api"].calls
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            DOMAIN, "delete_comment", {"message_id": "a1", "comment_id": "91"}, blocking=True
+        )

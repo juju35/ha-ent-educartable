@@ -84,6 +84,9 @@ export function educartableAccounts(hass) {
     var acc = (accounts[entry] = accounts[entry] || { entryId: entry, homework: [] });
     if ('children' in at) acc.last = st;
     else if ('documents' in at) acc.documents = st;
+    else if ('activities' in at) acc.activities = st;
+    else if ('notifications' in at) acc.notifications = st;
+    else if ('appointments' in at) acc.appointments = st;
     else if ('homework' in at) acc.homework.push(st);
     else if ('news' in at) acc.news = st;
     else if ('messages' in at) acc.carnet = st;
@@ -102,7 +105,7 @@ export function educartableData(hass, entryId) {
   var down = (st) => !st || st.state === 'unavailable' || st.state === 'unknown';
   var last = acc.last;
   var stale = [];
-  [acc.carnet, acc.news, acc.documents, last].forEach((st) => {
+  [acc.carnet, acc.news, acc.documents, acc.activities, acc.notifications, acc.appointments, last].forEach((st) => {
     (st?.attributes?.stale || []).forEach((s) => {
       if (stale.indexOf(s) === -1) stale.push(s);
     });
@@ -124,16 +127,20 @@ export function educartableData(hass, entryId) {
     news: a(acc.news, 'news'),
     // The livret: school reports and attestations, signed as consulted.
     documents: a(acc.documents, 'documents'),
+    // The cahier de vie, the portal's unread notifications and the appointments booked ahead.
+    activities: a(acc.activities, 'activities'),
+    notifications: a(acc.notifications, 'notifications'),
+    appointments: a(acc.appointments, 'appointments'),
     children: a(last, 'children').map((ch) => Object.assign({}, ch, { first_name: ch.firstname || ch.name || '' })),
     account: last?.attributes?.account || {},
     url: EDUCARTABLE_URL,
     // Tabs of the panel shown (integration option); all of them before the option exists.
-    panelTabs: Array.isArray(last?.attributes?.panel_tabs) ? last.attributes.panel_tabs : ['homework', 'words', 'news', 'documents'],
+    panelTabs: Array.isArray(last?.attributes?.panel_tabs) ? last.attributes.panel_tabs : ['homework', 'words', 'news', 'activities', 'documents'],
     // Who the panel's top bar is hidden for (integration option): off, all or non_admin.
     hideHeader: last?.attributes?.hide_header || 'off',
     updated: last && !down(last) ? last.state : null,
     stale: stale,
-    states: [acc.carnet, acc.news, acc.documents, last].concat(acc.homework),
+    states: [acc.carnet, acc.news, acc.documents, acc.activities, acc.notifications, acc.appointments, last].concat(acc.homework),
   };
 }
 
@@ -332,6 +339,14 @@ export function educartableFiles(medias, t, entryId, canAct) {
     '</div>';
 }
 
+// Web links of a message (a video, a site): opened in a new tab, only http(s) addresses (the integration keeps no other).
+export function educartableLinks(links) {
+  var safe = (links || []).filter((l) => /^https?:\/\//i.test(l.url || ''));
+  if (!safe.length) return '';
+  return '<div class="files links">' + safe.map((l) =>
+    '<a class="file" href="' + educartableEsc(l.url) + '" target="_blank" rel="noopener noreferrer" title="' + educartableEsc(l.url) + '"><ha-icon icon="' + (l.type === 'video' ? 'mdi:play-circle-outline' : 'mdi:link-variant') + '"></ha-icon><span>' + educartableEsc(l.title || l.url) + '</span></a>').join('') + '</div>';
+}
+
 // Gives the drawn thumbnails their sources.
 export function educartableHydrate(root, hass, entryId) {
   root.querySelectorAll('img[data-src]:not([src])').forEach((img) => {
@@ -368,8 +383,8 @@ export function educartableToggle(key, open, hasMore) {
 
 function educartableMore(item, key, opts) {
   var open = !!(opts?.full || opts?.isOpen?.(key));
-  var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0);
-  var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) : '';
+  var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0 || (item.links || []).length > 0);
+  var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) + educartableLinks(item.links) : '';
   // The panel adds what can be done on the message (survey, appointment, conversation) under it.
   if (open && opts?.extra) body += opts.extra(item);
   return { tg: tg, body: body };
@@ -426,6 +441,31 @@ export function educartableNewsRow(n, t, locale, opts) {
     '<div class="item-meta">' + educartableEsc([t[kind[1]], n.author, educartableDay(n.date, t, locale)].filter(Boolean).join(' · ')) + '</div>' + m.body + '</div>' + m.tg.chevron + '</div>';
 }
 
+// A post of the cahier de vie: its text and photos, its likes (a heart administrators can press) and the child.
+export function educartableActivityRow(a, t, locale, opts) {
+  var m = educartableMore(a, 'activity:' + a.id, Object.assign({ t: t }, opts));
+  var liked = !!a.like_id;
+  var heart = '<button class="like' + (liked ? ' on' : '') + '" data-action="like" data-id="' + educartableEsc(a.id) + '" aria-pressed="' + liked + '" aria-label="' + educartableEsc(t.like) + '" title="' + educartableEsc(t.like) + '"' + (opts?.canAct && !a.archived ? '' : ' disabled') + '><ha-icon icon="' + (liked ? 'mdi:heart' : 'mdi:heart-outline') + '"></ha-icon><span>' + educartableEsc(String(a.likes || 0)) + '</span></button>';
+  return '<div class="item activity">' +
+    '<ha-icon class="item-icon" icon="mdi:image-multiple-outline"></ha-icon>' +
+    '<div class="item-main"' + m.tg.attrs + '><div class="item-title">' + educartableEsc(a.title || '—') + '</div>' +
+    '<div class="item-meta">' + educartableEsc([opts?.child === false ? '' : a.child, a.author, educartableDay(a.date, t, locale)].filter(Boolean).join(' · ')) + '</div>' + m.body + '</div>' + heart + m.tg.chevron + '</div>';
+}
+
+export function educartableLike(hass, entryId, id, liked) {
+  return hass.callService('educartable', 'like_activity', { config_entry_id: entryId, activity_id: String(id), liked: !!liked });
+}
+
+export function educartableReadNotifications(hass, entryId, id) {
+  var data = { config_entry_id: entryId };
+  if (id) data.notification_id = String(id);
+  return hass.callService('educartable', 'mark_notifications_read', data);
+}
+
+export function educartableDeleteComment(hass, entryId, messageId, commentId) {
+  return hass.callService('educartable', 'delete_comment', { config_entry_id: entryId, message_id: String(messageId), comment_id: String(commentId) });
+}
+
 // A livret document: school report or attestation, its PDF (administrators) and Sign, or its state.
 export function educartableDocumentRow(d, t, opts) {
   var meta = [opts?.child === false ? '' : d.child, d.kind === 'attestation' ? t.kind_attestation : t.kind_notebook, d.type, d.year].filter(Boolean).join(' · ');
@@ -451,6 +491,13 @@ export function educartableItemStyles(accent) {
     '.item-icon { flex: none; color: var(--secondary-text-color); --mdc-icon-size: 20px; margin-top: 1px; }',
     '.word:not(.done) .item-icon, .doc:not(.done) .item-icon { color: ' + accent + '; }',
     '.doc-files { margin-top: 6px; }',
+    '.files.links { margin-top: 6px; }',
+    'a.file { text-decoration: none; }',
+    '.like { all: unset; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 12px; color: var(--secondary-text-color); --mdc-icon-size: 18px; }',
+    '.like.on { color: #e5487a; }',
+    '.like:hover:not(:disabled) { background: color-mix(in srgb, #e5487a 10%, transparent); }',
+    '.like:disabled { cursor: default; }',
+    '.like:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
     '.hw.done .item-icon { color: var(--success-color, #43a047); }',
     '.item-main { flex: 1; min-width: 0; }',
     '.item-title { font-weight: 500; color: var(--primary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
@@ -534,9 +581,12 @@ window.Educartable = {
   book: educartableBook,
   cancelBooking: educartableCancelBooking,
   signDocument: educartableSignDocument,
+  like: educartableLike,
+  readNotifications: educartableReadNotifications,
+  deleteComment: educartableDeleteComment,
   openFile: educartableOpenFile,
   hydrate: educartableHydrate,
   sortedHomework: educartableSortedHomework,
-  rows: { word: educartableWordRow, homework: educartableHomeworkRow, news: educartableNewsRow, document: educartableDocumentRow, files: educartableFiles },
+  rows: { word: educartableWordRow, homework: educartableHomeworkRow, news: educartableNewsRow, document: educartableDocumentRow, activity: educartableActivityRow, files: educartableFiles },
   itemStyles: educartableItemStyles,
 };

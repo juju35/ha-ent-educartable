@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "School reports to sign"
+      },
+      "activities": {
+        "name": "Class life"
+      },
+      "notifications": {
+        "name": "Unread notifications"
+      },
+      "next_appointment": {
+        "name": "Next appointment"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Homework"
+      },
+      "events_calendar": {
+        "name": "School events"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "The name recorded with the signature, 3 characters or more, as in the portal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Like a class-life post",
+      "description": "Like a post of the class life (cahier de vie), or take the like back.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "activity_id": {
+          "name": "Post",
+          "description": "The id of the post, from the activities attribute of the Class life sensor."
+        },
+        "liked": {
+          "name": "Liked",
+          "description": "Off to take the like back."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Mark notifications as read",
+      "description": "Mark a notification of the portal as read, or all of them.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "notification_id": {
+          "name": "Notification",
+          "description": "The id of the notification, from the notifications attribute of the Unread notifications sensor; all of them when empty."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Delete a comment",
+      "description": "Delete one of your own comments in a message's conversation with the teacher.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
+        },
+        "comment_id": {
+          "name": "Comment",
+          "description": "The id of one of your comments in the conversation."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "School report to sign for {child}"
+    },
+    "notify_new_activity": {
+      "message": "New in class life for {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Homework",
         "words": "Liaison book",
         "news": "News",
-        "documents": "School reports"
+        "documents": "School reports",
+        "activities": "Class life"
       }
     },
     "hide_header": {

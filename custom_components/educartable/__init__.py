@@ -28,13 +28,17 @@ from homeassistant.helpers.typing import ConfigType
 from .api import EducartableApi, EducartableError
 from .config_flow import clean_options, new_session, notify_choices
 from .const import (
+    ATTR_ACTIVITY_ID,
     ATTR_ANSWERS,
     ATTR_CHILD_ID,
     ATTR_CHILDREN,
+    ATTR_COMMENT_ID,
     ATTR_CONFIG_ENTRY_ID,
     ATTR_DOCUMENT_ID,
+    ATTR_LIKED,
     ATTR_MESSAGE_ID,
     ATTR_NAME,
+    ATTR_NOTIFICATION_ID,
     ATTR_SLOT_ID,
     ATTR_TEXT,
     ATTR_TITLE,
@@ -57,7 +61,10 @@ from .const import (
     SERVICE_ANSWER_SURVEY,
     SERVICE_BOOK,
     SERVICE_CANCEL_BOOKING,
+    SERVICE_DELETE_COMMENT,
+    SERVICE_LIKE,
     SERVICE_MARK_READ,
+    SERVICE_READ_NOTIFICATIONS,
     SERVICE_REFRESH,
     SERVICE_REPLY,
     SERVICE_SIGN,
@@ -120,6 +127,23 @@ BOOK_SCHEMA = vol.Schema(
 )
 CANCEL_BOOKING_SCHEMA = vol.Schema(
     {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_SLOT_ID): MESSAGE_ID}
+)
+LIKE_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_ACTIVITY_ID): MESSAGE_ID,
+        vol.Optional(ATTR_LIKED, default=True): cv.boolean,
+    }
+)
+READ_NOTIFICATIONS_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Optional(ATTR_NOTIFICATION_ID): MESSAGE_ID}
+)
+DELETE_COMMENT_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID,
+        vol.Required(ATTR_COMMENT_ID): MESSAGE_ID,
+    }
 )
 SIGN_DOCUMENT_SCHEMA = vol.Schema(
     {
@@ -184,6 +208,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             SIGN_DOCUMENT_SCHEMA,
             lambda c, d: c.async_sign_document(d[ATTR_DOCUMENT_ID], d[ATTR_NAME]),
         ),
+        SERVICE_LIKE: (LIKE_SCHEMA, lambda c, d: c.async_like(d[ATTR_ACTIVITY_ID], d[ATTR_LIKED])),
+        SERVICE_READ_NOTIFICATIONS: (
+            READ_NOTIFICATIONS_SCHEMA,
+            lambda c, d: c.async_read_notifications(d.get(ATTR_NOTIFICATION_ID, "")),
+        ),
+        SERVICE_DELETE_COMMENT: (
+            DELETE_COMMENT_SCHEMA,
+            lambda c, d: c.async_delete_comment(d[ATTR_MESSAGE_ID], d[ATTR_COMMENT_ID]),
+        ),
     }
     hass.services.async_register(DOMAIN, SERVICE_REFRESH, refresh, REFRESH_SCHEMA)
     # Every action on the portal is done with the parent's account: administrators only (a child's Home Assistant
@@ -194,12 +227,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: EducartableConfigEntry) -> bool:
-    """1.2: the panel's Documents tab (livret) is shown to accounts that chose their tabs before it existed."""
-    if entry.version == 1 and entry.minor_version < 2:
-        options = dict(entry.options)
-        if isinstance(options.get(CONF_PANEL_TABS), list) and "documents" not in options[CONF_PANEL_TABS]:
-            options[CONF_PANEL_TABS] = [*options[CONF_PANEL_TABS], "documents"]
-        hass.config_entries.async_update_entry(entry, options=options, minor_version=2)
+    """New panel tabs are shown to accounts that chose their tabs before they existed: 1.2 the livret (documents),
+    1.3 the cahier de vie (activities)."""
+    if entry.version != 1:
+        return True
+    for minor, tab in ((2, "documents"), (3, "activities")):
+        if entry.minor_version < minor:
+            options = dict(entry.options)
+            if isinstance(options.get(CONF_PANEL_TABS), list) and tab not in options[CONF_PANEL_TABS]:
+                options[CONF_PANEL_TABS] = [*options[CONF_PANEL_TABS], tab]
+            hass.config_entries.async_update_entry(entry, options=options, minor_version=minor)
     return True
 
 

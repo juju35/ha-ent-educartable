@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Zeugnisse zu unterschreiben"
+      },
+      "activities": {
+        "name": "Klassenleben"
+      },
+      "notifications": {
+        "name": "Ungelesene Benachrichtigungen"
+      },
+      "next_appointment": {
+        "name": "Nächster Termin"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Hausaufgaben"
+      },
+      "events_calendar": {
+        "name": "Schulveranstaltungen"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Der mit der Unterschrift gespeicherte Name, mindestens 3 Zeichen, wie im Portal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Beitrag liken",
+      "description": "Einen Beitrag des Klassenlebens liken oder das Like zurücknehmen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "activity_id": {
+          "name": "Beitrag",
+          "description": "Die ID des Beitrags, aus dem Attribut activities des Sensors Klassenleben."
+        },
+        "liked": {
+          "name": "Gefällt",
+          "description": "Aus, um das Like zurückzunehmen."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Benachrichtigungen als gelesen markieren",
+      "description": "Eine Benachrichtigung des Portals als gelesen markieren, oder alle.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "notification_id": {
+          "name": "Benachrichtigung",
+          "description": "Die ID der Benachrichtigung, aus dem Attribut notifications des Sensors Ungelesene Benachrichtigungen; leer für alle."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Kommentar löschen",
+      "description": "Einen deiner Kommentare im Austausch einer Mitteilung mit der Lehrkraft löschen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
+        },
+        "comment_id": {
+          "name": "Kommentar",
+          "description": "Die ID eines deiner Kommentare im Austausch."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Zeugnis zu unterschreiben für {child}"
+    },
+    "notify_new_activity": {
+      "message": "Neu im Klassenleben für {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Hausaufgaben",
         "words": "Mitteilungsheft",
         "news": "Neuigkeiten",
-        "documents": "Zeugnisse"
+        "documents": "Zeugnisse",
+        "activities": "Klassenleben"
       }
     },
     "hide_header": {

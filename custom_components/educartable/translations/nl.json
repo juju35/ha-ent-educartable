@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Rapporten te ondertekenen"
+      },
+      "activities": {
+        "name": "Klasleven"
+      },
+      "notifications": {
+        "name": "Ongelezen meldingen"
+      },
+      "next_appointment": {
+        "name": "Volgende afspraak"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Huiswerk"
+      },
+      "events_calendar": {
+        "name": "Schoolactiviteiten"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "De naam die met de handtekening wordt vastgelegd, minstens 3 tekens, zoals in het portaal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Bericht leuk vinden",
+      "description": "Een bericht van het klasleven leuk vinden, of dat terugdraaien.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "activity_id": {
+          "name": "Bericht",
+          "description": "Het id van het bericht, uit het attribuut activities van de sensor Klasleven."
+        },
+        "liked": {
+          "name": "Leuk",
+          "description": "Uit om het terug te draaien."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Meldingen als gelezen markeren",
+      "description": "Een melding van het portaal als gelezen markeren, of alle.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "notification_id": {
+          "name": "Melding",
+          "description": "Het id van de melding, uit het attribuut notifications van de sensor Ongelezen meldingen; leeg voor alle."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Reactie verwijderen",
+      "description": "Een van je eigen reacties in het gesprek van een bericht met de leerkracht verwijderen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
+        },
+        "comment_id": {
+          "name": "Reactie",
+          "description": "Het id van een van je reacties in het gesprek."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Rapport te ondertekenen voor {child}"
+    },
+    "notify_new_activity": {
+      "message": "Nieuw in het klasleven voor {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Huiswerk",
         "words": "Heen-en-weerschrift",
         "news": "Nieuws",
-        "documents": "Rapporten"
+        "documents": "Rapporten",
+        "activities": "Klasleven"
       }
     },
     "hide_header": {

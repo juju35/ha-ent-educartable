@@ -15,11 +15,23 @@
       },
       "documents_to_sign": {
         "default": "mdi:file-certificate"
+      },
+      "activities": {
+        "default": "mdi:image-multiple-outline"
+      },
+      "notifications": {
+        "default": "mdi:bell-outline"
+      },
+      "next_appointment": {
+        "default": "mdi:calendar-account"
       }
     },
     "calendar": {
       "homework_calendar": {
         "default": "mdi:calendar-check"
+      },
+      "events_calendar": {
+        "default": "mdi:calendar-star"
       }
     },
     "todo": {
@@ -55,6 +67,15 @@
     },
     "sign_document": {
       "service": "mdi:file-sign"
+    },
+    "like_activity": {
+      "service": "mdi:heart-outline"
+    },
+    "mark_notifications_read": {
+      "service": "mdi:bell-check-outline"
+    },
+    "delete_comment": {
+      "service": "mdi:comment-remove-outline"
     }
   }
 }
