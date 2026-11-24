@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Zadnja posodobitev"
+      },
+      "documents_to_sign": {
+        "name": "Spričevala za podpis"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
         }
       }
+    },
+    "reply": {
+      "name": "Odgovori učitelju",
+      "description": "Pisanje v zasebnem pogovoru o sporočilu z učiteljem. Pričakovani odgovor se zabeleži kot dan.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
+        },
+        "text": {
+          "name": "Besedilo",
+          "description": "Kaj napisati učitelju."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Piši učitelju",
+      "description": "Pošlji novo sporočilo učitelju izbranih otrok (eno sporočilo na razred).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "children": {
+          "name": "Otroci",
+          "description": "ID-ji otrok iz atributa children senzorja Zadnja posodobitev."
+        },
+        "title": {
+          "name": "Zadeva",
+          "description": "Zadeva sporočila."
+        },
+        "text": {
+          "name": "Besedilo",
+          "description": "Sporočilo."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Odgovori na anketo",
+      "description": "Odgovori na anketo sporočila za otroke, ki jih zadeva; prejšnji odgovor se zamenja.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
+        },
+        "answers": {
+          "name": "Odgovori",
+          "description": "Vsak ID vprašanja z ID-ji izbranih možnosti iz atributa survey sporočila."
+        },
+        "children": {
+          "name": "Otroci",
+          "description": "ID-ji otrok, za katere odgovarjate; prazno za vse otroke."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Rezerviraj termin",
+      "description": "Rezerviraj prosti termin roditeljskega sestanka za otroka.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "ID termina iz atributa slots sporočila."
+        },
+        "child_id": {
+          "name": "Otrok",
+          "description": "Otrok, za katerega je termin; potrebno, ko več otrok še nima termina."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Prekliči termin",
+      "description": "Prekliči termin, rezerviran za enega od otrok.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "ID rezerviranega termina iz atributa slots sporočila."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Podpiši spričevalo",
+      "description": "Podpiši spričevalo ali potrdilo kot pregledano.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "ID dokumenta iz atributa documents senzorja Spričevala za podpis."
+        },
+        "name": {
+          "name": "Ime podpisnika",
+          "description": "Ime, shranjeno s podpisom, vsaj 3 znaki, kot na portalu."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Novica iz šole"
+    },
+    "notify_new_document": {
+      "message": "Spričevalo za podpis: {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Domače naloge",
         "words": "Beležka",
-        "news": "Novice"
+        "news": "Novice",
+        "documents": "Spričevala"
       }
     },
     "hide_header": {

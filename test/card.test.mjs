@@ -20,7 +20,7 @@ const context = {
   Intl,
 };
 vm.createContext(context);
-vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
+vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableDocumentRow, educartableFileUrl, educartableAnswerSurvey, educartableBook, educartableReply, educartableWrite, educartableSignDocument, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
 const E = context.e;
 
 const sensor = (id, state, attrs) => ({ entity_id: id, state: String(state), attributes: { config_entry_id: 'abc', ...attrs } });
@@ -30,6 +30,7 @@ const states = {
   'sensor.edu_alex': sensor('sensor.edu_alex', 1, { child_id: 'p1', child: 'Alex', homework: [{ id: 'h1', title: 'Poem', subject: 'French', due: '2026-11-26', done: false }] }),
   'sensor.edu_sam': sensor('sensor.edu_sam', 0, { child_id: 'p2', child: 'Sam', homework: [{ id: 'h2', title: 'Box', subject: 'Art', due: '2026-11-27', done: true }] }),
   'sensor.edu_last': sensor('sensor.edu_last', '2026-11-16T08:00:00+00:00', { stale: [], account: { name: 'Parent' }, children: [{ id: 'p1', firstname: 'Alex', name: 'Alex Doe' }, { id: 'p2', firstname: 'Sam', name: 'Sam Doe' }], panel_tabs: ['homework', 'news'], hide_header: 'off' }),
+  'sensor.edu_docs': sensor('sensor.edu_docs', 1, { stale: [], documents: [{ id: 'notebook:3', kind: 'notebook', title: 'Report', year: '2026', child: 'Alex', child_id: 'p1', to_sign: true, signed: false, file: true }] }),
   'sensor.other': { entity_id: 'sensor.other', state: '3', attributes: { config_entry_id: 'zzz', messages: [] } },
 };
 // Values made in the card's context are compared as plain JSON (another realm's arrays are not deepEqual).
@@ -419,4 +420,41 @@ test("the status pill is measured only once <ha-card> has drawn its content", as
   const once = asked.length;
   card._fitPill();
   assert.equal(asked.length, once * 2, "then measured right away, with no wait");
+});
+
+test('the livret: its documents in the data, Sign and the PDF for administrators', () => {
+  const d = E.educartableData({ states, entities: registry() }, 'abc');
+  assert.deepEqual(plain(d.documents.map((x) => x.id)), ['notebook:3']);
+  const t = E.educartableT({});
+  const row = E.educartableDocumentRow(d.documents[0], t, { canAct: true });
+  assert.match(row, /data-action="doc-sign" data-id="notebook:3"/);
+  assert.match(row, /data-action="doc-file" data-doc="notebook:3"/);
+  const other = E.educartableDocumentRow(d.documents[0], t, { canAct: false });
+  assert.doesNotMatch(other, /doc-sign/);
+  assert.match(other, /disabled/);
+  assert.match(E.educartableDocumentRow({ ...d.documents[0], signed: true, to_sign: false }, t, { canAct: true }), /chip ok/);
+});
+
+test('a livret PDF is fetched by its document id, never by a file path', async () => {
+  const calls = [];
+  const hass = { callWS: (msg) => { calls.push(msg); return Promise.resolve({ path: msg.path + '&authSig=x' }); } };
+  await E.educartableFileUrl(hass, 'abc', { document: 'notebook:3', name: 'Report 2026.pdf' });
+  assert.equal(calls[0].path, '/api/educartable/file/abc?document=notebook%3A3&name=Report%202026.pdf');
+});
+
+test('replies, new messages, surveys, appointments and livret signatures call their actions', async () => {
+  const calls = [];
+  const hass = { callService: (d, s, data) => { calls.push([d, s, data]); return Promise.resolve(); } };
+  await E.educartableReply(hass, 'abc', 5, 'Hello');
+  await E.educartableWrite(hass, 'abc', [1, 'p2'], 'Absence', 'Ill');
+  await E.educartableAnswerSurvey(hass, 'abc', 'c5', { q1: ['a'] });
+  await E.educartableBook(hass, 'abc', 51, '');
+  await E.educartableSignDocument(hass, 'abc', 'notebook:3', 'Pat Doe');
+  assert.deepEqual(plain(calls), [
+    ['educartable', 'reply', { config_entry_id: 'abc', message_id: '5', text: 'Hello' }],
+    ['educartable', 'write_message', { config_entry_id: 'abc', children: ['1', 'p2'], title: 'Absence', text: 'Ill' }],
+    ['educartable', 'answer_survey', { config_entry_id: 'abc', message_id: 'c5', answers: { q1: ['a'] } }],
+    ['educartable', 'book_appointment', { config_entry_id: 'abc', slot_id: '51' }],
+    ['educartable', 'sign_document', { config_entry_id: 'abc', document_id: 'notebook:3', name: 'Pat Doe' }],
+  ]);
 });

@@ -66,4 +66,4 @@ export function pickerDefine(tag, Card, options) {
   return customElements.define(tag, lazy, options);
 }
 
-export var EDUCARTABLE_CARD_VERSION = '0.3.0';
+export var EDUCARTABLE_CARD_VERSION = '0.4.0';

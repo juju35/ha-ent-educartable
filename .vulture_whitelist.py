@@ -27,3 +27,5 @@ async_get_events  # CalendarEntity API
 async_step_reconfigure  # ConfigFlow step
 todo_items  # TodoListEntity API
 async_update_todo_item  # TodoListEntity API
+async_migrate_entry  # Home Assistant calls it on a config entry version change
+MINOR_VERSION  # read by Home Assistant

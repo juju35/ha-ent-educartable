@@ -86,6 +86,15 @@ ICONS = {
     "home-outline": "M12 5.69L17 10.19V18H15V12H9V18H7V10.19L12 5.69M12 3L2 12H5V20H11V14H13V20H19V12H22",
     "cog": "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z",
     "comment-outline": "M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10Z",
+    "file-certificate-outline": "M14 13V11L12 12L10 11V13L8 14L10 15V17L12 16L14 17V15L16 14M14 2H7A2 2 0 0 0 5 4V18A2 2 0 0 0 7 20H8V18H7V4H13V8H17V18H16V20H17A2 2 0 0 0 19 18V7M14 13V11L12 12L10 11V13L8 14L10 15V17L12 16L14 17V15L16 14M10 23L12 22L14 23V18H10M14 13V11L12 12L10 11V13L8 14L10 15V17L12 16L14 17V15L16 14Z",
+    "certificate-outline": "M13 21L15 20L17 21V14H13M17 9V7L15 8L13 7V9L11 10L13 11V13L15 12L17 13V11L19 10M20 3H4A2 2 0 0 0 2 5V15A2 2 0 0 0 4 17H11V15H4V5H20V15H19V17H20A2 2 0 0 0 22 15V5A2 2 0 0 0 20 3M11 8H5V6H11M9 11H5V9H9M11 14H5V12H11Z",
+    "file-document-outline": "M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M6,4H13V9H18V20H6V4M8,12V14H16V12H8M8,16V18H13V16H8Z",
+    "forum-outline": "M15,4V11H5.17L4,12.17V4H15M16,2H3A1,1 0 0,0 2,3V17L6,13H16A1,1 0 0,0 17,12V3A1,1 0 0,0 16,2M21,6H19V15H6V17A1,1 0 0,0 7,18H18L22,22V7A1,1 0 0,0 21,6Z",
+    "calendar-clock": "M15,13H16.5V15.82L18.94,17.23L18.19,18.53L15,16.69V13M19,8H5V19H9.67C9.24,18.09 9,17.07 9,16A7,7 0 0,1 16,9C17.07,9 18.09,9.24 19,9.67V8M5,21C3.89,21 3,20.1 3,19V5C3,3.89 3.89,3 5,3H6V1H8V3H16V1H18V3H19A2,2 0 0,1 21,5V11.1C22.24,12.36 23,14.09 23,16A7,7 0 0,1 16,23C14.09,23 12.36,22.24 11.1,21H5M16,11.15A4.85,4.85 0 0,0 11.15,16C11.15,18.68 13.32,20.85 16,20.85A4.85,4.85 0 0,0 20.85,16C20.85,13.32 18.68,11.15 16,11.15Z",
+    "calendar-check": "M19,19H5V8H19M19,3H18V1H16V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M16.53,11.06L15.47,10L10.59,14.88L8.47,12.76L7.41,13.82L10.59,17L16.53,11.06Z",
+    "poll": "M3,22V8H7V22H3M10,22V2H14V22H10M17,22V14H21V22H17Z",
+    "email-edit-outline": "M19.07 13.88L13 19.94V22H15.06L21.12 15.93M22.7 13.58L21.42 12.3C21.32 12.19 21.18 12.13 21.04 12.13C20.89 12.14 20.75 12.19 20.65 12.3L19.65 13.3L21.7 15.3L22.7 14.3C22.89 14.1 22.89 13.78 22.7 13.58M11 18H4V8L12 13L20 8V10H22V6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H11V18M20 6L12 11L4 6H20Z",
+    "email-alert-outline": "M24 7H22V13H24V7M24 15H22V17H24V15M20 6C20 4.9 19.1 4 18 4H2C.9 4 0 4.9 0 6V18C0 19.1 .9 20 2 20H18C19.1 20 20 19.1 20 18V6M18 6L10 11L2 6H18M18 18H2V8L10 13L18 8V18Z",
 }
 
 # Generic Material icons for the other rows of the mock Home Assistant sidebar.
@@ -217,6 +226,70 @@ CARNET = [
         "to_sign": False,
         "to_do": True,
     },
+    {
+        "id": "103",
+        "title": "Christmas lunch",
+        "text": "The canteen serves a Christmas lunch on Thursday 17 December.",
+        "type": "info",
+        "author": "Ms Brown",
+        "achievement": "survey",
+        "achieved": False,
+        "medias": [],
+        "date": "2026-11-11T12:00:00+01:00",
+        "children": ["p1"],
+        "child": "Alex",
+        "to_sign": False,
+        "to_do": True,
+        "commentable": True,
+        "comments": 2,
+        "survey": {
+            "deadline": "2026-12-04",
+            "anonymous": False,
+            "one_per_child": True,
+            "questions": [
+                {
+                    "id": "1",
+                    "label": "Will Alex eat at the canteen that day?",
+                    "multiple": False,
+                    "options": [{"id": "a", "label": "Yes"}, {"id": "b", "label": "No"}],
+                },
+                {
+                    "id": "2",
+                    "label": "Can you help with the decorations?",
+                    "multiple": True,
+                    "options": [
+                        {"id": "m", "label": "Monday"},
+                        {"id": "t", "label": "Tuesday"},
+                        {"id": "w", "label": "Wednesday"},
+                    ],
+                },
+            ],
+            "answers": {},
+        },
+        "slots": [],
+    },
+]
+
+# The conversation of the Christmas lunch message, as the comments websocket answers it.
+COMMENTS = [
+    {
+        "id": "c1",
+        "author": "Ms Brown",
+        "mine": False,
+        "text": "Hello, can you tell me if Alex has a food allergy?",
+        "date": "2026-11-12T08:10:00+01:00",
+        "deleted": False,
+        "medias": [],
+    },
+    {
+        "id": "c2",
+        "author": "Parent",
+        "mine": True,
+        "text": "No allergy, thank you for asking.",
+        "date": "2026-11-12T19:30:00+01:00",
+        "deleted": False,
+        "medias": [],
+    },
 ]
 
 
@@ -271,8 +344,80 @@ def _news(id_, title, type_, date, author, text=""):
 
 NEWS = [
     _news("n1", "Christmas fair", "event", "2026-11-15T10:00:00+01:00", "Head teacher", "Saturday 12 December, 10:00."),
-    _news("n2", "Parents' evening", "meeting", "2026-11-13T18:00:00+01:00", "Ms Brown"),
+    {
+        **_news(
+            "n2", "Parents' evening", "meeting", "2026-11-13T18:00:00+01:00", "Ms Brown", "Book a slot to meet me."
+        ),
+        "achievement": "book",
+        "children": ["p1", "p2"],
+        "child": "Alex · Sam",
+        "to_do": True,
+        "slots": [
+            {
+                "id": "s1",
+                "start": "2026-11-24T17:00:00+01:00",
+                "end": "2026-11-24T17:15:00+01:00",
+                "location": "Room 4",
+                "booked": True,
+                "child_id": "p1",
+            },
+            *[
+                {
+                    "id": f"s{i}",
+                    "start": f"2026-11-24T{17 + (i * 15) // 60}:{(i * 15) % 60:02d}:00+01:00",
+                    "end": f"2026-11-24T{17 + ((i + 1) * 15) // 60}:{((i + 1) * 15) % 60:02d}:00+01:00",
+                    "location": "Room 4",
+                    "booked": False,
+                    "child_id": "",
+                }
+                for i in range(2, 7)
+            ],
+        ],
+    },
     _news("n3", "Canteen menus for December", "advert", "2026-11-10T09:00:00+01:00", "Town hall"),
+]
+
+
+DOCUMENTS = [
+    {
+        "id": "notebook:21",
+        "kind": "notebook",
+        "title": "School report",
+        "type": "Term 1",
+        "year": "2026-2027",
+        "date": "2026-11-13T00:00:00+01:00",
+        "child_id": "p1",
+        "child": "Alex",
+        "signed": False,
+        "to_sign": True,
+        "file": True,
+    },
+    {
+        "id": "attestation:7",
+        "kind": "attestation",
+        "title": "Swimming test",
+        "type": "",
+        "year": "2026",
+        "date": "2026-06-30T00:00:00+02:00",
+        "child_id": "p1",
+        "child": "Alex",
+        "signed": True,
+        "to_sign": False,
+        "file": True,
+    },
+    {
+        "id": "notebook:20",
+        "kind": "notebook",
+        "title": "School report",
+        "type": "Term 3",
+        "year": "2025-2026",
+        "date": "2026-07-03T00:00:00+02:00",
+        "child_id": "p2",
+        "child": "Sam",
+        "signed": True,
+        "to_sign": False,
+        "file": True,
+    },
 ]
 
 
@@ -304,6 +449,7 @@ STATES = {
     for s in [
         _sensor("sensor.educartable_liaison_book_to_sign", 1, stale=[], messages=CARNET),
         _sensor("sensor.educartable_news", 3, stale=[], news=NEWS),
+        _sensor("sensor.educartable_school_reports_to_sign", 1, stale=[], documents=DOCUMENTS),
         *[_homework_sensor(ch, HOMEWORK[ch["id"]]) for ch in CHILDREN],
         _sensor(
             "sensor.educartable_last_update",
@@ -311,7 +457,7 @@ STATES = {
             stale=[],
             account={"name": "Parent"},
             children=CHILDREN,
-            panel_tabs=["homework", "words", "news"],
+            panel_tabs=["homework", "words", "news", "documents"],
             hide_header="off",
         ),
     ]
@@ -367,9 +513,23 @@ SHOTS = [
     {"file": "panel-words-dark", "theme": "dark", "panel": "words", "width": 960},
     {"file": "panel-news", "theme": "light", "panel": "news", "width": 960},
     {"file": "panel-news-dark", "theme": "dark", "panel": "news", "width": 960},
-    # The sidebar entry with its badge: 1 message to sign + 3 homework = 4, like the mock sensors.
-    {"file": "sidebar", "theme": "light", "sidebar": True, "count": 4, "width": 256},
-    {"file": "sidebar-dark", "theme": "dark", "sidebar": True, "count": 4, "width": 256},
+    {"file": "panel-documents", "theme": "light", "panel": "documents", "width": 960},
+    {"file": "panel-documents-dark", "theme": "dark", "panel": "documents", "width": 960},
+    # The conversation of a message with the teacher, opened under it (its survey above).
+    {"file": "panel-conversation", "theme": "light", "panel": "words", "width": 960, "click": '[data-action="thread"]'},
+    {
+        "file": "panel-conversation-dark",
+        "theme": "dark",
+        "panel": "words",
+        "width": 960,
+        "click": '[data-action="thread"]',
+    },
+    # A new message to the teacher, from the Liaison book.
+    {"file": "panel-write", "theme": "light", "panel": "words", "width": 960, "click": '[data-action="write"]'},
+    {"file": "panel-write-dark", "theme": "dark", "panel": "words", "width": 960, "click": '[data-action="write"]'},
+    # The sidebar entry with its badge: 1 message to sign + 3 homework + 1 school report = 5, like the mock sensors.
+    {"file": "sidebar", "theme": "light", "sidebar": True, "count": 5, "width": 256},
+    {"file": "sidebar-dark", "theme": "dark", "sidebar": True, "count": 5, "width": 256},
 ]
 
 
@@ -440,10 +600,10 @@ def mount(context, shot):
     if shot.get("panel"):
         page.add_script_tag(content=PANEL_JS)
     page.evaluate(
-        """({config, states, element, tab, dark, mockImage}) => {
+        """({config, states, element, tab, dark, mockImage, comments}) => {
           const hass = {states, themes: {darkMode: dark}, language: "en", locale: {language: "en", time_format: "24"}, user: {is_admin: true},
                         callService: () => Promise.resolve(),
-                        callWS: (msg) => Promise.resolve(msg.type === "auth/sign_path" ? {path: mockImage} : {})};
+                        callWS: (msg) => Promise.resolve(msg.type === "auth/sign_path" ? {path: mockImage} : msg.type === "educartable/comments" ? {comments} : {})};
           const el = document.createElement(element);
           if (tab) {
             el._tab = tab;
@@ -461,6 +621,7 @@ def mount(context, shot):
             "element": "educartable-panel" if shot.get("panel") else shot.get("element", "educartable-card"),
             "tab": shot.get("panel"),
             "mockImage": MOCK_IMAGE,
+            "comments": COMMENTS,
             # The illustrated header follows the dark theme alone, so dark twins show the night.
             "dark": shot["theme"] == "dark",
         },

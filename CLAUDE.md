@@ -60,9 +60,14 @@ carries the new version, updated together in one commit:
   `POST …/messages/{id}/achieve` (`subject_model`, `subject_key`, `action`, `body` = signer's name for sign),
   `POST …/messages/{id}/check` (`recipient_id`, `checked`, per pupil recipient), attachments at
   `educore/medias/{id}/file`. Writes are **administrators only** (services, websocket, file view).
-- Not yet implemented: replying (comments), surveys (`parent.messages.answerSurvey` RPC), appointments, the pupil
-  **livret / compétences** (`livret/…/notebooks`, `attestations_validations`). The writes still need confirming on a
-  real parent account (beta).
+- Also implemented (0.4.0): the conversation of a message (`educore/…/comments`, model `HomeworkMessage`, `reply` = its first
+  comment), new messages (`POST educartable/…/messages` {children of one classroom, title, body}), surveys and appointments
+  through the RPC API (`POST https://api.edumoov.com/rpc/<method>` {params, payload}: `parent.messages.answerSurvey` /
+  `deleteAnswerSurvey`, `parent.events.register` / `unregister`), the livret (`livret/…/notebooks` and
+  `attestations_validations`, signed with `…/{id}/sign` {name}; PDFs at `core/cloudy_files/{file}/file/{hash}/educartable`
+  and `livret/attestations_validations/pdf/{id}?hash=`). Every write is still to confirm on a real parent account (beta).
+- Not yet implemented: attachments in replies and new messages (upload through `core/…/medias/url`), translation, the
+  pupil's skills.
 - New card or visual rework: **propose design options to choose from** before implementing.
 
 ## README layout

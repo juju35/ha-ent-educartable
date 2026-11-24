@@ -20,9 +20,18 @@ export class EducartablePanel extends HTMLElement {
     // Day picked in the week strip of the home page ('' = the whole week), not remembered.
     this._day = '';
     this._entry = this._entry || '';
-    // Rows unfolded on the home page, and the signature being confirmed.
+    // Rows unfolded on the home page, and the action being confirmed (sign, sign a document, book a slot).
     this._open = {};
     this._confirm = null;
+    // What is being typed (reply, new message), kept across redraws; the conversations loaded and shown.
+    this._typed = {};
+    this._threads = {};
+    this._threadOpen = {};
+    // Survey answers being chosen, by message; the surveys reopened to change their answer.
+    this._picks = {};
+    this._editing = {};
+    // The new message to the teacher being written.
+    this._write = null;
   }
 
   set panel(panel) {
@@ -123,6 +132,11 @@ export class EducartablePanel extends HTMLElement {
       '<div class="hbtns"></div></div><div class="tabbar"><div class="tabs" role="tablist"></div><div class="tb-side"></div></div><div class="content"></div>';
     this._root.addEventListener('click', this._onClick.bind(this));
     this._root.addEventListener('change', this._onChange.bind(this));
+    // What is typed is kept as it is typed: a redraw (a sensor update) draws it back.
+    this._root.addEventListener('input', (ev) => {
+      var key = ev.target.getAttribute?.('data-draft');
+      if (key) this._typed[key] = ev.target.value;
+    });
     this._root.addEventListener('keydown', (ev) => {
       if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.hasAttribute?.('data-toggle')) {
         ev.preventDefault();
@@ -130,6 +144,9 @@ export class EducartablePanel extends HTMLElement {
       } else if (ev.key === 'Enter' && ev.target.classList?.contains('signer') && this._data) {
         ev.preventDefault();
         this._doSign(this._data);
+      } else if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && ev.target.matches?.('textarea[data-draft^="reply:"]') && this._data) {
+        ev.preventDefault();
+        this._doReply(this._data, ev.target.getAttribute('data-draft').slice(6));
       }
     });
     // Tabs: arrows, Home and End move between them (WAI-ARIA tabs pattern).
@@ -158,6 +175,7 @@ export class EducartablePanel extends HTMLElement {
         homework: "mdi:pencil-outline",
         words: "mdi:notebook-edit-outline",
         news: "mdi:newspaper-variant-outline",
+        documents: "mdi:file-certificate-outline",
         settings: "mdi:cog",
       },
       badge: ".badge",
@@ -236,17 +254,28 @@ export class EducartablePanel extends HTMLElement {
       content.innerHTML = '<div class="page"><div class="empty">' + E.esc(t.unavailable) + '</div></div>';
       return;
     }
-    var html = { home: this._home, homework: this._homework, words: this._words, news: this._news }[this._tab].call(this, t, data);
-    // The signer's name being typed survives the redraw (the input is drawn again).
+    var html = { home: this._home, homework: this._homework, words: this._words, news: this._news, documents: this._documents }[this._tab].call(this, t, data);
+    // The signer's name being typed survives the redraw (the input is drawn again), and so does the focus.
     var typed = content.querySelector('.signer');
     if (typed && this._confirm) this._confirm.name = typed.value;
+    var active = this._root.activeElement;
+    var focus = active?.getAttribute?.('data-draft') || (active?.classList?.contains('signer') ? 'signer' : '');
+    var caret = focus && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
     content.innerHTML = '<div class="page">' + (this._error ? '<div class="error-text errbar">' + E.esc(this._error) + '</div>' : '') + this._popup(t, data) + html + '</div>';
     E.hydrate(content, this._hass, data.entryId);
+    if (focus) {
+      var again = focus === 'signer' ? content.querySelector('.signer') : content.querySelector('[data-draft="' + CSS.escape(focus) + '"]');
+      if (again) {
+        again.focus({ preventScroll: true });
+        if (caret) again.setSelectionRange?.(caret[0], caret[1]);
+      }
+    }
   }
 
   _count(tab, data) {
     if (tab === 'words') return data.words.filter((w) => !w.signed).length;
     if (tab === 'homework') return data.homework.filter((h) => !h.done).length;
+    if (tab === 'documents') return data.documents.filter((d) => d.to_sign).length;
     return 0;
   }
 
@@ -360,7 +389,7 @@ export class EducartablePanel extends HTMLElement {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
     var R = E.rows;
-    var opts = { isOpen: (key) => !!this._open[key], entryId: data.entryId, canAct: E.canAct(this._hass) };
+    var opts = { isOpen: (key) => !!this._open[key], entryId: data.entryId, canAct: E.canAct(this._hass), extra: (item) => this._extras(item, t, data) };
     var on = (tab) => data.panelTabs.indexOf(tab) !== -1;
     // The week strip counts homework: left out with the Homework tab, its day filter cleared.
     if (!on('homework')) this._day = '';
@@ -370,21 +399,24 @@ export class EducartablePanel extends HTMLElement {
     var pending = data.words.filter((w) => w.achievement && !w.achieved);
     var todo = E.sortedHomework(this._myHomework(data), false).filter((h) => !day || String(h.date).slice(0, 10) === day);
     var latest = data.news[0];
+    var docs = data.documents.filter((d) => d.to_sign);
     var tiles = [
       on('words') ? this._tile('words', 'mdi:notebook-edit-outline', 'red', t.section_words, toSign.length ? toSign.length + ' ' + t.tile_words : t.no_words, toSign.length) : '',
       on('homework') ? this._tile('homework', 'mdi:pencil-outline', 'amber', t.section_homework, todo.length ? todo.length + ' ' + t.tile_homework : t.no_homework, todo.length) : '',
       on('news') ? this._tile('news', 'mdi:newspaper-variant-outline', 'blue', t.section_news, latest ? [latest.title, E.day(latest.date, t, locale)].filter(Boolean).join(' · ') : t.no_news, 0) : '',
+      on('documents') && data.documents.length ? this._tile('documents', 'mdi:file-certificate-outline', 'violet', t.section_documents, docs.length ? docs.length + ' ' + t.tile_documents : t.doc_all_signed, docs.length) : '',
     ].filter(Boolean);
     var see = (tab) => (on(tab) ? '<button class="see" data-tab="' + tab + '">' + E.esc(t.see_all) + ' ›</button>' : '');
     var todoRows = (on('words') ? pending.map((w) => R.word(w, t, locale, opts)) : [])
-      .concat(on('homework') ? todo.slice(0, 6).map((h) => R.homework(h, t, locale, Object.assign({}, opts, { child: several && !this._child }))) : []);
+      .concat(on('homework') ? todo.slice(0, 6).map((h) => R.homework(h, t, locale, Object.assign({}, opts, { child: several && !this._child }))) : [])
+      .concat(on('documents') ? docs.slice(0, 3).map((d) => R.document(d, t, { canAct: opts.canAct, child: several })) : []);
     var newsRows = data.news.slice(0, 5).map((n) => R.news(n, t, locale, opts));
     var box = (cls, title, side, rows, empty) =>
       '<section class="box ' + cls + '"><div class="bh"><h2>' + E.esc(title) + '</h2>' + side + '</div>' + this._list(rows, empty) + '</section>';
     return this._childChips(t, data) + (on('homework') ? this._week(t, data) : '') +
       (tiles.length ? '<div class="tiles" style="grid-template-columns: repeat(' + tiles.length + ', minmax(0, 1fr))">' + tiles.join('') + '</div>' : '') +
       '<div class="dgrid">' +
-      (on('words') || on('homework') ? box('todo-box', t.section_todo, see(on('homework') ? 'homework' : 'words'), todoRows, t.nothing_to_do) : '') +
+      (on('words') || on('homework') || on('documents') ? box('todo-box', t.section_todo, see(on('homework') ? 'homework' : 'words'), todoRows, t.nothing_to_do) : '') +
       (on('news') ? box('read-box', t.section_news, see('news'), newsRows, t.no_news) : '') +
       '</div>';
   }
@@ -415,40 +447,325 @@ export class EducartablePanel extends HTMLElement {
   }
 
   // Liaison book: the messages still to sign first, then the signed ones.
+  // Liaison book: New message (to the teacher) above the messages still to sign first, then the signed ones.
   _words(t, data) {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
     var words = data.words.slice().sort((a, b) => (a.signed === b.signed ? 0 : a.signed ? 1 : -1));
-    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass) };
-    return this._box('', this._list(words.map((w) => E.rows.word(w, t, locale, opts)), t.no_words), true);
+    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass), extra: (item) => this._extras(item, t, data) };
+    var write = opts.canAct && !this._write && this._children(data).length
+      ? '<div class="toolbar"><button class="act" data-action="write"><ha-icon icon="mdi:email-edit-outline"></ha-icon>' + E.esc(t.new_message) + '</button></div>'
+      : '';
+    return write + this._box('', this._list(words.map((w) => E.rows.word(w, t, locale, opts)), t.no_words), true);
   }
 
   _news(t, data) {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
-    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass) };
+    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass), extra: (item) => this._extras(item, t, data) };
     return this._box('', this._list(data.news.map((n) => E.rows.news(n, t, locale, opts)), t.no_news), true);
+  }
+
+  // The livret: one box per child (one list with a single child), the documents to sign first.
+  _documents(t, data) {
+    var E = window.Educartable;
+    var canAct = E.canAct(this._hass);
+    var kids = this._children(data);
+    if (!data.documents.length) return this._box('', '<div class="empty">' + E.esc(t.no_documents) + '</div>', true);
+    if (kids.length < 2) return this._box('', data.documents.map((d) => E.rows.document(d, t, { canAct: canAct, child: false })).join(''), true);
+    var known = kids.map((ch) => String(ch.id));
+    var groups = kids.map((ch) => [ch.first_name, data.documents.filter((d) => d.child_id === String(ch.id))]);
+    groups.push(['', data.documents.filter((d) => known.indexOf(d.child_id) === -1)]);
+    return '<div class="grid">' + groups.filter((g) => g[1].length).map((g) =>
+      this._box(g[0], g[1].map((d) => E.rows.document(d, t, { canAct: canAct, child: false })).join(''))).join('') + '</div>';
+  }
+
+  // The children a message concerns (all of them when it does not say).
+  _concerned(item, data) {
+    var kids = this._children(data);
+    var ids = (item.children || []).map(String);
+    var some = kids.filter((ch) => ids.indexOf(String(ch.id)) !== -1);
+    return some.length ? some : kids;
+  }
+
+  // Under an unfolded message: its survey, its appointment slots and its conversation with the teacher.
+  _extras(item, t, data) {
+    var can = window.Educartable.canAct(this._hass);
+    var html = '';
+    if (item.survey) html += this._surveyBlock(item, t, data, can);
+    if (item.slots?.length) html += this._slotsBlock(item, t, data, can);
+    if (can && (item.commentable || item.achievement === 'comment')) html += this._threadBlock(item, t, data);
+    return html ? '<div class="extras">' + html + '</div>' : '';
+  }
+
+  _closed(survey) {
+    if (!survey.deadline) return false;
+    var end = window.Educartable.parse ? window.Educartable.parse(survey.deadline) : new Date(survey.deadline);
+    end = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1);
+    return end < new Date();
+  }
+
+  _surveyBlock(item, t, data, can) {
+    var E = window.Educartable;
+    var locale = E.locale(this._hass);
+    var s = item.survey;
+    var kids = this._concerned(item, data);
+    var answered = kids.filter((ch) => s.answers[String(ch.id)]);
+    var closed = this._closed(s);
+    var form = can && !closed && (answered.length < kids.length || this._editing[item.id]);
+    var current = this._picks[item.id] || (answered[0] ? s.answers[String(answered[0].id)] : {});
+    var meta = [closed ? t.survey_closed : s.deadline ? E.format(t.survey_until, { day: E.day(s.deadline, t, locale) }) : '', s.anonymous ? t.survey_anonymous : ''].filter(Boolean).join(' · ');
+    var questions = s.questions.map((q) =>
+      '<div class="q"><div class="ql">' + E.esc(q.label) + (q.multiple ? ' <span class="qm">' + E.esc(t.survey_multiple) + '</span>' : '') + '</div><div class="opts" role="group" aria-label="' + E.esc(q.label) + '">' +
+      q.options.map((o) => {
+        var on = (current[q.id] || []).indexOf(o.id) !== -1;
+        return '<button class="opt' + (on ? ' on' : '') + '" role="' + (q.multiple ? 'checkbox' : 'radio') + '" aria-checked="' + on + '" data-action="survey-opt" data-msg="' + E.esc(item.id) + '" data-q="' + E.esc(q.id) + '" data-o="' + E.esc(o.id) + '"' + (form ? '' : ' disabled') + '>' + E.esc(o.label) + '</button>';
+      }).join('') + '</div></div>').join('');
+    var foot = (answered.length ? '<span class="chip ok">' + E.esc(E.format(t.survey_answered, { children: answered.map((ch) => ch.first_name).join(', ') })) + '</span>' : '') +
+      (form
+        ? '<button class="act" data-action="survey-send" data-msg="' + E.esc(item.id) + '">' + E.esc(t.survey_send) + '</button>'
+        : can && !closed && answered.length ? '<button class="act ghost" data-action="survey-change" data-msg="' + E.esc(item.id) + '">' + E.esc(t.survey_change) + '</button>' : '');
+    return '<div class="xblock"><div class="xh"><ha-icon icon="mdi:poll"></ha-icon>' + E.esc(t.survey) + (meta ? '<span class="xmeta">' + E.esc(meta) + '</span>' : '') + '</div>' + questions +
+      (foot ? '<div class="xfoot">' + foot + '</div>' : '') + '</div>';
+  }
+
+  _slotLabel(slot, t) {
+    var E = window.Educartable;
+    var locale = E.locale(this._hass);
+    return [E.day(slot.start, t, locale), [E.time(slot.start, locale), slot.end ? E.time(slot.end, locale) : ''].filter(Boolean).join('–')].filter(Boolean).join(' · ');
+  }
+
+  _slotsBlock(item, t, data, can) {
+    var E = window.Educartable;
+    var kids = this._concerned(item, data);
+    var names = {};
+    kids.forEach((ch) => {
+      names[String(ch.id)] = ch.first_name;
+    });
+    var booked = item.slots.filter((x) => x.booked);
+    var free = item.slots.filter((x) => !x.booked);
+    var waiting = kids.filter((ch) => !booked.some((x) => x.child_id === String(ch.id)));
+    var rows = booked.map((x) =>
+      '<div class="booked"><ha-icon icon="mdi:calendar-check"></ha-icon><span>' + E.esc([E.format(t.slot_booked, { child: names[x.child_id] || '' }), this._slotLabel(x, t), x.location].filter(Boolean).join(' · ')) + '</span>' +
+      (can ? '<button class="act ghost" data-action="slot-cancel" data-slot="' + E.esc(x.id) + '">' + E.esc(t.slot_cancel) + '</button>' : '') + '</div>').join('');
+    var pick = '';
+    if (waiting.length) {
+      // The free slots day by day: the day once, then its times.
+      var locale = E.locale(this._hass);
+      var days = [];
+      free.forEach((x) => {
+        var day = E.day(x.start, t, locale);
+        if (!days.length || days[days.length - 1].day !== day) days.push({ day: day, slots: [] });
+        days[days.length - 1].slots.push(x);
+      });
+      pick = free.length
+        ? (can ? '<div class="xsub">' + E.esc(t.slot_pick) + '</div>' : '') + days.map((d) =>
+          '<div class="slot-day"><span class="sd">' + E.esc(d.day) + '</span><div class="opts">' + d.slots.map((x) =>
+            '<button class="opt" data-action="slot" data-slot="' + E.esc(x.id) + '" data-msg="' + E.esc(item.id) + '"' + (can ? '' : ' disabled') + '>' +
+            E.esc([E.time(x.start, locale), x.end ? E.time(x.end, locale) : ''].filter(Boolean).join('–')) + '</button>').join('') + '</div></div>').join('')
+        : '<div class="empty">' + E.esc(t.slot_none) + '</div>';
+    }
+    return '<div class="xblock"><div class="xh"><ha-icon icon="mdi:calendar-clock"></ha-icon>' + E.esc(t.slots) + '</div>' + rows + pick + '</div>';
+  }
+
+  _threadBlock(item, t, data) {
+    var E = window.Educartable;
+    var locale = E.locale(this._hass);
+    var open = !!this._threadOpen[item.id];
+    var th = this._threads[item.id];
+    var label = item.comments ? E.format(t.conversation_count, { n: item.comments }) : t.conversation;
+    var head = '<button class="xh link-like" data-action="thread" data-msg="' + E.esc(item.id) + '" aria-expanded="' + open + '"><ha-icon icon="mdi:forum-outline"></ha-icon>' + E.esc(label) +
+      '<ha-icon class="chevron' + (open ? '' : ' closed') + '" icon="mdi:chevron-down"></ha-icon></button>';
+    if (!open) return '<div class="xblock">' + head + '</div>';
+    var body;
+    if (!th || th.loading) body = '<div class="empty">' + E.esc(t.loading) + '</div>';
+    else if (th.error) body = '<div class="error-text">' + E.esc(th.error) + '</div>';
+    else if (!th.comments.length) body = '<div class="empty">' + E.esc(t.conversation_empty) + '</div>';
+    else {
+      body = '<div class="thread">' + th.comments.map((c) =>
+        '<div class="bubble' + (c.mine ? ' mine' : '') + (c.deleted ? ' deleted' : '') + '"><div class="bm">' + E.esc([c.mine ? t.me : c.author, c.date ? E.day(c.date, t, locale) : ''].filter(Boolean).join(' · ')) + '</div>' +
+        (c.deleted ? '<div class="bt">' + E.esc(t.deleted) + '</div>' : c.text ? '<div class="bt">' + E.esc(c.text) + '</div>' : '') +
+        E.rows.files(c.medias, t, data.entryId, true) + '</div>').join('') + '</div>';
+    }
+    var key = 'reply:' + item.id;
+    var busy = th?.sending;
+    var reply = '<div class="reply"><textarea data-draft="' + E.esc(key) + '" rows="2" aria-label="' + E.esc(t.reply_placeholder) + '" placeholder="' + E.esc(t.reply_placeholder) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(this._typed[key] || '') + '</textarea>' +
+      '<button class="act" data-action="reply-send" data-msg="' + E.esc(item.id) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(busy ? t.sending : t.reply_send) + '</button></div>';
+    return '<div class="xblock">' + head + body + reply + '</div>';
+  }
+
+  _loadThread(data, id) {
+    var E = window.Educartable;
+    var th = (this._threads[id] = Object.assign(this._threads[id] || {}, { loading: true, error: '' }));
+    this._render();
+    E.comments(this._hass, data.entryId, id)
+      .then((comments) => {
+        th.comments = comments;
+      })
+      .catch((err) => E.errorText(this._hass, err).then((text) => {
+        th.error = text;
+      }))
+      .finally(() => {
+        th.loading = false;
+        this._render();
+      });
+  }
+
+  _doReply(data, id) {
+    var E = window.Educartable;
+    var key = 'reply:' + id;
+    var text = String(this._typed[key] || '').trim();
+    var th = this._threads[id] || (this._threads[id] = { comments: [] });
+    if (!text || th.sending) return;
+    th.sending = true;
+    this._error = '';
+    this._render();
+    E.reply(this._hass, data.entryId, id, text)
+      .then(() => {
+        delete this._typed[key];
+        th.sending = false;
+        this._loadThread(data, id);
+      })
+      .catch((err) => {
+        th.sending = false;
+        this._fail(err);
+      });
+  }
+
+  _doSurvey(data, id) {
+    var E = window.Educartable;
+    var t = E.t(this._hass);
+    var item = data.words.concat(data.news).find((x) => String(x.id) === id);
+    if (!item?.survey) return;
+    var kids = this._concerned(item, data);
+    var answered = kids.filter((ch) => item.survey.answers[String(ch.id)]);
+    var picks = this._picks[id] || (answered[0] ? item.survey.answers[String(answered[0].id)] : {});
+    if (item.survey.questions.some((q) => !(picks[q.id] || []).length)) {
+      this._error = t.survey_incomplete;
+      this._render();
+      return;
+    }
+    this._error = '';
+    E.answerSurvey(this._hass, data.entryId, id, picks)
+      .then(() => {
+        delete this._picks[id];
+        delete this._editing[id];
+        this._render();
+      })
+      .catch((err) => this._fail(err));
+  }
+
+  // A new message to the teacher, at the top of the Liaison book: the children (those whose teacher paused messages
+  // cannot be picked), a subject and the text.
+  _writePopup(t, data) {
+    var E = window.Educartable;
+    var w = this._write;
+    var kids = this._children(data);
+    var boxes = kids.map((ch) => {
+      var id = String(ch.id);
+      var paused = ch.writable === false;
+      return '<label class="wchild' + (paused ? ' paused' : '') + '"><input type="checkbox" data-action="write-child" value="' + E.esc(id) + '"' + (w.children.indexOf(id) !== -1 ? ' checked' : '') + (paused ? ' disabled' : '') + '> ' +
+        E.esc(ch.first_name || ch.name) + (paused ? ' <span class="qm">' + E.esc(t.write_paused) + '</span>' : '') + '</label>';
+    }).join('');
+    return '<div class="popup write"><div class="popup-title">' + E.esc(t.write_title) + '</div>' +
+      '<div class="wkids" role="group" aria-label="' + E.esc(t.write_children) + '"><span class="signer-label">' + E.esc(t.write_children) + '</span>' + boxes + '</div>' +
+      '<label class="signer-label wide">' + E.esc(t.write_subject) + '<input class="winput" type="text" maxlength="255" data-draft="write:title" value="' + E.esc(this._typed['write:title'] || '') + '"></label>' +
+      '<label class="signer-label wide">' + E.esc(t.write_text) + '<textarea class="winput" rows="5" data-draft="write:text">' + E.esc(this._typed['write:text'] || '') + '</textarea></label>' +
+      '<div class="popup-actions"><button class="act ghost" data-action="write-cancel">' + E.esc(t.cancel) + '</button>' +
+      '<button class="act" data-action="write-send"' + (w.busy ? ' disabled' : '') + '>' + E.esc(w.busy ? t.sending : t.write_send) + '</button></div></div>';
+  }
+
+  _doWrite(data) {
+    var E = window.Educartable;
+    var t = E.t(this._hass);
+    var w = this._write;
+    var title = String(this._typed['write:title'] || '').trim();
+    var text = String(this._typed['write:text'] || '').trim();
+    if (!w || w.busy) return;
+    if (!w.children.length || !title || !text) {
+      this._error = t.write_incomplete;
+      this._render();
+      return;
+    }
+    w.busy = true;
+    this._error = '';
+    this._render();
+    E.write(this._hass, data.entryId, w.children, title, text)
+      .then(() => {
+        this._write = null;
+        delete this._typed['write:title'];
+        delete this._typed['write:text'];
+      })
+      .catch((err) => {
+        w.busy = false;
+        this._fail(err);
+      })
+      .finally(() => this._render());
   }
 
   // Signing a liaison-book message: a confirmation at the top of the page with the signer's name (as the portal asks
   // for it), prefilled with the account's name.
   _popup(t, data) {
     var E = window.Educartable;
-    var w = this._confirm ? data.words.find((x) => String(x.id) === this._confirm.id) : null;
+    if (this._write && this._tab === 'words') return this._writePopup(t, data);
+    var c = this._confirm;
+    if (c?.kind === 'book') return this._bookPopup(t, data);
+    var w = !c ? null : c.kind === 'doc' ? data.documents.find((x) => x.id === c.id) : data.words.find((x) => String(x.id) === c.id);
     if (!w) return '';
-    return '<div class="popup"><div class="popup-title">' + E.esc(t.sign_title) + '</div>' +
-      '<div class="popup-text">' + E.esc(E.format(t.sign_text, { title: w.title || '—' })) + '</div>' +
+    var doc = c.kind === 'doc';
+    return '<div class="popup"><div class="popup-title">' + E.esc(doc ? t.doc_sign_title : t.sign_title) + '</div>' +
+      '<div class="popup-text">' + E.esc(E.format(doc ? t.doc_sign_text : t.sign_text, { title: [w.title, doc ? w.year : ''].filter(Boolean).join(' ') || '—' })) + '</div>' +
       '<label class="signer-label">' + E.esc(t.signer) + '<input class="signer" type="text" autocomplete="name" value="' + E.esc(this._confirm.name) + '"></label>' +
       '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
       '<button class="act" data-action="confirm"' + (this._confirm.busy ? ' disabled' : '') + '>' + E.esc(this._confirm.busy ? t.signing : t.sign) + '</button></div></div>';
   }
 
+  // Booking a slot: when it is, and for which child (a choice when several still wait for theirs).
+  _bookPopup(t, data) {
+    var E = window.Educartable;
+    var c = this._confirm;
+    var item = data.words.concat(data.news).find((x) => String(x.id) === c.msg);
+    var slot = item?.slots?.find((x) => x.id === c.id);
+    if (!slot) return '';
+    var waiting = this._concerned(item, data).filter((ch) => !item.slots.some((x) => x.booked && x.child_id === String(ch.id)));
+    if (!waiting.some((ch) => String(ch.id) === c.child)) c.child = waiting[0] ? String(waiting[0].id) : '';
+    var who = waiting.length > 1
+      ? '<label class="signer-label">' + E.esc(t.book_for) + '<select class="signer book-child">' + waiting.map((ch) =>
+        '<option value="' + E.esc(ch.id) + '"' + (String(ch.id) === c.child ? ' selected' : '') + '>' + E.esc(ch.first_name) + '</option>').join('') + '</select></label>'
+      : '';
+    var name = waiting.find((ch) => String(ch.id) === c.child)?.first_name || '';
+    return '<div class="popup"><div class="popup-title">' + E.esc(t.book_title) + '</div>' +
+      '<div class="popup-text">' + E.esc([item.title, this._slotLabel(slot, t), slot.location, waiting.length > 1 ? '' : name].filter(Boolean).join(' · ')) + '</div>' + who +
+      '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
+      '<button class="act" data-action="confirm"' + (c.busy ? ' disabled' : '') + '>' + E.esc(c.busy ? t.sending : t.book) + '</button></div></div>';
+  }
+
+  _doBook(data) {
+    var E = window.Educartable;
+    var c = this._confirm;
+    if (!c || c.busy) return;
+    c.busy = true;
+    this._error = '';
+    this._render();
+    E.book(this._hass, data.entryId, c.id, c.child)
+      .catch((err) => this._fail(err))
+      .finally(() => {
+        this._confirm = null;
+        this._render();
+      });
+  }
+
   _doSign(data) {
     var E = window.Educartable;
     var t = E.t(this._hass);
+    if (this._confirm?.kind === 'book') {
+      this._doBook(data);
+      return;
+    }
     var input = this._root.querySelector('.signer');
     if (input) this._confirm.name = input.value;
-    var w = data.words.find((x) => String(x.id) === this._confirm.id);
+    var doc = this._confirm.kind === 'doc';
+    var w = doc ? data.documents.find((x) => x.id === this._confirm.id) : data.words.find((x) => String(x.id) === this._confirm.id);
     if (!w || this._confirm.busy) return;
     if (String(this._confirm.name || '').trim().length < 3) {
       this._error = t.signer_short;
@@ -458,7 +775,7 @@ export class EducartablePanel extends HTMLElement {
     this._confirm.busy = true;
     this._error = '';
     this._render();
-    E.sign(this._hass, data.entryId, w, this._confirm.name.trim())
+    (doc ? E.signDocument(this._hass, data.entryId, w.id, this._confirm.name.trim()) : E.sign(this._hass, data.entryId, w, this._confirm.name.trim()))
       .catch((err) => this._fail(err))
       .finally(() => {
         this._confirm = null;
@@ -526,7 +843,7 @@ export class EducartablePanel extends HTMLElement {
             select: {
               multiple: true,
               mode: 'list',
-              options: ['homework', 'words', 'news'].map((tab) => ({ value: tab, label: t[EDUCARTABLE_TAB_KEYS[tab]] })),
+              options: ['homework', 'words', 'news', 'documents'].map((tab) => ({ value: tab, label: t[EDUCARTABLE_TAB_KEYS[tab]] })),
             },
           },
         },
@@ -583,6 +900,12 @@ export class EducartablePanel extends HTMLElement {
     if (el.classList?.contains('account')) {
       this._entry = el.value;
       this._render();
+    } else if (el.classList?.contains('book-child') && this._confirm) {
+      this._confirm.child = el.value;
+    } else if (el.getAttribute?.('data-action') === 'write-child' && this._write) {
+      var picked = this._write.children.filter((id) => id !== el.value);
+      if (el.checked) picked.push(el.value);
+      this._write.children = picked;
     } else if (el.getAttribute?.('data-action') === 'hide-done') {
       this._hideDone = el.checked;
       this._saveFilters();
@@ -593,7 +916,7 @@ export class EducartablePanel extends HTMLElement {
   _onClick(ev) {
     var E = window.Educartable;
     var toggle = ev.target.closest('[data-toggle]');
-    if (toggle && !ev.target.closest('[data-action], a')) {
+    if (toggle && !ev.target.closest('[data-action], a, .extras')) {
       var key = toggle.getAttribute('data-toggle');
       if (this._open[key]) delete this._open[key];
       else this._open[key] = true;
@@ -646,6 +969,51 @@ export class EducartablePanel extends HTMLElement {
       var item = data.homework.find((h) => String(h.id) === el.getAttribute('data-id') && String(h.child_id) === el.getAttribute('data-child'));
       if (item && E.canAct(this._hass)) E.setDone(this._hass, data.entryId, item, !item.done).catch((err) => this._fail(err));
     } else if (action === 'file') E.openFile(this._hass, data.entryId, { id: el.getAttribute('data-media'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err));
+    else if (action === 'doc-file') E.openFile(this._hass, data.entryId, { document: el.getAttribute('data-doc'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err));
+    else if (!E.canAct(this._hass)) return;
+    else if (action === 'doc-sign') {
+      this._confirm = { kind: 'doc', id: el.getAttribute('data-id'), name: data.account.name || '' };
+      this._render();
+      this._root.querySelector('.popup')?.scrollIntoView?.({ block: 'nearest' });
+      this._root.querySelector('.signer')?.focus?.({ preventScroll: true });
+    } else if (action === 'slot') {
+      this._confirm = { kind: 'book', id: el.getAttribute('data-slot'), msg: el.getAttribute('data-msg'), child: '' };
+      this._render();
+      this._root.querySelector('.popup')?.scrollIntoView?.({ block: 'nearest' });
+    } else if (action === 'slot-cancel') E.cancelBooking(this._hass, data.entryId, el.getAttribute('data-slot')).catch((err) => this._fail(err));
+    else if (action === 'survey-opt') this._pick(data, el.getAttribute('data-msg'), el.getAttribute('data-q'), el.getAttribute('data-o'));
+    else if (action === 'survey-send') this._doSurvey(data, el.getAttribute('data-msg'));
+    else if (action === 'survey-change') {
+      this._editing[el.getAttribute('data-msg')] = true;
+      this._render();
+    } else if (action === 'thread') {
+      var id = el.getAttribute('data-msg');
+      this._threadOpen[id] = !this._threadOpen[id];
+      if (this._threadOpen[id] && !this._threads[id]?.comments) this._loadThread(data, id);
+      else this._render();
+    } else if (action === 'reply-send') this._doReply(data, el.getAttribute('data-msg'));
+    else if (action === 'write') {
+      this._write = { children: this._children(data).filter((ch) => ch.writable !== false).slice(0, 1).map((ch) => String(ch.id)), busy: false };
+      this._render();
+      this._root.querySelector('.winput')?.focus?.({ preventScroll: true });
+    } else if (action === 'write-cancel') {
+      this._write = null;
+      this._render();
+    } else if (action === 'write-send') this._doWrite(data);
+  }
+
+  // A survey option clicked: the only one of its question, or one more (or less) when several are allowed.
+  _pick(data, id, qid, oid) {
+    var item = data.words.concat(data.news).find((x) => String(x.id) === id);
+    var q = item?.survey?.questions.find((x) => x.id === qid);
+    if (!q) return;
+    var kids = this._concerned(item, data);
+    var answered = kids.find((ch) => item.survey.answers[String(ch.id)]);
+    var picks = this._picks[id] || JSON.parse(JSON.stringify(answered ? item.survey.answers[String(answered.id)] : {}));
+    var now = picks[qid] || [];
+    picks[qid] = q.multiple ? (now.indexOf(oid) === -1 ? now.concat([oid]) : now.filter((x) => x !== oid)) : [oid];
+    this._picks[id] = picks;
+    this._render();
   }
 
   _refresh(data) {
@@ -753,7 +1121,7 @@ export class EducartablePanel extends HTMLElement {
       '.tile:not(.static):hover { border-color: color-mix(in srgb, var(--c) 55%, var(--divider-color, #e0e0e0)); }',
       '.tile:focus-visible { outline: 2px solid var(--primary-color); }',
       '.tile.static { cursor: default; }',
-      '.tile.red { --c: var(--error-color, #e5484d); } .tile.amber { --c: #f5a623; } .tile.blue { --c: #2f80ed; }',
+      '.tile.red { --c: var(--error-color, #e5484d); } .tile.amber { --c: #f5a623; } .tile.blue { --c: #2f80ed; } .tile.violet { --c: #8e6bd8; }',
       '.pastille { position: relative; flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; --mdc-icon-size: 22px;' +
         ' color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }',
       '.pbadge { position: absolute; top: -3px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; font-size: 11px; font-weight: 600;' +
@@ -786,6 +1154,50 @@ export class EducartablePanel extends HTMLElement {
       '.popup-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }',
       '.errbar { padding: 8px 12px; border-radius: 8px; background: color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }',
       '.msg { font-size: 13px; margin-right: auto; }',
+      // New message: its button above the liaison book; the form in the popup.
+      '.toolbar { display: flex; justify-content: flex-end; }',
+      '.toolbar .act, .act:has(ha-icon) { display: inline-flex; align-items: center; gap: 6px; --mdc-icon-size: 16px; }',
+      '.wkids { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 8px; }',
+      '.wkids .signer-label { margin: 0; flex-basis: 100%; max-width: none; }',
+      '.wchild { font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }',
+      '.wchild.paused { color: var(--secondary-text-color); }',
+      '.signer-label.wide { max-width: none; }',
+      '.winput:focus-visible, .reply textarea:focus-visible, .signer:focus-visible { outline: 2px solid ' + A + '; outline-offset: 0; border-color: transparent; }',
+      '.winput, .reply textarea { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--divider-color, rgba(0,0,0,.2)); background: var(--card-background-color, #fff); color: var(--primary-text-color); resize: vertical; }',
+      // Survey, appointment slots and conversation under an unfolded message.
+      '.extras { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }',
+      '.xblock { border-radius: 10px; padding: 8px 12px; background: color-mix(in srgb, var(--primary-text-color) 4%, transparent); display: flex; flex-direction: column; gap: 6px; }',
+      '.xh { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--primary-text-color); --mdc-icon-size: 18px; }',
+      '.xh > ha-icon:first-child { color: ' + A + '; }',
+      '.xh .chevron { margin: 0 0 0 auto; }',
+      '.link-like { all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; --mdc-icon-size: 18px; }',
+      '.link-like:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; border-radius: 4px; }',
+      '.xmeta, .xsub { font-size: 12px; font-weight: 400; color: var(--secondary-text-color); }',
+      '.xmeta { margin-left: auto; }',
+      '.q { display: flex; flex-direction: column; gap: 4px; }',
+      '.ql { font-size: 13px; }',
+      '.qm { font-size: 11px; color: var(--secondary-text-color); }',
+      '.opts { display: flex; flex-wrap: wrap; gap: 6px; }',
+      '.opt { all: unset; cursor: pointer; font-size: 12px; padding: 4px 12px; border-radius: 14px; border: 1px solid var(--divider-color, rgba(0,0,0,.2)); color: var(--primary-text-color); background: var(--card-background-color, #fff); }',
+      '.opt:hover:not(:disabled) { border-color: color-mix(in srgb, ' + A + ' 50%, transparent); }',
+      '.opt.on { color: color-mix(in srgb, ' + A + ' 60%, var(--primary-text-color)); border-color: ' + A + '; background: color-mix(in srgb, ' + A + ' 12%, var(--card-background-color, #fff)); }',
+      '.opt:disabled { cursor: default; opacity: .7; }',
+      '.opt:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
+      '.xfoot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }',
+      '.xfoot .chip { margin-right: auto; }',
+      '.slot-day { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }',
+      '.sd { flex: none; min-width: 110px; font-size: 12px; font-weight: 500; color: var(--secondary-text-color); }',
+      '.booked { display: flex; align-items: center; gap: 6px; font-size: 13px; --mdc-icon-size: 18px; }',
+      '.booked > ha-icon { color: var(--success-color, #43a047); flex: none; }',
+      '.booked span { flex: 1; min-width: 0; }',
+      '.thread { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }',
+      '.bubble { max-width: 85%; align-self: flex-start; padding: 6px 10px; border-radius: 12px 12px 12px 4px; background: var(--card-background-color, #fff); border: 1px solid var(--divider-color, rgba(0,0,0,.12)); }',
+      '.bubble.mine { align-self: flex-end; border-radius: 12px 12px 4px 12px; background: color-mix(in srgb, ' + A + ' 12%, var(--card-background-color, #fff)); border-color: color-mix(in srgb, ' + A + ' 30%, transparent); }',
+      '.bubble.deleted .bt { font-style: italic; color: var(--secondary-text-color); }',
+      '.bm { font-size: 11px; color: var(--secondary-text-color); }',
+      '.bt { font-size: 13px; white-space: pre-line; overflow-wrap: anywhere; }',
+      '.reply { display: flex; gap: 8px; align-items: flex-end; }',
+      '.reply textarea { flex: 1; min-width: 0; }',
       '.msg.ok { color: color-mix(in srgb, var(--success-color, #43a047) 55%, var(--primary-text-color)); }',
       '@media (max-width: 900px) { .dgrid { grid-template-columns: 1fr; } .dgrid .todo-box { grid-column: auto; } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }',
       '@media (max-width: 600px) { .page { padding: 12px; } .banner { --eo-scene-w: 0px; } .eo-scene { display: none; } .htext { right: calc(var(--eo-btns) + 12px); } .name { font-size: 17px; }' +

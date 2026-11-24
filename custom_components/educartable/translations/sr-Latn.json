@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Poslednje ažuriranje"
+      },
+      "documents_to_sign": {
+        "name": "Svedočanstva za potpisivanje"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
         }
       }
+    },
+    "reply": {
+      "name": "Odgovori učitelju",
+      "description": "Pišite u privatnom razgovoru o poruci sa učiteljem. Očekivani odgovor se beleži kao dat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Šta napisati učitelju."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Piši učitelju",
+      "description": "Pošaljite novu poruku učitelju izabrane dece (jedna poruka po odeljenju).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "children": {
+          "name": "Deca",
+          "description": "ID-ovi dece, iz atributa children senzora Poslednje ažuriranje."
+        },
+        "title": {
+          "name": "Naslov",
+          "description": "Naslov poruke."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Poruka."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Odgovori na anketu",
+      "description": "Odgovorite na anketu poruke za decu na koju se odnosi; raniji odgovor se zamenjuje.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
+        },
+        "answers": {
+          "name": "Odgovori",
+          "description": "Svaki ID pitanja sa ID-ovima izabranih opcija, iz atributa survey poruke."
+        },
+        "children": {
+          "name": "Deca",
+          "description": "ID-ovi dece za koju se odgovara; prazno za svu decu."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Rezerviši termin",
+      "description": "Rezervišite slobodan termin roditeljskog sastanka za dete.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "ID termina, iz atributa slots poruke."
+        },
+        "child_id": {
+          "name": "Dete",
+          "description": "Dete za koje je termin; potrebno kada više dece još nema termin."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Otkaži termin",
+      "description": "Otkažite termin rezervisan za jedno od dece.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "ID rezervisanog termina, iz atributa slots poruke."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Potpiši svedočanstvo",
+      "description": "Potpišite svedočanstvo ili potvrdu kao pregledano.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "ID dokumenta, iz atributa documents senzora Svedočanstva za potpisivanje."
+        },
+        "name": {
+          "name": "Ime potpisnika",
+          "description": "Ime koje se beleži uz potpis, najmanje 3 znaka, kao na portalu."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Vest iz škole"
+    },
+    "notify_new_document": {
+      "message": "Svedočanstvo za potpisivanje za {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Domaći",
         "words": "Đačka knjižica",
-        "news": "Vesti"
+        "news": "Vesti",
+        "documents": "Svedočanstva"
       }
     },
     "hide_header": {

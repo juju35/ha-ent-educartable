@@ -28,9 +28,16 @@ from homeassistant.helpers.typing import ConfigType
 from .api import EducartableApi, EducartableError
 from .config_flow import clean_options, new_session, notify_choices
 from .const import (
+    ATTR_ANSWERS,
+    ATTR_CHILD_ID,
+    ATTR_CHILDREN,
     ATTR_CONFIG_ENTRY_ID,
+    ATTR_DOCUMENT_ID,
     ATTR_MESSAGE_ID,
     ATTR_NAME,
+    ATTR_SLOT_ID,
+    ATTR_TEXT,
+    ATTR_TITLE,
     BADGE_FILENAME,
     CARD_FILENAME,
     CONF_HIDE_HEADER,
@@ -47,9 +54,15 @@ from .const import (
     PANEL_ICON,
     PANEL_TABS,
     PANEL_URL_PATH,
+    SERVICE_ANSWER_SURVEY,
+    SERVICE_BOOK,
+    SERVICE_CANCEL_BOOKING,
     SERVICE_MARK_READ,
     SERVICE_REFRESH,
+    SERVICE_REPLY,
     SERVICE_SIGN,
+    SERVICE_SIGN_DOCUMENT,
+    SERVICE_WRITE,
 )
 from .coordinator import EducartableConfigEntry, EducartableCoordinator
 from .secret import SecretNotFoundError, async_credentials
@@ -73,6 +86,48 @@ SIGN_SCHEMA = vol.Schema(
 MARK_READ_SCHEMA = vol.Schema(
     {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID}
 )
+TEXT = vol.All(cv.string, vol.Strip, vol.Length(min=1, max=5000))
+REPLY_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID,
+        vol.Required(ATTR_TEXT): TEXT,
+    }
+)
+WRITE_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_CHILDREN): vol.All(cv.ensure_list, [cv.string], vol.Length(min=1)),
+        vol.Required(ATTR_TITLE): vol.All(cv.string, vol.Strip, vol.Length(min=1, max=255)),
+        vol.Required(ATTR_TEXT): TEXT,
+    }
+)
+ANSWER_SURVEY_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID,
+        # Question id → the option ids chosen (one for a single-choice question).
+        vol.Required(ATTR_ANSWERS): {cv.string: vol.All(cv.ensure_list, [cv.string])},
+        vol.Optional(ATTR_CHILDREN): vol.All(cv.ensure_list, [cv.string]),
+    }
+)
+BOOK_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_SLOT_ID): MESSAGE_ID,
+        vol.Optional(ATTR_CHILD_ID): cv.string,
+    }
+)
+CANCEL_BOOKING_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_SLOT_ID): MESSAGE_ID}
+)
+SIGN_DOCUMENT_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_DOCUMENT_ID): MESSAGE_ID,
+        vol.Required(ATTR_NAME): vol.All(cv.string, vol.Strip, vol.Length(min=3)),
+    }
+)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -85,6 +140,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, ws_settings)
     websocket_api.async_register_command(hass, ws_update_settings)
     websocket_api.async_register_command(hass, ws_homework_done)
+    websocket_api.async_register_command(hass, ws_comments)
     hass.http.register_view(EducartableFileView())
 
     async def refresh(call: ServiceCall) -> None:
@@ -97,20 +153,53 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 translation_placeholders={"error": str(coordinator.last_exception or "unknown error")},
             )
 
-    async def achieve(call: ServiceCall) -> None:
-        coordinator = _get_coordinator(hass, call.data.get(ATTR_CONFIG_ENTRY_ID))
-        try:
-            await coordinator.async_achieve(call.data[ATTR_MESSAGE_ID], call.data.get(ATTR_NAME, ""))
-        except EducartableError as err:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="action_failed", translation_placeholders={"error": str(err)}
-            ) from err
+    def portal_action(run: Any) -> Any:
+        """A service acting on the portal: the account's coordinator runs it, a refusal is told in the UI."""
 
+        async def handle(call: ServiceCall) -> None:
+            coordinator = _get_coordinator(hass, call.data.get(ATTR_CONFIG_ENTRY_ID))
+            try:
+                await run(coordinator, call.data)
+            except EducartableError as err:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="action_failed",
+                    translation_placeholders={"error": str(err)},
+                ) from err
+
+        return handle
+
+    actions = {
+        SERVICE_SIGN: (SIGN_SCHEMA, lambda c, d: c.async_achieve(d[ATTR_MESSAGE_ID], d[ATTR_NAME])),
+        SERVICE_MARK_READ: (MARK_READ_SCHEMA, lambda c, d: c.async_achieve(d[ATTR_MESSAGE_ID])),
+        SERVICE_REPLY: (REPLY_SCHEMA, lambda c, d: c.async_reply(d[ATTR_MESSAGE_ID], d[ATTR_TEXT])),
+        SERVICE_WRITE: (WRITE_SCHEMA, lambda c, d: c.async_write(d[ATTR_CHILDREN], d[ATTR_TITLE], d[ATTR_TEXT])),
+        SERVICE_ANSWER_SURVEY: (
+            ANSWER_SURVEY_SCHEMA,
+            lambda c, d: c.async_answer_survey(d[ATTR_MESSAGE_ID], d[ATTR_ANSWERS], d.get(ATTR_CHILDREN)),
+        ),
+        SERVICE_BOOK: (BOOK_SCHEMA, lambda c, d: c.async_book(d[ATTR_SLOT_ID], d.get(ATTR_CHILD_ID, ""))),
+        SERVICE_CANCEL_BOOKING: (CANCEL_BOOKING_SCHEMA, lambda c, d: c.async_cancel_booking(d[ATTR_SLOT_ID])),
+        SERVICE_SIGN_DOCUMENT: (
+            SIGN_DOCUMENT_SCHEMA,
+            lambda c, d: c.async_sign_document(d[ATTR_DOCUMENT_ID], d[ATTR_NAME]),
+        ),
+    }
     hass.services.async_register(DOMAIN, SERVICE_REFRESH, refresh, REFRESH_SCHEMA)
-    # Signing and marking read act on the portal with the parent's account: administrators only (a child's Home
-    # Assistant account must not sign their own liaison book). The card and the panel hide the buttons from others.
-    async_register_admin_service(hass, DOMAIN, SERVICE_SIGN, achieve, SIGN_SCHEMA)
-    async_register_admin_service(hass, DOMAIN, SERVICE_MARK_READ, achieve, MARK_READ_SCHEMA)
+    # Every action on the portal is done with the parent's account: administrators only (a child's Home Assistant
+    # account must not sign their own liaison book or write to the teacher). The card and the panel hide the buttons.
+    for service, (schema, run) in actions.items():
+        async_register_admin_service(hass, DOMAIN, service, portal_action(run), schema)
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: EducartableConfigEntry) -> bool:
+    """1.2: the panel's Documents tab (livret) is shown to accounts that chose their tabs before it existed."""
+    if entry.version == 1 and entry.minor_version < 2:
+        options = dict(entry.options)
+        if isinstance(options.get(CONF_PANEL_TABS), list) and "documents" not in options[CONF_PANEL_TABS]:
+            options[CONF_PANEL_TABS] = [*options[CONF_PANEL_TABS], "documents"]
+        hass.config_entries.async_update_entry(entry, options=options, minor_version=2)
     return True
 
 
@@ -312,6 +401,27 @@ async def ws_homework_done(
     connection.send_result(msg["id"])
 
 
+# The private conversation of a message is the parent's: administrators only, like writing in it.
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "educartable/comments",
+        vol.Required("config_entry_id"): str,
+        vol.Required("message_id"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_comments(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
+    """The conversation of a message with the teacher, for the panel."""
+    try:
+        coordinator = _get_coordinator(hass, msg["config_entry_id"])
+        comments = await coordinator.async_comments(msg["message_id"])
+    except (ServiceValidationError, EducartableError) as err:
+        connection.send_error(msg["id"], "failed", str(err))
+        return
+    connection.send_result(msg["id"], {"comments": comments})
+
+
 # Types a browser shows without running anything: shown in the card and the panel, every other file is downloaded.
 INLINE_TYPES = frozenset({"application/pdf", "image/png", "image/jpeg", "image/gif", "image/webp", "text/plain"})
 SANDBOX_POLICY = "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
@@ -346,7 +456,7 @@ def file_name(name: str) -> str:
 
 
 class EducartableFileView(HomeAssistantView):
-    """An attachment (media) of a message, fetched with the account's session.
+    """An attachment (media) of a message, or a livret document's PDF, fetched with the account's session.
 
     The browser has no portal session of its own: the card asks Home Assistant for a signed URL of this view
     (auth/sign_path) and shows it (image, PDF) or downloads it. Administrators only (a signed URL carries the user who
@@ -367,12 +477,16 @@ class EducartableFileView(HomeAssistantView):
         except ServiceValidationError as err:
             return web.Response(status=HTTPStatus.BAD_REQUEST, text=str(err))
         media_id = request.query.get("media", "")
+        document_id = request.query.get("document", "")
         try:
-            body, content_type = await coordinator.async_media(media_id)
+            if document_id:
+                body, content_type = await coordinator.async_document_file(document_id)
+            else:
+                body, content_type = await coordinator.async_media(media_id)
         except EducartableError as err:
-            _LOGGER.warning("Educartable media %s not fetched: %s", media_id, err)
+            _LOGGER.warning("Educartable file %s not fetched: %s", document_id or media_id, err)
             return web.Response(status=HTTPStatus.BAD_GATEWAY, text=str(err))
-        filename = file_name(request.query.get("name", "") or media_id)
+        filename = file_name(request.query.get("name", "") or media_id or document_id.replace(":", "-"))
         kind = sniff_type(body, content_type, filename)
         # Served from Home Assistant's origin: only inert types are shown. Anything else (HTML, SVG, scripts) is a
         # plain download under a sandbox policy. A PDF gets no sandbox: browsers refuse to draw a sandboxed PDF.

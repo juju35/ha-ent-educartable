@@ -10,28 +10,29 @@
 
 <p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/custom_components/educartable/brand/icon.png" alt="Educartable" width="120"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/images/wip.svg" alt="Work in progress: signing, ticking homework and attachments are in beta" width="720"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/images/wip.svg" alt="Work in progress: every action on the portal is in beta" width="720"></p>
 
-Home Assistant integration for **Educartable**, the family portal of EDUMOOV used by many French primary schools: homework of every child, liaison book to sign and school news, with a Lovelace card and a sidebar panel included.
+Home Assistant integration for **Educartable**, the family portal of EDUMOOV used by many French primary schools: homework of every child, liaison book to sign, surveys, parent meetings to book, the private conversation with the teacher, the school reports (livret) and school news, with a Lovelace card and a sidebar panel included.
 
 [![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-ent-educartable&category=integration)
 
 <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/card.png" alt="educartable-card" width="380">
 
 > [!IMPORTANT]
-> Unofficial community project, neither made nor endorsed by EDUMOOV or Educartable. The portal has no public API: the integration calls the routes its own web application uses, and a portal update can break it. Signing, ticking homework and attachments are in **beta**: please report what you see on your account.
+> Unofficial community project, neither made nor endorsed by EDUMOOV or Educartable. The portal has no public API: the integration calls the routes its own web application uses, and a portal update can break it. Every action on the portal (signing, ticking homework, replying, writing to the teacher, surveys, appointments, the livret) is in **beta**: please report what you see on your account.
 
 ## Features
 
 - One device per child with a **Homework to do** sensor: the count, with the homework (title, subject, due date, text, attachments, done) as attributes
 - **Liaison book to sign** sensor (messages still to sign, with the ones to read) and **News** sensor (news, events and parent meetings)
+- **School reports to sign** sensor: the livret (school reports and attestations) still to sign as consulted, with every document as attributes
 - **Last update** sensor with the children and the panel options, read by the card and the panel
 - **Homework** calendar (every child's homework on its due date) and one **Homework** to-do list per child: ticking an item marks it done in the portal
-- `educartable.sign` and `educartable.mark_read` actions (administrators only), `educartable.refresh` to read the portal now
-- `educartable_new_homework`, `educartable_new_message` and `educartable_new_news` events for automations, and optional **notifications** to the notify actions of your choice
+- Actions on the portal (administrators only): sign or mark as read a message, reply to the teacher, write a new message, answer a survey, book or cancel an appointment, sign a school report; `educartable.refresh` to read the portal now
+- `educartable_new_homework`, `educartable_new_message`, `educartable_new_news` and `educartable_new_document` events for automations, and optional **notifications** to the notify actions of your choice
 - `custom:educartable-card` card, **shipped with the integration** and loaded automatically: counts, liaison book to sign (with confirmation) or to read, homework to tick and news, each unfolding to its text and attachments
 - `custom:educartable-mini-card` compact card: the counts, with a button to open the full card
-- **Educartable sidebar panel** with Home, Homework, Liaison book, News and Settings tabs, and a badge on its sidebar entry counting what there is to deal with
+- **Educartable sidebar panel** with Home, Homework, Liaison book, News, School reports and Settings tabs: surveys, appointment slots and the conversation with the teacher under each message, a *New message* form, and a badge on its sidebar entry counting what there is to deal with
 - Username and password stored in the entry or read from `secrets.yaml` at every update; optional two-factor code; **⋮ → Reconfigure** switches each credential between a stored value and a secret
 - Diagnostics download with counts only: no name, title or message ever leaves Home Assistant
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek
@@ -149,10 +150,11 @@ The **Educartable** entry of the sidebar opens a panel under the card's illustra
 
 | Tab | Content |
 |---|---|
-| Home | A child filter (with two children or more), the school week (homework left per day; a click keeps only that day), tiles for the liaison book, homework and news (count as badge, coloured state line), then *To do* (messages to sign, homework) and the news |
+| Home | A child filter (with two children or more), the school week (homework left per day; a click keeps only that day), tiles for the liaison book, homework, news and school reports (count as badge, coloured state line), then *To do* (messages waiting, homework, school reports to sign) and the news |
 | Homework | The child filter, then one box per due day with its progress (done / total), each homework with its text and its box to tick; done ones can be hidden |
-| Liaison book | The messages still waiting (to sign, to read) first, then the others, with their text, attachments and *Sign* / *Mark as read* buttons |
-| News | News, events and parent meetings, with their text and attachments |
+| Liaison book | *New message* (to the teacher of the children chosen; one message per classroom), then the messages still waiting first, with their text, attachments, *Sign* / *Mark as read* buttons, their survey (choose the answers, send them for the children concerned, change them until the deadline), their appointment slots and their conversation with the teacher (opened on demand, with a reply box) |
+| News | News, events and parent meetings, with their text, attachments and slots: the slot booked for each child (with *Cancel booking*) and the free ones, day by day, to book |
+| School reports | The livret of each child: school reports and attestations, their PDF, and *Sign* (as consulted, with the signer's name) for those still to sign |
 | Settings | The account options; only administrators can change them |
 
 With several accounts, a menu at the right of the tabs switches between them. The child filter and *Hide done* are remembered in the browser, and the tabs can be browsed with the arrow keys. On scroll, the top bar folds into a compact sticky bar with round icon tabs.
@@ -166,7 +168,27 @@ data:
   name: "Camille Martin"
 ```
 
-`message_id` comes from the `messages` attribute of the **Liaison book to sign** sensor; `name` is recorded with the signature (3 characters or more). `educartable.mark_read` takes a `message_id` only. Both act with the parent's account and are reserved to administrators. `educartable.refresh` reads the portal now. With several accounts, add `config_entry_id`.
+`message_id` comes from the `messages` attribute of the **Liaison book to sign** sensor (or `news` of **News**); `name` is recorded with the signature (3 characters or more). The other actions:
+
+| Action | Data |
+|---|---|
+| `educartable.mark_read` | `message_id` |
+| `educartable.reply` | `message_id`, `text`: written in the message's conversation with the teacher; a reply the message asks for is recorded as given |
+| `educartable.write_message` | `children` (ids from the `children` attribute of **Last update**), `title`, `text`: one message per classroom |
+| `educartable.answer_survey` | `message_id`, `answers` (each question id with the option ids chosen, from the message's `survey` attribute), optional `children` (all those concerned by default); an answer given before is replaced |
+| `educartable.book_appointment` | `slot_id` (from the message's `slots` attribute), `child_id` when several children can still book |
+| `educartable.cancel_appointment` | `slot_id` of a booked slot |
+| `educartable.sign_document` | `document_id` (from the `documents` attribute of **School reports to sign**), `name` |
+
+```yaml
+action: educartable.answer_survey
+data:
+  message_id: "12345"
+  answers:
+    "1": ["2"]
+```
+
+They act with the parent's account and are reserved to administrators. `educartable.refresh` reads the portal now. With several accounts, add `config_entry_id`.
 
 ### Events
 
@@ -175,6 +197,7 @@ data:
 | `educartable_new_homework` | A homework to do appears | `id`, `child_id`, `child`, `title`, `subject`, `due` |
 | `educartable_new_message` | A liaison-book message waiting for something appears | `id`, `child`, `title`, `achievement`, `author` |
 | `educartable_new_news` | A news item appears | `id`, `title`, `type`, `author` |
+| `educartable_new_document` | A school report or an attestation to sign appears | `id`, `child_id`, `child`, `title`, `kind`, `year` |
 
 Every event also carries `config_entry_id`. Nothing fires at startup or after a reload, and an item fires once only.
 
@@ -246,7 +269,7 @@ The mini card, then expanded by its detail button:
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/mini-card.png" alt="mini card" width="260"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/mini-card-dark.png" alt="mini card dark" width="260"> |
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/mini-card-zoom.png" alt="mini card expanded" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/mini-card-zoom-dark.png" alt="mini card expanded dark" width="400"> |
 
-The sidebar entry, with a badge counting what there is to deal with (messages to sign and homework to do):
+The sidebar entry, with a badge counting what there is to deal with (messages to sign, homework to do and school reports to sign):
 
 | Light | Dark |
 |---|---|
@@ -254,7 +277,7 @@ The sidebar entry, with a badge counting what there is to deal with (messages to
 
 ### Panel
 
-Home (child filter, week, tiles, To do and news), the same with the top bar hidden, Homework (one box per day with its progress), Liaison book and News:
+Home (child filter, week, tiles, To do and news), the same with the top bar hidden, Homework (one box per day with its progress), Liaison book, News (with a parent meeting to book), School reports, a survey with the conversation with the teacher, and a new message:
 
 | Light | Dark |
 |---|---|
@@ -263,10 +286,13 @@ Home (child filter, week, tiles, To do and news), the same with the top bar hidd
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-homework.png" alt="panel, homework" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-homework-dark.png" alt="panel, homework, dark" width="480"> |
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-words.png" alt="panel, liaison book" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-words-dark.png" alt="panel, liaison book, dark" width="480"> |
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-news.png" alt="panel, news" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-news-dark.png" alt="panel, news, dark" width="480"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-documents.png" alt="panel, school reports" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-documents-dark.png" alt="panel, school reports, dark" width="480"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-conversation.png" alt="panel, survey and conversation" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-conversation-dark.png" alt="panel, survey and conversation, dark" width="480"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-write.png" alt="panel, new message" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-write-dark.png" alt="panel, new message, dark" width="480"> |
 
 ## Roadmap
 
-Next: replying to messages, answering surveys, booking appointments and the pupil *livret / compétences* (with its signature).
+Next: attachments in replies and new messages, translating a message (as the portal offers it), and the pupil's skills (*compétences*) when the school publishes them.
 
 ## Support
 

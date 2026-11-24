@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .config_flow import hide_header, panel_tabs
-from .const import MESSAGES_KEPT, NEWS_KEPT
+from .const import DOCUMENTS_KEPT, MESSAGES_KEPT, NEWS_KEPT
 from .coordinator import EducartableConfigEntry, EducartableCoordinator
 from .entity import EducartableEntity, EducartablePupilEntity
 
@@ -24,6 +24,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = [
         CarnetToSignSensor(coordinator),
         NewsSensor(coordinator),
+        DocumentsToSignSensor(coordinator),
         LastUpdateSensor(coordinator),
     ]
     known: set[str] = set()
@@ -76,6 +77,23 @@ class NewsSensor(EducartableEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         return {**self.base_attributes, "news": self.coordinator.data.news[:NEWS_KEPT]}
+
+
+class DocumentsToSignSensor(EducartableEntity, SensorEntity):
+    """Number of livret documents (notebooks, attestations) still to sign as consulted, across all children."""
+
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: EducartableCoordinator) -> None:
+        super().__init__(coordinator, "documents_to_sign")
+
+    @property
+    def native_value(self) -> int:
+        return sum(1 for d in self.coordinator.data.documents if d["to_sign"])
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {**self.base_attributes, "documents": self.coordinator.data.documents[:DOCUMENTS_KEPT]}
 
 
 class HomeworkSensor(EducartablePupilEntity, SensorEntity):

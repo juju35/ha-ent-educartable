@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Última atualização"
+      },
+      "documents_to_sign": {
+        "name": "Boletins por assinar"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar ou Notícias."
         }
       }
+    },
+    "reply": {
+      "name": "Responder ao professor",
+      "description": "Escrever na conversa privada de uma mensagem com o professor. Uma resposta esperada fica registada como dada.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "message_id": {
+          "name": "Mensagem",
+          "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar ou Notícias."
+        },
+        "text": {
+          "name": "Texto",
+          "description": "O que escrever ao professor."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Escrever ao professor",
+      "description": "Enviar uma nova mensagem ao professor dos filhos escolhidos (uma mensagem por turma).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "children": {
+          "name": "Filhos",
+          "description": "Ids dos filhos, do atributo children do sensor Última atualização."
+        },
+        "title": {
+          "name": "Assunto",
+          "description": "O assunto da mensagem."
+        },
+        "text": {
+          "name": "Texto",
+          "description": "A mensagem."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Responder a um inquérito",
+      "description": "Responder ao inquérito de uma mensagem pelos filhos abrangidos; uma resposta anterior é substituída.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "message_id": {
+          "name": "Mensagem",
+          "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar ou Notícias."
+        },
+        "answers": {
+          "name": "Respostas",
+          "description": "Cada id de pergunta com os ids das opções escolhidas, do atributo survey da mensagem."
+        },
+        "children": {
+          "name": "Filhos",
+          "description": "Ids dos filhos por quem responder; todos os abrangidos se ficar vazio."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Marcar uma reunião",
+      "description": "Marcar um horário livre de uma reunião de pais para um filho.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "slot_id": {
+          "name": "Horário",
+          "description": "O id do horário, do atributo slots da mensagem."
+        },
+        "child_id": {
+          "name": "Filho",
+          "description": "O filho a que a reunião se refere; necessário quando vários ainda não têm."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Anular uma reunião",
+      "description": "Anular um horário marcado para um dos filhos.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "slot_id": {
+          "name": "Horário",
+          "description": "O id de um horário marcado, do atributo slots da mensagem."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Assinar um boletim",
+      "description": "Assinar como consultado um boletim escolar ou um certificado.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "document_id": {
+          "name": "Documento",
+          "description": "O id do documento, do atributo documents do sensor Boletins por assinar."
+        },
+        "name": {
+          "name": "Nome de quem assina",
+          "description": "O nome registado com a assinatura, 3 caracteres ou mais, como no portal."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Notícia da escola"
+    },
+    "notify_new_document": {
+      "message": "Boletim por assinar de {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Trabalhos de casa",
         "words": "Caderneta",
-        "news": "Notícias"
+        "news": "Notícias",
+        "documents": "Boletins"
       }
     },
     "hide_header": {

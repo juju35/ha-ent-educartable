@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Letzte Aktualisierung"
+      },
+      "documents_to_sign": {
+        "name": "Zeugnisse zu unterschreiben"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
         }
       }
+    },
+    "reply": {
+      "name": "Der Lehrkraft antworten",
+      "description": "Im privaten Austausch einer Mitteilung mit der Lehrkraft schreiben. Eine erwartete Antwort wird als gegeben vermerkt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Was der Lehrkraft geschrieben wird."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Der Lehrkraft schreiben",
+      "description": "Eine neue Nachricht an die Lehrkraft der gewählten Kinder senden (eine Nachricht pro Klasse).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "children": {
+          "name": "Kinder",
+          "description": "IDs der Kinder, aus dem Attribut children des Sensors Letzte Aktualisierung."
+        },
+        "title": {
+          "name": "Betreff",
+          "description": "Der Betreff der Nachricht."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Die Nachricht."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Umfrage beantworten",
+      "description": "Die Umfrage einer Mitteilung für die betroffenen Kinder beantworten; eine frühere Antwort wird ersetzt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
+        },
+        "answers": {
+          "name": "Antworten",
+          "description": "Jede Fragen-ID mit den IDs der gewählten Optionen, aus dem Attribut survey der Mitteilung."
+        },
+        "children": {
+          "name": "Kinder",
+          "description": "IDs der Kinder, für die geantwortet wird; leer für alle betroffenen Kinder."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Termin buchen",
+      "description": "Einen freien Termin eines Elterngesprächs für ein Kind buchen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "Die ID des Termins, aus dem Attribut slots der Mitteilung."
+        },
+        "child_id": {
+          "name": "Kind",
+          "description": "Das Kind, für das der Termin ist; nötig, wenn mehrere Kinder noch keinen haben."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Termin stornieren",
+      "description": "Einen für ein Kind gebuchten Termin stornieren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "Die ID eines gebuchten Termins, aus dem Attribut slots der Mitteilung."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Zeugnis unterschreiben",
+      "description": "Ein Zeugnis oder eine Bescheinigung als eingesehen unterschreiben.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "Die ID des Dokuments, aus dem Attribut documents des Sensors Zeugnisse zu unterschreiben."
+        },
+        "name": {
+          "name": "Name des Unterzeichners",
+          "description": "Der mit der Unterschrift gespeicherte Name, mindestens 3 Zeichen, wie im Portal."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Neuigkeit der Schule"
+    },
+    "notify_new_document": {
+      "message": "Zeugnis zu unterschreiben für {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Hausaufgaben",
         "words": "Mitteilungsheft",
-        "news": "Neuigkeiten"
+        "news": "Neuigkeiten",
+        "documents": "Zeugnisse"
       }
     },
     "hide_header": {

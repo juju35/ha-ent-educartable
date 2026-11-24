@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Dernière mise à jour"
+      },
+      "documents_to_sign": {
+        "name": "Livret à signer"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
         }
       }
+    },
+    "reply": {
+      "name": "Répondre à l’enseignant",
+      "description": "Écrire dans les échanges privés d’un message avec l’enseignant. Une réponse attendue par le message est enregistrée comme donnée.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
+        },
+        "text": {
+          "name": "Texte",
+          "description": "Ce qu’il faut écrire à l’enseignant."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Écrire à l’enseignant",
+      "description": "Envoyer un nouveau message à l’enseignant des enfants choisis (un message par classe).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "children": {
+          "name": "Enfants",
+          "description": "Identifiants des enfants, dans l’attribut children du capteur Dernière mise à jour."
+        },
+        "title": {
+          "name": "Objet",
+          "description": "L’objet du message."
+        },
+        "text": {
+          "name": "Texte",
+          "description": "Le message."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Répondre à un sondage",
+      "description": "Répondre au sondage d’un message pour les enfants concernés ; une réponse déjà donnée est remplacée.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
+        },
+        "answers": {
+          "name": "Réponses",
+          "description": "Chaque identifiant de question avec ceux des options choisies, dans l’attribut survey du message."
+        },
+        "children": {
+          "name": "Enfants",
+          "description": "Identifiants des enfants pour qui répondre ; tous les enfants concernés si vide."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Réserver un rendez-vous",
+      "description": "Réserver un créneau libre d’une réunion parents pour un enfant.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "slot_id": {
+          "name": "Créneau",
+          "description": "L’identifiant du créneau, dans l’attribut slots du message."
+        },
+        "child_id": {
+          "name": "Enfant",
+          "description": "L’enfant concerné par le rendez-vous ; nécessaire quand plusieurs enfants n’en ont pas encore."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Annuler un rendez-vous",
+      "description": "Annuler un créneau réservé pour l’un des enfants.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "slot_id": {
+          "name": "Créneau",
+          "description": "L’identifiant d’un créneau réservé, dans l’attribut slots du message."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Signer un document du livret",
+      "description": "Signer comme consulté un livret scolaire ou une attestation.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "document_id": {
+          "name": "Document",
+          "description": "L’identifiant du document, dans l’attribut documents du capteur Livret à signer."
+        },
+        "name": {
+          "name": "Nom du signataire",
+          "description": "Le nom enregistré avec la signature, 3 caractères ou plus, comme dans le portail."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Actualité de l’école"
+    },
+    "notify_new_document": {
+      "message": "Livret à signer pour {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Devoirs",
         "words": "Cahier de liaison",
-        "news": "Actualités"
+        "news": "Actualités",
+        "documents": "Livret"
       }
     },
     "hide_header": {
