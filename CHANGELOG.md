@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 - 2026-11-24
+
+### Features
+- Attach files to a reply or a new message: the paperclip in the panel (up to 10 files of 40 MB: pictures, PDF, office documents, audio, video), or `attachments` in `educartable.reply` and `educartable.write_message` with paths Home Assistant may read (a camera snapshot…). A reply can be made of files only; a new message's files go in its first comment, as the portal does.
+- *Translate* under a message in the panel, by the portal's own translation, when Home Assistant is not in French; *Show the original* goes back.
+
 ## 1.0.0 - 2026-11-24
 
 First stable version: every part of the portal's family app is covered, and the work-in-progress banner is gone.

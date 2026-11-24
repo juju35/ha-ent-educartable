@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} lemondta a(z) {day} {time} időpontot",
   presence: "A gyerek jelenléte is kérve",
   delete: "Törlés",
+  attach: "Csatolás",
+  remove_file: "Eltávolítás",
+  file_too_big: "{name}: nagyobb 40 MB-nál",
+  translate: "Fordítás",
+  translating: "Fordítás…",
+  show_original: "Eredeti megjelenítése",
 };

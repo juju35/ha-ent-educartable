@@ -190,6 +190,10 @@
         "text": {
           "name": "Text",
           "description": "What to write to the teacher."
+        },
+        "attachments": {
+          "name": "Attachments",
+          "description": "Files to attach: upload tokens from the panel, or paths Home Assistant may read (allowlist_external_dirs); 40 MB each, 10 at most."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Text",
           "description": "The message."
+        },
+        "attachments": {
+          "name": "Attachments",
+          "description": "Files to attach: upload tokens from the panel, or paths Home Assistant may read (allowlist_external_dirs); 40 MB each, 10 at most."
         }
       }
     },

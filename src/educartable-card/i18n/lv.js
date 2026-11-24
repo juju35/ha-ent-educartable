@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} atcēla tikšanos {day} plkst. {time}",
   presence: "Gaidīts arī bērns",
   delete: "Dzēst",
+  attach: "Pievienot",
+  remove_file: "Noņemt",
+  file_too_big: "{name}: lielāks par 40 MB",
+  translate: "Tulkot",
+  translating: "Tulko…",
+  show_original: "Rādīt oriģinālu",
 };

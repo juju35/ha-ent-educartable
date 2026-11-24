@@ -238,12 +238,38 @@ export function educartableComments(hass, entryId, id) {
   return hass.callWS({ type: 'educartable/comments', config_entry_id: entryId, message_id: String(id) }).then((res) => res.comments || []);
 }
 
-export function educartableReply(hass, entryId, id, text) {
-  return hass.callService('educartable', 'reply', { config_entry_id: entryId, message_id: String(id), text: String(text) });
+export function educartableReply(hass, entryId, id, text, attachments) {
+  var data = { config_entry_id: entryId, message_id: String(id), text: String(text || '') };
+  if (attachments?.length) data.attachments = attachments;
+  return hass.callService('educartable', 'reply', data);
 }
 
-export function educartableWrite(hass, entryId, children, title, text) {
-  return hass.callService('educartable', 'write_message', { config_entry_id: entryId, children: children.map(String), title: String(title), text: String(text) });
+export function educartableWrite(hass, entryId, children, title, text, attachments) {
+  var data = { config_entry_id: entryId, children: children.map(String), title: String(title), text: String(text) };
+  if (attachments?.length) data.attachments = attachments;
+  return hass.callService('educartable', 'write_message', data);
+}
+
+// The portal accepts files up to 40 MB, of these kinds (its own uploader's list).
+export var EDUCARTABLE_MAX_FILE = 40 * 1024 * 1024;
+export var EDUCARTABLE_ACCEPT = '.jpg,.jpeg,.png,.gif,.heic,.webp,.pdf,.txt,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.mp3,.m4a,.wav,.ogg,.wma,.mp4,.mov,.avi,.webm,.mpeg';
+
+// Sends the chosen files to Home Assistant, which keeps them a few minutes: the tokens it gives are named in the
+// reply or new message action.
+export function educartableUpload(hass, entryId, files) {
+  if (!files?.length) return Promise.resolve([]);
+  var form = new FormData();
+  files.forEach((f) => {
+    form.append('file', f, f.name);
+  });
+  return hass.fetchWithAuth('/api/educartable/upload/' + encodeURIComponent(entryId), { method: 'POST', body: form })
+    .then((resp) => (resp.ok ? resp.json() : resp.text().then((text) => Promise.reject(new Error(text || resp.statusText)))))
+    .then((res) => (res.files || []).map((f) => f.id));
+}
+
+// A message translated by the portal into the user's language.
+export function educartableTranslate(hass, entryId, id, language) {
+  return hass.callWS({ type: 'educartable/translate', config_entry_id: entryId, message_id: String(id), language: String(language || 'en') });
 }
 
 // answers: question id → the option ids chosen.
@@ -582,6 +608,10 @@ window.Educartable = {
   cancelBooking: educartableCancelBooking,
   signDocument: educartableSignDocument,
   like: educartableLike,
+  upload: educartableUpload,
+  translate: educartableTranslate,
+  maxFile: EDUCARTABLE_MAX_FILE,
+  accept: EDUCARTABLE_ACCEPT,
   readNotifications: educartableReadNotifications,
   deleteComment: educartableDeleteComment,
   openFile: educartableOpenFile,

@@ -190,6 +190,10 @@
         "text": {
           "name": "Tekst",
           "description": "Wat je de leerkracht schrijft."
+        },
+        "attachments": {
+          "name": "Bijlagen",
+          "description": "Bij te voegen bestanden: uploadtokens uit het paneel of paden die Home Assistant mag lezen (allowlist_external_dirs); 40 MB per stuk, maximaal 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Tekst",
           "description": "Het bericht."
+        },
+        "attachments": {
+          "name": "Bijlagen",
+          "description": "Bij te voegen bestanden: uploadtokens uit het paneel of paden die Home Assistant mag lezen (allowlist_external_dirs); 40 MB per stuk, maximaal 10."
         }
       }
     },

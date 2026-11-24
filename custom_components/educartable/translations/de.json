@@ -190,6 +190,10 @@
         "text": {
           "name": "Text",
           "description": "Was der Lehrkraft geschrieben wird."
+        },
+        "attachments": {
+          "name": "Anhänge",
+          "description": "Anzuhängende Dateien: Upload-Token aus dem Panel oder Pfade, die Home Assistant lesen darf (allowlist_external_dirs); je 40 MB, höchstens 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Text",
           "description": "Die Nachricht."
+        },
+        "attachments": {
+          "name": "Anhänge",
+          "description": "Anzuhängende Dateien: Upload-Token aus dem Panel oder Pfade, die Home Assistant lesen darf (allowlist_external_dirs); je 40 MB, höchstens 10."
         }
       }
     },

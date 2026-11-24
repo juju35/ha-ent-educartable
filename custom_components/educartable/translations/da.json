@@ -190,6 +190,10 @@
         "text": {
           "name": "Tekst",
           "description": "Hvad du skriver til læreren."
+        },
+        "attachments": {
+          "name": "Vedhæftninger",
+          "description": "Filer, der skal vedhæftes: upload-tokens fra panelet eller stier, Home Assistant må læse (allowlist_external_dirs); 40 MB hver, højst 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Tekst",
           "description": "Beskeden."
+        },
+        "attachments": {
+          "name": "Vedhæftninger",
+          "description": "Filer, der skal vedhæftes: upload-tokens fra panelet eller stier, Home Assistant må læse (allowlist_external_dirs); 40 MB hver, højst 10."
         }
       }
     },

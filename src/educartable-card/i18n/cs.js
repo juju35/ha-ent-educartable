@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} zrušil(a) schůzku {day} v {time}",
   presence: "Očekává se i dítě",
   delete: "Smazat",
+  attach: "Přiložit",
+  remove_file: "Odebrat",
+  file_too_big: "{name}: větší než 40 MB",
+  translate: "Přeložit",
+  translating: "Překládá se…",
+  show_original: "Zobrazit originál",
 };

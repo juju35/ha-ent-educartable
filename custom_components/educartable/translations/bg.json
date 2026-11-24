@@ -190,6 +190,10 @@
         "text": {
           "name": "Текст",
           "description": "Какво да напишете на учителя."
+        },
+        "attachments": {
+          "name": "Прикачени файлове",
+          "description": "Файлове за прикачване: токени за качване от панела или пътища, които Home Assistant може да чете (allowlist_external_dirs); по 40 MB, най-много 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Текст",
           "description": "Съобщението."
+        },
+        "attachments": {
+          "name": "Прикачени файлове",
+          "description": "Файлове за прикачване: токени за качване от панела или пътища, които Home Assistant може да чете (allowlist_external_dirs); по 40 MB, най-много 10."
         }
       }
     },

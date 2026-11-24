@@ -190,6 +190,10 @@
         "text": {
           "name": "Teksts",
           "description": "Ko rakstīt skolotājam."
+        },
+        "attachments": {
+          "name": "Pielikumi",
+          "description": "Pievienojamie faili: augšupielādes žetoni no paneļa vai ceļi, ko Home Assistant drīkst lasīt (allowlist_external_dirs); katrs līdz 40 MB, ne vairāk kā 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Teksts",
           "description": "Ziņa."
+        },
+        "attachments": {
+          "name": "Pielikumi",
+          "description": "Pievienojamie faili: augšupielādes žetoni no paneļa vai ceļi, ko Home Assistant drīkst lasīt (allowlist_external_dirs); katrs līdz 40 MB, ne vairāk kā 10."
         }
       }
     },

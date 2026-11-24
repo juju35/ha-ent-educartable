@@ -190,6 +190,10 @@
         "text": {
           "name": "Besedilo",
           "description": "Kaj napisati učitelju."
+        },
+        "attachments": {
+          "name": "Priloge",
+          "description": "Datoteke za prilogo: žetoni nalaganja iz plošče ali poti, ki jih Home Assistant sme brati (allowlist_external_dirs); po 40 MB, največ 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Besedilo",
           "description": "Sporočilo."
+        },
+        "attachments": {
+          "name": "Priloge",
+          "description": "Datoteke za prilogo: žetoni nalaganja iz plošče ali poti, ki jih Home Assistant sme brati (allowlist_external_dirs); po 40 MB, največ 10."
         }
       }
     },

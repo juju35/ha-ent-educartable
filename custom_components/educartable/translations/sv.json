@@ -190,6 +190,10 @@
         "text": {
           "name": "Text",
           "description": "Vad du skriver till läraren."
+        },
+        "attachments": {
+          "name": "Bilagor",
+          "description": "Filer att bifoga: uppladdningstoken från panelen eller sökvägar som Home Assistant får läsa (allowlist_external_dirs); 40 MB var, högst 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Text",
           "description": "Meddelandet."
+        },
+        "attachments": {
+          "name": "Bilagor",
+          "description": "Filer att bifoga: uppladdningstoken från panelen eller sökvägar som Home Assistant får läsa (allowlist_external_dirs); 40 MB var, högst 10."
         }
       }
     },

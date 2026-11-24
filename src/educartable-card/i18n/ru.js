@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} отменил(а) встречу {day} в {time}",
   presence: "Ребёнок тоже должен присутствовать",
   delete: "Удалить",
+  attach: "Прикрепить",
+  remove_file: "Убрать",
+  file_too_big: "{name}: больше 40 МБ",
+  translate: "Перевести",
+  translating: "Перевод…",
+  show_original: "Показать оригинал",
 };

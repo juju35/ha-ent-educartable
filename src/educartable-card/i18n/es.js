@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} anuló la cita del {day} a las {time}",
   presence: "También se espera al niño",
   delete: "Eliminar",
+  attach: "Adjuntar",
+  remove_file: "Quitar",
+  file_too_big: "{name}: más de 40 MB",
+  translate: "Traducir",
+  translating: "Traduciendo…",
+  show_original: "Ver el original",
 };

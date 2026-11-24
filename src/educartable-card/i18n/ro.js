@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} a anulat programarea din {day} la {time}",
   presence: "Este așteptat și copilul",
   delete: "Șterge",
+  attach: "Atașează",
+  remove_file: "Elimină",
+  file_too_big: "{name}: mai mare de 40 MB",
+  translate: "Tradu",
+  translating: "Se traduce…",
+  show_original: "Arată originalul",
 };

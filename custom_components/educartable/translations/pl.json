@@ -190,6 +190,10 @@
         "text": {
           "name": "Tekst",
           "description": "Co napisać nauczycielowi."
+        },
+        "attachments": {
+          "name": "Załączniki",
+          "description": "Pliki do załączenia: tokeny przesyłania z panelu lub ścieżki, które Home Assistant może czytać (allowlist_external_dirs); po 40 MB, najwyżej 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Tekst",
           "description": "Treść wiadomości."
+        },
+        "attachments": {
+          "name": "Załączniki",
+          "description": "Pliki do załączenia: tokeny przesyłania z panelu lub ścieżki, które Home Assistant może czytać (allowlist_external_dirs); po 40 MB, najwyżej 10."
         }
       }
     },

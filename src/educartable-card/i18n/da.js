@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} har aflyst aftalen {day} kl. {time}",
   presence: "Barnet forventes også at deltage",
   delete: "Slet",
+  attach: "Vedhæft",
+  remove_file: "Fjern",
+  file_too_big: "{name}: større end 40 MB",
+  translate: "Oversæt",
+  translating: "Oversætter…",
+  show_original: "Vis originalen",
 };

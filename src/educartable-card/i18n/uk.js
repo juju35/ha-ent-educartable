@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} скасував(ла) зустріч {day} о {time}",
   presence: "Дитина теж має бути присутня",
   delete: "Видалити",
+  attach: "Прикріпити",
+  remove_file: "Прибрати",
+  file_too_big: "{name}: понад 40 МБ",
+  translate: "Перекласти",
+  translating: "Переклад…",
+  show_original: "Показати оригінал",
 };

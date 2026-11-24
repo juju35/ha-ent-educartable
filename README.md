@@ -31,7 +31,7 @@ Home Assistant integration for **Educartable**, the family portal of EDUMOOV use
 - `educartable_new_homework`, `educartable_new_message`, `educartable_new_news`, `educartable_new_activity` and `educartable_new_document` events for automations, and optional **notifications** to the notify actions of your choice
 - `custom:educartable-card` card, **shipped with the integration** and loaded automatically: counts, liaison book to sign (with confirmation) or to read, homework to tick and news, each unfolding to its text and attachments
 - `custom:educartable-mini-card` compact card: the counts, with a button to open the full card
-- **Educartable sidebar panel** with Home, Homework, Liaison book, News, Class life, School reports and Settings tabs: surveys, appointment slots, links and the conversation with the teacher under each message, a *New message* form, the next appointments and the portal's notifications on the home page, and a badge on its sidebar entry counting what there is to deal with
+- **Educartable sidebar panel** with Home, Homework, Liaison book, News, Class life, School reports and Settings tabs: surveys, appointment slots, links, *Translate* and the conversation with the teacher (with attachments) under each message, a *New message* form, the next appointments and the portal's notifications on the home page, and a badge on its sidebar entry counting what there is to deal with
 - Username and password stored in the entry or read from `secrets.yaml` at every update; optional two-factor code; **⋮ → Reconfigure** switches each credential between a stored value and a secret
 - Diagnostics download with counts only: no name, title or message ever leaves Home Assistant
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek
@@ -173,8 +173,8 @@ data:
 | Action | Data |
 |---|---|
 | `educartable.mark_read` | `message_id` |
-| `educartable.reply` | `message_id`, `text`: written in the message's conversation with the teacher; a reply the message asks for is recorded as given |
-| `educartable.write_message` | `children` (ids from the `children` attribute of **Last update**), `title`, `text`: one message per classroom |
+| `educartable.reply` | `message_id`, `text`, optional `attachments`: written in the message's conversation with the teacher; a reply the message asks for is recorded as given |
+| `educartable.write_message` | `children` (ids from the `children` attribute of **Last update**), `title`, `text`, optional `attachments`: one message per classroom, its files in a first comment |
 | `educartable.answer_survey` | `message_id`, `answers` (each question id with the option ids chosen, from the message's `survey` attribute), optional `children` (all those concerned by default); an answer given before is replaced |
 | `educartable.book_appointment` | `slot_id` (from the message's `slots` attribute), `child_id` when several children can still book |
 | `educartable.cancel_appointment` | `slot_id` of a booked slot |
@@ -191,7 +191,7 @@ data:
     "1": ["2"]
 ```
 
-They act with the parent's account and are reserved to administrators. `educartable.refresh` reads the portal now. With several accounts, add `config_entry_id`.
+`attachments` lists files of up to 40 MB each (10 at most; pictures, PDF, office documents, audio, video): paths Home Assistant may read (under `allowlist_external_dirs`, e.g. a camera snapshot), or the files chosen with the paperclip in the panel. They act with the parent's account and are reserved to administrators. `educartable.refresh` reads the portal now. With several accounts, add `config_entry_id`.
 
 ### Events
 
@@ -297,7 +297,7 @@ Home (child filter, week, tiles, To do, news, next appointments and notification
 
 ## Roadmap
 
-Next: attachments in replies and new messages, translating a message (as the portal offers it), and the pupil's skills (*compétences*) when the school publishes them.
+Everything the portal's family app offers parents is covered. The pupil's skills (*compétences*) are not part of it: schools publish them in the livret, shown in the School reports tab. Ideas and issues are welcome.
 
 ## Support
 

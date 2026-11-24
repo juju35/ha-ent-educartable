@@ -232,6 +232,12 @@ def _json(value: Any) -> Any:
     return value
 
 
+# The text the portal gives a comment made of files only.
+ATTACHMENTS_ONLY = "Pièce(s) jointe(s) :"
+# Messages are written in French; the panel asks for its own language.
+TRANSLATE_SOURCE = "fr"
+TRANSLATIONS_KEPT = 50
+
 # A survey or a list of slots is cut to this: enough for any school form, small enough for the state machine.
 SURVEY_QUESTIONS_KEPT = 20
 SLOTS_KEPT = 40
@@ -434,6 +440,8 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         # Ids seen by kind, from the first successful read: only what appears after it fires an event.
         self._seen: dict[str, set[str]] = {}
         self._file_cache: OrderedDict[str, tuple[float, bytes, str]] = OrderedDict()
+        # Translations asked from the panel, by message, language and content.
+        self._translations: dict[tuple[str, ...], dict[str, str]] = {}
         # Where each livret document's PDF is (ids and hashes the attributes do not carry).
         self._document_files: dict[str, tuple[str, ...]] = {}
 
@@ -753,7 +761,7 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
                     "id": _str(raw["id"]),
                     "author": _author(raw),
                     "mine": _str(raw.get("user_id")) in mine,
-                    "text": "" if text == "Pièce(s) jointe(s) :" else text,
+                    "text": "" if text == ATTACHMENTS_ONLY else text,
                     "date": _iso(raw.get("created") or raw.get("modified")),
                     "deleted": deleted,
                     "medias": _medias(raw),
@@ -761,17 +769,32 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             )
         return out
 
-    async def async_reply(self, message_id: str, text: str) -> None:
-        """Write to the teacher in a message's conversation; a reply it asks for is then recorded as given."""
+    async def _comment(self, message_id: str, text: str, files: list[Any]) -> None:
+        """A comment in a message's conversation, then its attached files (the portal's own way: one upload each)."""
+        parent_id = self._parent_id()
+        first = next(iter(await self.api.comments(parent_id, message_id)), None)
+        # A comment with files only carries the portal's own placeholder text.
+        body = text or ATTACHMENTS_ONLY
+        comment = await self.api.comment(
+            parent_id, message_id, body, _str(first.get("id")) if isinstance(first, dict) else None
+        )
+        if files and not comment.get("id"):
+            raise EducartableError("the portal did not say which comment to attach the files to")
+        for file in files:
+            target = await self.api.upload_target(parent_id)
+            await self.api.upload(target, _str(comment["id"]), file.name, file.body, file.content_type)
+
+    async def async_reply(self, message_id: str, text: str, files: list[Any] | None = None) -> None:
+        """Write to the teacher in a message's conversation (with files); a reply it asks for is then recorded."""
         message = self._find_message(message_id)
         text = text.strip()
-        if not text:
+        files = files or []
+        if not text and not files:
             raise EducartableError("the reply is empty")
         if not message.get("commentable") and message.get("achievement") != "comment":
             raise EducartableError("this message takes no reply")
         parent_id = self._parent_id()
-        first = next(iter(await self.api.comments(parent_id, message_id)), None)
-        await self.api.comment(parent_id, message_id, text, _str(first.get("id")) if isinstance(first, dict) else None)
+        await self._comment(message_id, text, files)
         change: dict[str, Any] = {"comments": message.get("comments", 0) + 1}
         if message.get("achievement") == "comment" and not message.get("achieved"):
             model, keys = (
@@ -781,7 +804,7 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             change |= {"achieved": True, "to_do": False}
         self._patch_messages(message_id, change)
 
-    async def async_write(self, children: list[str], title: str, body: str) -> None:
+    async def async_write(self, children: list[str], title: str, body: str, files: list[Any] | None = None) -> None:
         """A new message to the teacher: one per classroom of the chosen children, as the portal's app sends it."""
         title, body = title.strip(), body.strip()
         if not title or not body:
@@ -797,8 +820,31 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             by_classroom.setdefault(pupils[child]["classroom_id"], []).append(child)
         parent_id = self._parent_id()
         for group in by_classroom.values():
-            await self.api.write_message(parent_id, group, title, body)
+            sent = await self.api.write_message(parent_id, group, title, body)
+            # Files go with a first comment on the new message, as the portal's app tells parents to add them.
+            if files:
+                if not sent.get("id"):
+                    raise EducartableError("the message was sent, but not its files")
+                await self._comment(_str(sent["id"]), "", files)
         await self.async_request_refresh()
+
+    async def async_translate(self, message_id: str, target: str) -> dict[str, str]:
+        """A message's title and text in another language, by the portal's translation (kept for the session)."""
+        message = self._find_message(message_id)
+        target = (target or "en").split("-")[0].lower()
+        key = (message_id, target, message.get("title", ""), message.get("text", ""))
+        if key not in self._translations:
+            texts = [message.get("title") or "", message.get("text") or ""]
+            out = await self.api.translate(texts, TRANSLATE_SOURCE, target)
+            if not out:
+                raise EducartableError("no translation")
+            self._translations[key] = {
+                "title": out[0] if message.get("title") else "",
+                "text": out[1] if len(out) > 1 else out[0],
+            }
+            while len(self._translations) > TRANSLATIONS_KEPT:
+                self._translations.pop(next(iter(self._translations)))
+        return self._translations[key]
 
     async def async_answer_survey(
         self, message_id: str, answers: dict[str, list[str]], children: list[str] | None = None

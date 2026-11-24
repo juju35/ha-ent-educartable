@@ -32,6 +32,9 @@ export class EducartablePanel extends HTMLElement {
     this._editing = {};
     // The new message to the teacher being written.
     this._write = null;
+    // Files chosen for a reply ("reply:<id>") or the new message ("write"), and the messages translated.
+    this._files = {};
+    this._translated = {};
   }
 
   set panel(panel) {
@@ -528,11 +531,66 @@ export class EducartablePanel extends HTMLElement {
   _extras(item, t, data) {
     // An archived message (a past school year) shows its survey, slots and conversation without acting on them.
     var can = window.Educartable.canAct(this._hass) && !item.archived;
-    var html = '';
+    var html = this._translateBlock(item, t, data);
     if (item.survey) html += this._surveyBlock(item, t, data, can);
     if (item.slots?.length) html += this._slotsBlock(item, t, data, can);
     if (can && (item.commentable || item.achievement === 'comment')) html += this._threadBlock(item, t, data);
     return html ? '<div class="extras">' + html + '</div>' : '';
+  }
+
+  // The user's language, for the portal's translation: offered when it is not French (the messages' language).
+  _language() {
+    return String(this._hass.locale?.language || this._hass.language || 'en').toLowerCase();
+  }
+
+  _translateBlock(item, t) {
+    var E = window.Educartable;
+    if (!item.text || this._language().split('-')[0] === 'fr') return '';
+    var tr = this._translated[item.id];
+    var button = '<button class="xh link-like" data-action="translate" data-msg="' + E.esc(item.id) + '" aria-pressed="' + !!tr?.shown + '"><ha-icon icon="mdi:translate"></ha-icon>' +
+      E.esc(tr?.loading ? t.translating : tr?.shown ? t.show_original : t.translate) + '</button>';
+    // Folded, it is a small link under the text; unfolded, the translation in a block.
+    if (!tr?.shown) return '<div class="trlink">' + button + (tr?.error ? '<div class="error-text">' + E.esc(tr.error) + '</div>' : '') + '</div>';
+    return '<div class="xblock tr">' + button + (tr.title ? '<div class="ql">' + E.esc(tr.title) + '</div>' : '') + '<div class="bt">' + E.esc(tr.text) + '</div></div>';
+  }
+
+  _doTranslate(data, id) {
+    var E = window.Educartable;
+    var tr = (this._translated[id] = this._translated[id] || {});
+    if (tr.text) {
+      tr.shown = !tr.shown;
+      this._render();
+      return;
+    }
+    if (tr.loading) return;
+    tr.loading = true;
+    tr.error = '';
+    this._render();
+    E.translate(this._hass, data.entryId, id, this._language())
+      .then((res) => {
+        tr.title = res.title;
+        tr.text = res.text;
+        tr.shown = true;
+      })
+      .catch((err) => E.errorText(this._hass, err).then((text) => {
+        tr.error = text;
+      }))
+      .finally(() => {
+        tr.loading = false;
+        this._render();
+      });
+  }
+
+  // The files chosen for a reply or the new message: a paperclip to add some, a chip each to take one back.
+  _filesField(key, t, busy) {
+    var E = window.Educartable;
+    var files = this._files[key] || [];
+    return '<div class="attach">' +
+      '<label class="act ghost clip' + (busy ? ' disabled' : '') + '" title="' + E.esc(t.attach) + '"><ha-icon icon="mdi:paperclip"></ha-icon><span>' + E.esc(t.attach) + '</span>' +
+      '<input type="file" multiple hidden accept="' + E.esc(E.accept) + '" data-files="' + E.esc(key) + '"' + (busy ? ' disabled' : '') + '></label>' +
+      files.map((f, i) => '<span class="fchip"><ha-icon icon="mdi:file-outline"></ha-icon>' + E.esc(f.name) +
+        '<button class="fx" data-action="file-remove" data-key="' + E.esc(key) + '" data-i="' + i + '" aria-label="' + E.esc(t.remove_file) + '" title="' + E.esc(t.remove_file) + '"><ha-icon icon="mdi:close"></ha-icon></button></span>').join('') +
+      '</div>';
   }
 
   _closed(survey) {
@@ -630,7 +688,7 @@ export class EducartablePanel extends HTMLElement {
     var key = 'reply:' + item.id;
     var busy = th?.sending;
     if (item.archived) return '<div class="xblock">' + head + body + '</div>';
-    var reply = '<div class="reply"><textarea data-draft="' + E.esc(key) + '" rows="2" aria-label="' + E.esc(t.reply_placeholder) + '" placeholder="' + E.esc(t.reply_placeholder) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(this._typed[key] || '') + '</textarea>' +
+    var reply = this._filesField(key, t, busy) + '<div class="reply"><textarea data-draft="' + E.esc(key) + '" rows="2" aria-label="' + E.esc(t.reply_placeholder) + '" placeholder="' + E.esc(t.reply_placeholder) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(this._typed[key] || '') + '</textarea>' +
       '<button class="act" data-action="reply-send" data-msg="' + E.esc(item.id) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(busy ? t.sending : t.reply_send) + '</button></div>';
     return '<div class="xblock">' + head + body + reply + '</div>';
   }
@@ -657,13 +715,16 @@ export class EducartablePanel extends HTMLElement {
     var key = 'reply:' + id;
     var text = String(this._typed[key] || '').trim();
     var th = this._threads[id] || (this._threads[id] = { comments: [] });
-    if (!text || th.sending) return;
+    var files = this._files[key] || [];
+    if ((!text && !files.length) || th.sending) return;
     th.sending = true;
     this._error = '';
     this._render();
-    E.reply(this._hass, data.entryId, id, text)
+    E.upload(this._hass, data.entryId, files)
+      .then((tokens) => E.reply(this._hass, data.entryId, id, text, tokens))
       .then(() => {
         delete this._typed[key];
+        delete this._files[key];
         th.sending = false;
         this._loadThread(data, id);
       })
@@ -712,6 +773,7 @@ export class EducartablePanel extends HTMLElement {
       '<div class="wkids" role="group" aria-label="' + E.esc(t.write_children) + '"><span class="signer-label">' + E.esc(t.write_children) + '</span>' + boxes + '</div>' +
       '<label class="signer-label wide">' + E.esc(t.write_subject) + '<input class="winput" type="text" maxlength="255" data-draft="write:title" value="' + E.esc(this._typed['write:title'] || '') + '"></label>' +
       '<label class="signer-label wide">' + E.esc(t.write_text) + '<textarea class="winput" rows="5" data-draft="write:text">' + E.esc(this._typed['write:text'] || '') + '</textarea></label>' +
+      this._filesField('write', t, w.busy) +
       '<div class="popup-actions"><button class="act ghost" data-action="write-cancel">' + E.esc(t.cancel) + '</button>' +
       '<button class="act" data-action="write-send"' + (w.busy ? ' disabled' : '') + '>' + E.esc(w.busy ? t.sending : t.write_send) + '</button></div></div>';
   }
@@ -731,9 +793,11 @@ export class EducartablePanel extends HTMLElement {
     w.busy = true;
     this._error = '';
     this._render();
-    E.write(this._hass, data.entryId, w.children, title, text)
+    E.upload(this._hass, data.entryId, this._files.write || [])
+      .then((tokens) => E.write(this._hass, data.entryId, w.children, title, text, tokens))
       .then(() => {
         this._write = null;
+        delete this._files.write;
         delete this._typed['write:title'];
         delete this._typed['write:text'];
       })
@@ -941,6 +1005,14 @@ export class EducartablePanel extends HTMLElement {
     if (el.classList?.contains('account')) {
       this._entry = el.value;
       this._render();
+    } else if (el.getAttribute?.('data-files')) {
+      var E = window.Educartable;
+      var key = el.getAttribute('data-files');
+      var big = Array.from(el.files || []).filter((f) => f.size > E.maxFile);
+      this._error = big.length ? E.format(E.t(this._hass).file_too_big, { name: big.map((f) => f.name).join(', ') }) : '';
+      this._files[key] = (this._files[key] || []).concat(Array.from(el.files || []).filter((f) => f.size <= E.maxFile)).slice(0, 10);
+      el.value = '';
+      this._render();
     } else if (el.classList?.contains('book-child') && this._confirm) {
       this._confirm.child = el.value;
     } else if (el.getAttribute?.('data-action') === 'write-child' && this._write) {
@@ -1010,6 +1082,7 @@ export class EducartablePanel extends HTMLElement {
       var item = data.homework.find((h) => String(h.id) === el.getAttribute('data-id') && String(h.child_id) === el.getAttribute('data-child'));
       if (item && E.canAct(this._hass)) E.setDone(this._hass, data.entryId, item, !item.done).catch((err) => this._fail(err));
     } else if (action === 'file') E.openFile(this._hass, data.entryId, { id: el.getAttribute('data-media'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err));
+    else if (action === 'translate') this._doTranslate(data, el.getAttribute('data-msg'));
     else if (action === 'doc-file') E.openFile(this._hass, data.entryId, { document: el.getAttribute('data-doc'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err));
     else if (!E.canAct(this._hass)) return;
     else if (action === 'doc-sign') {
@@ -1033,7 +1106,11 @@ export class EducartablePanel extends HTMLElement {
       if (this._threadOpen[id] && !this._threads[id]?.comments) this._loadThread(data, id);
       else this._render();
     } else if (action === 'reply-send') this._doReply(data, el.getAttribute('data-msg'));
-    else if (action === 'like') {
+    else if (action === 'file-remove') {
+      var fkey = el.getAttribute('data-key');
+      (this._files[fkey] || []).splice(Number(el.getAttribute('data-i')), 1);
+      this._render();
+    } else if (action === 'like') {
       var post = data.activities.find((x) => String(x.id) === el.getAttribute('data-id'));
       if (post) E.like(this._hass, data.entryId, post.id, !post.like_id).catch((err) => this._fail(err));
     } else if (action === 'notif-read') E.readNotifications(this._hass, data.entryId, el.getAttribute('data-id')).catch((err) => this._fail(err));
@@ -1249,6 +1326,16 @@ export class EducartablePanel extends HTMLElement {
       '.bdel { all: unset; cursor: pointer; position: absolute; top: 2px; right: 4px; opacity: .55; --mdc-icon-size: 15px; color: var(--secondary-text-color); }',
       '.bdel:hover, .bdel:focus-visible { opacity: 1; color: var(--error-color, #e5484d); }',
       '.bubble.mine { padding-right: 24px; }',
+      '.trlink .link-like { font-size: 12px; font-weight: 400; color: var(--secondary-text-color); --mdc-icon-size: 15px; }',
+      '.trlink .link-like:hover { color: var(--primary-text-color); }',
+      '.attach { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }',
+      '.clip { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; --mdc-icon-size: 16px; }',
+      '.clip.disabled { opacity: .5; pointer-events: none; }',
+      '.clip:focus-within { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
+      '.fchip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 4px 2px 8px; border-radius: 12px; border: 1px solid var(--divider-color, rgba(0,0,0,.2)); max-width: 260px; --mdc-icon-size: 14px; }',
+      '.fchip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+      '.fx { all: unset; cursor: pointer; display: inline-flex; padding: 2px; border-radius: 50%; color: var(--secondary-text-color); }',
+      '.fx:hover, .fx:focus-visible { color: var(--error-color, #e5484d); }',
       '.notif .item-title { white-space: normal; overflow: visible; text-overflow: clip; font-size: 14px; }',
       '.presence { display: flex; align-items: center; gap: 4px; --mdc-icon-size: 16px; }',
       '.bubble.deleted .bt { font-style: italic; color: var(--secondary-text-color); }',

@@ -153,4 +153,10 @@ export default {
   notif_canceled: '{author} cancelled the appointment of {day} at {time}',
   presence: 'The child is expected too',
   delete: 'Delete',
+  attach: 'Attach',
+  remove_file: 'Remove',
+  file_too_big: '{name}: larger than 40 MB',
+  translate: 'Translate',
+  translating: 'Translating…',
+  show_original: 'Show the original',
 };
