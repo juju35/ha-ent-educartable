@@ -295,10 +295,67 @@ Home (child filter, week, tiles, To do, news, next appointments and notification
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-conversation.png" alt="panel, survey and conversation" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-conversation-dark.png" alt="panel, survey and conversation, dark" width="480"> |
 | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-write.png" alt="panel, new message" width="480"> | <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/panel-write-dark.png" alt="panel, new message, dark" width="480"> |
 
-## Roadmap
+## How it works
 
-Everything the portal's family app offers parents is covered. The pupil's skills (*compétences*) are not part of it: schools publish them in the livret, shown in the School reports tab. Ideas and issues are welcome.
+The integration signs in with the family account like the portal's web app (OpenID Connect on `accounts.edumoov.com`, client `educlasse`; the access token is renewed with its refresh token, a refused login starts a reauthentication) and reads, at each update, from `app.educartable.com/api/1.0`: the account and the children (`educore/users/me`, `educore/…/pupils`), each child's homework (`educartable/…/messages?type=lesson`), the liaison book and the news (`info`, `alert`, `event`, `advert`, `meeting` messages, with their surveys and appointment slots), the class life (`activity` messages), the livret (`livret/…/notebooks`, `attestations_validations`), the portal's notifications and the appointments booked ahead. A part a school does not use stays empty; a part the portal fails to give keeps its last content and is listed in the sensors' `stale` attribute, and the card then shows *Partly updated*.
+
+What you do goes through the same routes as the portal's app: achievements (sign, read, comment…), the done box of a homework, comments, new messages, likes, and the RPC API of `api.edumoov.com` for surveys, appointments and translation. Attachments and livret PDFs are fetched only when you open them, through `/api/educartable/file/<entry_id>` (administrators only, 25 MB at most); files you attach are sent to `/api/educartable/upload/<entry_id>` (administrators only, 40 MB each), then uploaded to the portal with the reply. The pupil's skills (*compétences*) are not part of the portal's family app: schools publish them in the livret, shown in the School reports tab.
+
+## Development
+
+The card and the panel are written as ES modules in `src/educartable-card/` and `src/educartable-panel/` (entry `index.js`, translations one file per language in `src/educartable-card/i18n/`). `scripts/build-frontend.mjs` assembles them into `custom_components/educartable/frontend/educartable-card.js` and `educartable-panel.js`, which are not committed: build them before running Home Assistant or the tests. The modules share one scope once assembled, so top-level names stay unique; a new module must be listed in its `index.js`.
+
+```bash
+npm install --no-save --no-package-lock acorn@8.19.0 && node scripts/build-frontend.mjs
+pip install -r requirements_test.txt && pytest
+node --test test/*.test.mjs
+pip install playwright==1.64.1 pillow && playwright install chromium
+python scripts/screenshots.py   # renders the card, mini card and panel stills and the GIFs of the header animations and of the refresh (needs ffmpeg) into screenshots/
+```
+
+### Releasing
+
+1. Bump the version in `custom_components/educartable/manifest.json` and `EDUCARTABLE_CARD_VERSION` in `src/educartable-card/card-picker.js`
+2. Add a `## <version>` section at the top of [CHANGELOG.md](https://github.com/juju35/ha-ent-educartable/blob/main/CHANGELOG.md)
+3. Merge to `main` with a `feat` or `fix` title: the **Release** workflow creates the tag and the GitHub release with the changelog sections as notes
+
+## Translations
+
+The integration, the card and the panel follow the language of Home Assistant (the card's `language` option can force another one). Currently supported:
+
+| Language | Code |
+|---|---|
+| English | `en` |
+| Français | `fr` |
+| Deutsch | `de` |
+| Español | `es` |
+| Српски | `sr` |
+| Srpski (latinica) | `sr-Latn` |
+| Italiano | `it` |
+| Nederlands | `nl` |
+| Português (Portugal) | `pt` |
+| Polski | `pl` |
+| Română | `ro` |
+| Dansk | `da` |
+| Svenska | `sv` |
+| Български | `bg` |
+| Русский | `ru` |
+| Українська | `uk` |
+| Magyar | `hu` |
+| Slovenčina | `sk` |
+| Čeština | `cs` |
+| Slovenščina | `sl` |
+| Latviešu | `lv` |
+| Ελληνικά | `el` |
+
+Contributions for additional languages are welcome!
+
+## License
+
+[MIT](https://github.com/juju35/ha-ent-educartable/blob/main/LICENSE)
 
 ## Support
 
-If this is useful to you, you can [buy me a coffee](https://buymeacoffee.com/julienstep9). Issues and ideas are welcome on the [issue tracker](https://github.com/juju35/ha-ent-educartable/issues).
+If you find this project useful, you can support its development:
+
+<a href="https://buymeacoffee.com/julienstep9"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="50"></a>
