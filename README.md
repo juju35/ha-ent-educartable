@@ -10,8 +10,6 @@
 
 <p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/custom_components/educartable/brand/icon.png" alt="Educartable" width="120"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/images/wip.svg" alt="Work in progress: every action on the portal is in beta" width="720"></p>
-
 Home Assistant integration for **Educartable**, the family portal of EDUMOOV used by many French primary schools: homework of every child, liaison book to sign, surveys, parent meetings to book, the private conversation with the teacher, the class life (cahier de vie), the school reports (livret) and school news, with a Lovelace card and a sidebar panel included.
 
 [![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-ent-educartable&category=integration)
@@ -19,7 +17,7 @@ Home Assistant integration for **Educartable**, the family portal of EDUMOOV use
 <img src="https://raw.githubusercontent.com/juju35/ha-ent-educartable/main/screenshots/card.png" alt="educartable-card" width="380">
 
 > [!IMPORTANT]
-> Unofficial community project, neither made nor endorsed by EDUMOOV or Educartable. The portal has no public API: the integration calls the routes its own web application uses, and a portal update can break it. Every action on the portal (signing, ticking homework, replying, writing to the teacher, surveys, appointments, the livret) is in **beta**: please report what you see on your account.
+> Unofficial community project, neither made nor endorsed by EDUMOOV or Educartable. The portal has no public API: the integration calls the routes its own web application uses, and a portal update can break it. If something does not work on your account, please [open an issue](https://github.com/juju35/ha-ent-educartable/issues).
 
 ## Features
 

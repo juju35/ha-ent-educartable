@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.5.0 - 2026-11-24
+## 1.0.0 - 2026-11-24
+
+First stable version: every part of the portal's family app is covered, and the work-in-progress banner is gone.
 
 ### Features
 - The class life (cahier de vie): a **Class life** sensor and panel tab with the class's posts, their photos and links, a heart to like them and their conversation with the teacher. `educartable.like_activity` action and `educartable_new_activity` event (also notified).
