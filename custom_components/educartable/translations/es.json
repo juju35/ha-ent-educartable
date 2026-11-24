@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Boletines por firmar"
+      },
+      "activities": {
+        "name": "Vida de la clase"
+      },
+      "notifications": {
+        "name": "Notificaciones sin leer"
+      },
+      "next_appointment": {
+        "name": "Próxima cita"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Deberes"
+      },
+      "events_calendar": {
+        "name": "Eventos del colegio"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "El nombre registrado con la firma, 3 caracteres o más, como en el portal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Dar me gusta a una publicación",
+      "description": "Dar me gusta a una publicación de la vida de la clase, o quitarlo.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "activity_id": {
+          "name": "Publicación",
+          "description": "El id de la publicación, del atributo activities del sensor Vida de la clase."
+        },
+        "liked": {
+          "name": "Me gusta",
+          "description": "Desactivado para quitar el me gusta."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Marcar notificaciones como leídas",
+      "description": "Marcar como leída una notificación del portal, o todas.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "notification_id": {
+          "name": "Notificación",
+          "description": "El id de la notificación, del atributo notifications del sensor Notificaciones sin leer; todas si se deja vacío."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Eliminar un comentario",
+      "description": "Eliminar uno de tus comentarios en la conversación de un mensaje con el docente.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "message_id": {
+          "name": "Mensaje",
+          "description": "El id del mensaje, en el atributo messages del sensor Cuaderno de enlace por firmar o Noticias."
+        },
+        "comment_id": {
+          "name": "Comentario",
+          "description": "El id de uno de tus comentarios en la conversación."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Boletín por firmar de {child}"
+    },
+    "notify_new_activity": {
+      "message": "Novedad en la vida de la clase de {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Deberes",
         "words": "Agenda escolar",
         "news": "Noticias",
-        "documents": "Boletines"
+        "documents": "Boletines",
+        "activities": "Vida de la clase"
       }
     },
     "hide_header": {

@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Табели на подпись"
+      },
+      "activities": {
+        "name": "Жизнь класса"
+      },
+      "notifications": {
+        "name": "Непрочитанные уведомления"
+      },
+      "next_appointment": {
+        "name": "Ближайшая встреча"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Домашние задания"
+      },
+      "events_calendar": {
+        "name": "События школы"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Имя, сохраняемое с подписью, не менее 3 символов, как на портале."
         }
       }
+    },
+    "like_activity": {
+      "name": "Отметить публикацию «Нравится»",
+      "description": "Отметить публикацию из жизни класса «Нравится» или снять отметку.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Учётная запись",
+          "description": "Учётная запись Educartable. Оставьте пустым, если настроена только одна."
+        },
+        "activity_id": {
+          "name": "Публикация",
+          "description": "ID публикации из атрибута activities датчика Жизнь класса."
+        },
+        "liked": {
+          "name": "Нравится",
+          "description": "Выключено — снять отметку."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Отметить уведомления прочитанными",
+      "description": "Отметить уведомление портала прочитанным или все сразу.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Учётная запись",
+          "description": "Учётная запись Educartable. Оставьте пустым, если настроена только одна."
+        },
+        "notification_id": {
+          "name": "Уведомление",
+          "description": "ID уведомления из атрибута notifications датчика Непрочитанные уведомления; пусто — все."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Удалить комментарий",
+      "description": "Удалить один из своих комментариев в переписке по сообщению с учителем.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Учётная запись",
+          "description": "Учётная запись Educartable. Оставьте пустым, если настроена только одна."
+        },
+        "message_id": {
+          "name": "Сообщение",
+          "description": "ID сообщения из атрибута messages датчика Дневник на подпись или Новости."
+        },
+        "comment_id": {
+          "name": "Комментарий",
+          "description": "ID одного из ваших комментариев в переписке."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Табель на подпись: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Новое в жизни класса: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Домашние задания",
         "words": "Дневник",
         "news": "Новости",
-        "documents": "Табели"
+        "documents": "Табели",
+        "activities": "Жизнь класса"
       }
     },
     "hide_header": {

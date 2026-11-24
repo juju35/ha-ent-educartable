@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Boletins por assinar"
+      },
+      "activities": {
+        "name": "Vida da turma"
+      },
+      "notifications": {
+        "name": "Notificações por ler"
+      },
+      "next_appointment": {
+        "name": "Próxima marcação"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Trabalhos de casa"
+      },
+      "events_calendar": {
+        "name": "Eventos da escola"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "O nome registado com a assinatura, 3 caracteres ou mais, como no portal."
         }
       }
+    },
+    "like_activity": {
+      "name": "Gostar de uma publicação",
+      "description": "Gostar de uma publicação da vida da turma, ou retirar o gosto.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "activity_id": {
+          "name": "Publicação",
+          "description": "O id da publicação, do atributo activities do sensor Vida da turma."
+        },
+        "liked": {
+          "name": "Gosto",
+          "description": "Desligado para retirar o gosto."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Marcar notificações como lidas",
+      "description": "Marcar como lida uma notificação do portal, ou todas.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "notification_id": {
+          "name": "Notificação",
+          "description": "O id da notificação, do atributo notifications do sensor Notificações por ler; todas se ficar vazio."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Eliminar um comentário",
+      "description": "Eliminar um dos seus comentários na conversa de uma mensagem com o professor.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "message_id": {
+          "name": "Mensagem",
+          "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar ou Notícias."
+        },
+        "comment_id": {
+          "name": "Comentário",
+          "description": "O id de um dos seus comentários na conversa."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Boletim por assinar de {child}"
+    },
+    "notify_new_activity": {
+      "message": "Novidade na vida da turma de {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Trabalhos de casa",
         "words": "Caderneta",
         "news": "Notícias",
-        "documents": "Boletins"
+        "documents": "Boletins",
+        "activities": "Vida da turma"
       }
     },
     "hide_header": {

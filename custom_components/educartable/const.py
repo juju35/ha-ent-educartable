@@ -21,7 +21,8 @@ API_CORE: Final = f"{API_BASE}/core"
 RPC_BASE: Final = "https://api.edumoov.com/rpc"
 
 # The unified "message" object is discriminated by its `type`.
-LESSON_TYPES: Final = ("lesson", "activity")  # homework / cahier de textes (per pupil)
+LESSON_TYPES: Final = ("lesson",)  # homework / cahier de textes (per pupil)
+ACTIVITY_TYPES: Final = ("activity",)  # cahier de vie: the class's posts (photos, likes, comments)
 CARNET_TYPES: Final = ("info", "alert")  # liaison book (to sign)
 NEWS_TYPES: Final = ("event", "advert", "meeting")  # news / events / parent meetings
 
@@ -43,6 +44,10 @@ DEFAULT_HOMEWORK_DAYS: Final = 14
 # Items kept in the attributes: enough for a card, small enough for the state machine.
 MESSAGES_KEPT: Final = 10
 NEWS_KEPT: Final = 5
+ACTIVITIES_KEPT: Final = 12
+NOTIFICATIONS_KEPT: Final = 20
+# The appointments booked ahead, as the portal's app lists them ("my next appointments").
+APPOINTMENT_DAYS: Final = 92
 DOCUMENTS_KEPT: Final = 30
 
 SERVICE_REFRESH: Final = "refresh"
@@ -54,6 +59,9 @@ SERVICE_ANSWER_SURVEY: Final = "answer_survey"
 SERVICE_BOOK: Final = "book_appointment"
 SERVICE_CANCEL_BOOKING: Final = "cancel_appointment"
 SERVICE_SIGN_DOCUMENT: Final = "sign_document"
+SERVICE_LIKE: Final = "like_activity"
+SERVICE_READ_NOTIFICATIONS: Final = "mark_notifications_read"
+SERVICE_DELETE_COMMENT: Final = "delete_comment"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
 ATTR_MESSAGE_ID: Final = "message_id"
 ATTR_NAME: Final = "name"
@@ -64,18 +72,23 @@ ATTR_CHILD_ID: Final = "child_id"
 ATTR_ANSWERS: Final = "answers"
 ATTR_SLOT_ID: Final = "slot_id"
 ATTR_DOCUMENT_ID: Final = "document_id"
+ATTR_ACTIVITY_ID: Final = "activity_id"
+ATTR_LIKED: Final = "liked"
+ATTR_NOTIFICATION_ID: Final = "notification_id"
+ATTR_COMMENT_ID: Final = "comment_id"
 
 # Fired on the bus for what appeared since the last update (never on the first one).
 EVENT_NEW_HOMEWORK: Final = f"{DOMAIN}_new_homework"
 EVENT_NEW_MESSAGE: Final = f"{DOMAIN}_new_message"
 EVENT_NEW_NEWS: Final = f"{DOMAIN}_new_news"
 EVENT_NEW_DOCUMENT: Final = f"{DOMAIN}_new_document"
+EVENT_NEW_ACTIVITY: Final = f"{DOMAIN}_new_activity"
 
 CONF_SHOW_PANEL: Final = "show_panel"
 DEFAULT_SHOW_PANEL: Final = True
 # Tabs of the panel (and sections of its home page) shown; Home and Settings always are.
 CONF_PANEL_TABS: Final = "panel_tabs"
-PANEL_TABS: Final = ("homework", "words", "news", "documents")
+PANEL_TABS: Final = ("homework", "words", "news", "activities", "documents")
 # Who the panel's top bar (the illustrated header) is hidden for; the tabs stay.
 CONF_HIDE_HEADER: Final = "hide_header"
 HIDE_HEADER_OFF: Final = "off"

@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Livret à signer"
+      },
+      "activities": {
+        "name": "Cahier de vie"
+      },
+      "notifications": {
+        "name": "Notifications non lues"
+      },
+      "next_appointment": {
+        "name": "Prochain rendez-vous"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Devoirs"
+      },
+      "events_calendar": {
+        "name": "Événements de l’école"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Le nom enregistré avec la signature, 3 caractères ou plus, comme dans le portail."
         }
       }
+    },
+    "like_activity": {
+      "name": "Aimer une publication",
+      "description": "Aimer une publication du cahier de vie, ou retirer le j’aime.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "activity_id": {
+          "name": "Publication",
+          "description": "L’identifiant de la publication, dans l’attribut activities du capteur Cahier de vie."
+        },
+        "liked": {
+          "name": "Aimé",
+          "description": "Désactivé pour retirer le j’aime."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Marquer les notifications comme lues",
+      "description": "Marquer comme lue une notification du portail, ou toutes.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "notification_id": {
+          "name": "Notification",
+          "description": "L’identifiant de la notification, dans l’attribut notifications du capteur Notifications non lues ; toutes si vide."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Supprimer un commentaire",
+      "description": "Supprimer l’un de vos commentaires dans les échanges d’un message avec l’enseignant.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
+        },
+        "comment_id": {
+          "name": "Commentaire",
+          "description": "L’identifiant de l’un de vos commentaires dans les échanges."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Livret à signer pour {child}"
+    },
+    "notify_new_activity": {
+      "message": "Nouveau dans le cahier de vie pour {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Devoirs",
         "words": "Cahier de liaison",
         "news": "Actualités",
-        "documents": "Livret"
+        "documents": "Livret",
+        "activities": "Cahier de vie"
       }
     },
     "hide_header": {

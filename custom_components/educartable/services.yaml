@@ -153,3 +153,52 @@ sign_document:
       example: "Camille Martin"
       selector:
         text:
+
+like_activity:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    activity_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+    liked:
+      required: false
+      default: true
+      selector:
+        boolean:
+
+mark_notifications_read:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    notification_id:
+      required: false
+      example: "678"
+      selector:
+        text:
+
+delete_comment:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+    comment_id:
+      required: true
+      example: "90"
+      selector:
+        text:

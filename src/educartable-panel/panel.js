@@ -175,6 +175,7 @@ export class EducartablePanel extends HTMLElement {
         homework: "mdi:pencil-outline",
         words: "mdi:notebook-edit-outline",
         news: "mdi:newspaper-variant-outline",
+        activities: "mdi:image-multiple-outline",
         documents: "mdi:file-certificate-outline",
         settings: "mdi:cog",
       },
@@ -254,7 +255,7 @@ export class EducartablePanel extends HTMLElement {
       content.innerHTML = '<div class="page"><div class="empty">' + E.esc(t.unavailable) + '</div></div>';
       return;
     }
-    var html = { home: this._home, homework: this._homework, words: this._words, news: this._news, documents: this._documents }[this._tab].call(this, t, data);
+    var html = { home: this._home, homework: this._homework, words: this._words, news: this._news, activities: this._activities, documents: this._documents }[this._tab].call(this, t, data);
     // The signer's name being typed survives the redraw (the input is drawn again), and so does the focus.
     var typed = content.querySelector('.signer');
     if (typed && this._confirm) this._confirm.name = typed.value;
@@ -400,10 +401,12 @@ export class EducartablePanel extends HTMLElement {
     var todo = E.sortedHomework(this._myHomework(data), false).filter((h) => !day || String(h.date).slice(0, 10) === day);
     var latest = data.news[0];
     var docs = data.documents.filter((d) => d.to_sign);
+    var post = data.activities[0];
     var tiles = [
       on('words') ? this._tile('words', 'mdi:notebook-edit-outline', 'red', t.section_words, toSign.length ? toSign.length + ' ' + t.tile_words : t.no_words, toSign.length) : '',
       on('homework') ? this._tile('homework', 'mdi:pencil-outline', 'amber', t.section_homework, todo.length ? todo.length + ' ' + t.tile_homework : t.no_homework, todo.length) : '',
       on('news') ? this._tile('news', 'mdi:newspaper-variant-outline', 'blue', t.section_news, latest ? [latest.title, E.day(latest.date, t, locale)].filter(Boolean).join(' · ') : t.no_news, 0) : '',
+      on('activities') && post ? this._tile('activities', 'mdi:image-multiple-outline', 'green', t.section_activities, [post.title, E.day(post.date, t, locale)].filter(Boolean).join(' · '), 0) : '',
       on('documents') && data.documents.length ? this._tile('documents', 'mdi:file-certificate-outline', 'violet', t.section_documents, docs.length ? docs.length + ' ' + t.tile_documents : t.doc_all_signed, docs.length) : '',
     ].filter(Boolean);
     var see = (tab) => (on(tab) ? '<button class="see" data-tab="' + tab + '">' + E.esc(t.see_all) + ' ›</button>' : '');
@@ -411,6 +414,8 @@ export class EducartablePanel extends HTMLElement {
       .concat(on('homework') ? todo.slice(0, 6).map((h) => R.homework(h, t, locale, Object.assign({}, opts, { child: several && !this._child }))) : [])
       .concat(on('documents') ? docs.slice(0, 3).map((d) => R.document(d, t, { canAct: opts.canAct, child: several })) : []);
     var newsRows = data.news.slice(0, 5).map((n) => R.news(n, t, locale, opts));
+    var now = Date.now();
+    var upcoming = data.appointments.filter((a) => !a.end || E.parse(a.end).getTime() > now);
     var box = (cls, title, side, rows, empty) =>
       '<section class="box ' + cls + '"><div class="bh"><h2>' + E.esc(title) + '</h2>' + side + '</div>' + this._list(rows, empty) + '</section>';
     return this._childChips(t, data) + (on('homework') ? this._week(t, data) : '') +
@@ -418,7 +423,38 @@ export class EducartablePanel extends HTMLElement {
       '<div class="dgrid">' +
       (on('words') || on('homework') || on('documents') ? box('todo-box', t.section_todo, see(on('homework') ? 'homework' : 'words'), todoRows, t.nothing_to_do) : '') +
       (on('news') ? box('read-box', t.section_news, see('news'), newsRows, t.no_news) : '') +
+      (upcoming.length ? box('rdv-box', t.next_appointments, '', upcoming.slice(0, 4).map((a) => this._appointmentRow(a, t, several)), '') : '') +
+      (data.notifications.length ? box('notif-box', t.notifications,
+        opts.canAct ? '<button class="see" data-action="notif-all">' + E.esc(t.mark_all_read) + '</button>' : '',
+        data.notifications.slice(0, 6).map((n) => this._notificationRow(n, t, opts.canAct)), '') : '') +
       '</div>';
+  }
+
+  _appointmentRow(a, t, several) {
+    var E = window.Educartable;
+    var meta = [several ? a.child : '', this._slotLabel(a, t), a.location].filter(Boolean).join(' · ');
+    return '<div class="item rdv"><ha-icon class="item-icon" icon="mdi:calendar-account"></ha-icon><div class="item-main"><div class="item-title">' +
+      E.esc(a.title || t.slots) + '</div><div class="item-meta">' + E.esc(meta) + '</div></div></div>';
+  }
+
+  // A notification of the portal: its text (a cancelled appointment told with its author and time), Mark as read.
+  _notificationRow(n, t, canAct) {
+    var E = window.Educartable;
+    var locale = E.locale(this._hass);
+    var text = n.type === 'message-event_canceled' && n.start
+      ? E.format(t.notif_canceled, { author: n.author || '—', day: E.day(n.start, t, locale), time: E.time(n.start, locale) })
+      : n.text || '—';
+    return '<div class="item notif"><ha-icon class="item-icon" icon="' + (n.type === 'message-event_canceled' ? 'mdi:calendar-remove' : n.subject === 'activity' ? 'mdi:image-multiple-outline' : 'mdi:bell-outline') + '"></ha-icon>' +
+      '<div class="item-main"><div class="item-title">' + E.esc(text) + '</div>' + (n.date ? '<div class="item-meta">' + E.esc(E.day(n.date, t, locale)) + '</div>' : '') + '</div>' +
+      (canAct ? '<button class="act ghost" data-action="notif-read" data-id="' + E.esc(n.id) + '">' + E.esc(t.mark_read) + '</button>' : '') + '</div>';
+  }
+
+  // The cahier de vie: the class's posts, their photos, likes and conversation.
+  _activities(t, data) {
+    var E = window.Educartable;
+    var locale = E.locale(this._hass);
+    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass), child: this._children(data).length > 1, extra: (item) => this._extras(item, t, data) };
+    return this._box('', this._list(data.activities.map((a) => E.rows.activity(a, t, locale, opts)), t.no_activities), true);
   }
 
   // Homework: the child chips, then one box per due day with how much of it is done.
@@ -490,7 +526,8 @@ export class EducartablePanel extends HTMLElement {
 
   // Under an unfolded message: its survey, its appointment slots and its conversation with the teacher.
   _extras(item, t, data) {
-    var can = window.Educartable.canAct(this._hass);
+    // An archived message (a past school year) shows its survey, slots and conversation without acting on them.
+    var can = window.Educartable.canAct(this._hass) && !item.archived;
     var html = '';
     if (item.survey) html += this._surveyBlock(item, t, data, can);
     if (item.slots?.length) html += this._slotsBlock(item, t, data, can);
@@ -565,7 +602,8 @@ export class EducartablePanel extends HTMLElement {
             E.esc([E.time(x.start, locale), x.end ? E.time(x.end, locale) : ''].filter(Boolean).join('–')) + '</button>').join('') + '</div></div>').join('')
         : '<div class="empty">' + E.esc(t.slot_none) + '</div>';
     }
-    return '<div class="xblock"><div class="xh"><ha-icon icon="mdi:calendar-clock"></ha-icon>' + E.esc(t.slots) + '</div>' + rows + pick + '</div>';
+    var presence = item.presence ? '<div class="xsub presence"><ha-icon icon="mdi:human-child"></ha-icon> ' + E.esc(t.presence) + '</div>' : '';
+    return '<div class="xblock"><div class="xh"><ha-icon icon="mdi:calendar-clock"></ha-icon>' + E.esc(t.slots) + '</div>' + presence + rows + pick + '</div>';
   }
 
   _threadBlock(item, t, data) {
@@ -585,10 +623,13 @@ export class EducartablePanel extends HTMLElement {
       body = '<div class="thread">' + th.comments.map((c) =>
         '<div class="bubble' + (c.mine ? ' mine' : '') + (c.deleted ? ' deleted' : '') + '"><div class="bm">' + E.esc([c.mine ? t.me : c.author, c.date ? E.day(c.date, t, locale) : ''].filter(Boolean).join(' · ')) + '</div>' +
         (c.deleted ? '<div class="bt">' + E.esc(t.deleted) + '</div>' : c.text ? '<div class="bt">' + E.esc(c.text) + '</div>' : '') +
-        E.rows.files(c.medias, t, data.entryId, true) + '</div>').join('') + '</div>';
+        E.rows.files(c.medias, t, data.entryId, true) +
+        (c.mine && !c.deleted && !item.archived ? '<button class="bdel" data-action="comment-delete" data-msg="' + E.esc(item.id) + '" data-id="' + E.esc(c.id) + '" aria-label="' + E.esc(t.delete) + '" title="' + E.esc(t.delete) + '"><ha-icon icon="mdi:trash-can-outline"></ha-icon></button>' : '') +
+        '</div>').join('') + '</div>';
     }
     var key = 'reply:' + item.id;
     var busy = th?.sending;
+    if (item.archived) return '<div class="xblock">' + head + body + '</div>';
     var reply = '<div class="reply"><textarea data-draft="' + E.esc(key) + '" rows="2" aria-label="' + E.esc(t.reply_placeholder) + '" placeholder="' + E.esc(t.reply_placeholder) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(this._typed[key] || '') + '</textarea>' +
       '<button class="act" data-action="reply-send" data-msg="' + E.esc(item.id) + '"' + (busy ? ' disabled' : '') + '>' + E.esc(busy ? t.sending : t.reply_send) + '</button></div>';
     return '<div class="xblock">' + head + body + reply + '</div>';
@@ -843,7 +884,7 @@ export class EducartablePanel extends HTMLElement {
             select: {
               multiple: true,
               mode: 'list',
-              options: ['homework', 'words', 'news', 'documents'].map((tab) => ({ value: tab, label: t[EDUCARTABLE_TAB_KEYS[tab]] })),
+              options: ['homework', 'words', 'news', 'activities', 'documents'].map((tab) => ({ value: tab, label: t[EDUCARTABLE_TAB_KEYS[tab]] })),
             },
           },
         },
@@ -992,6 +1033,17 @@ export class EducartablePanel extends HTMLElement {
       if (this._threadOpen[id] && !this._threads[id]?.comments) this._loadThread(data, id);
       else this._render();
     } else if (action === 'reply-send') this._doReply(data, el.getAttribute('data-msg'));
+    else if (action === 'like') {
+      var post = data.activities.find((x) => String(x.id) === el.getAttribute('data-id'));
+      if (post) E.like(this._hass, data.entryId, post.id, !post.like_id).catch((err) => this._fail(err));
+    } else if (action === 'notif-read') E.readNotifications(this._hass, data.entryId, el.getAttribute('data-id')).catch((err) => this._fail(err));
+    else if (action === 'notif-all') E.readNotifications(this._hass, data.entryId, '').catch((err) => this._fail(err));
+    else if (action === 'comment-delete') {
+      var msg = el.getAttribute('data-msg');
+      E.deleteComment(this._hass, data.entryId, msg, el.getAttribute('data-id'))
+        .then(() => this._loadThread(data, msg))
+        .catch((err) => this._fail(err));
+    }
     else if (action === 'write') {
       this._write = { children: this._children(data).filter((ch) => ch.writable !== false).slice(0, 1).map((ch) => String(ch.id)), busy: false };
       this._render();
@@ -1121,7 +1173,7 @@ export class EducartablePanel extends HTMLElement {
       '.tile:not(.static):hover { border-color: color-mix(in srgb, var(--c) 55%, var(--divider-color, #e0e0e0)); }',
       '.tile:focus-visible { outline: 2px solid var(--primary-color); }',
       '.tile.static { cursor: default; }',
-      '.tile.red { --c: var(--error-color, #e5484d); } .tile.amber { --c: #f5a623; } .tile.blue { --c: #2f80ed; } .tile.violet { --c: #8e6bd8; }',
+      '.tile.red { --c: var(--error-color, #e5484d); } .tile.amber { --c: #f5a623; } .tile.blue { --c: #2f80ed; } .tile.violet { --c: #8e6bd8; } .tile.green { --c: #2e9e6a; }',
       '.pastille { position: relative; flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; --mdc-icon-size: 22px;' +
         ' color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }',
       '.pbadge { position: absolute; top: -3px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; font-size: 11px; font-weight: 600;' +
@@ -1193,6 +1245,12 @@ export class EducartablePanel extends HTMLElement {
       '.thread { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }',
       '.bubble { max-width: 85%; align-self: flex-start; padding: 6px 10px; border-radius: 12px 12px 12px 4px; background: var(--card-background-color, #fff); border: 1px solid var(--divider-color, rgba(0,0,0,.12)); }',
       '.bubble.mine { align-self: flex-end; border-radius: 12px 12px 4px 12px; background: color-mix(in srgb, ' + A + ' 12%, var(--card-background-color, #fff)); border-color: color-mix(in srgb, ' + A + ' 30%, transparent); }',
+      '.bubble { position: relative; }',
+      '.bdel { all: unset; cursor: pointer; position: absolute; top: 2px; right: 4px; opacity: .55; --mdc-icon-size: 15px; color: var(--secondary-text-color); }',
+      '.bdel:hover, .bdel:focus-visible { opacity: 1; color: var(--error-color, #e5484d); }',
+      '.bubble.mine { padding-right: 24px; }',
+      '.notif .item-title { white-space: normal; overflow: visible; text-overflow: clip; font-size: 14px; }',
+      '.presence { display: flex; align-items: center; gap: 4px; --mdc-icon-size: 16px; }',
       '.bubble.deleted .bt { font-style: italic; color: var(--secondary-text-color); }',
       '.bm { font-size: 11px; color: var(--secondary-text-color); }',
       '.bt { font-size: 13px; white-space: pre-line; overflow-wrap: anywhere; }',

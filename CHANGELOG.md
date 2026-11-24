@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0 - 2026-11-24
+
+First stable version: every part of the portal's family app is covered, and the work-in-progress banner is gone.
+
+### Features
+- The class life (cahier de vie): a **Class life** sensor and panel tab with the class's posts, their photos and links, a heart to like them and their conversation with the teacher. `educartable.like_activity` action and `educartable_new_activity` event (also notified).
+- **Next appointment** sensor with every appointment booked ahead, and a *Next appointments* box on the panel's home page.
+- **School events** calendar: the events of the news on their own day and the appointments booked for the children.
+- **Unread notifications** sensor with the portal's notifications (a cancelled appointment told with its author and time), shown on the panel's home page and marked as read one by one or all together. `educartable.mark_notifications_read` action.
+- Links attached to messages and homework (videos, sites) open from their row.
+- Parent meetings say when the child is expected too; archived messages are read only.
+- Delete one of your own comments in a conversation. `educartable.delete_comment` action.
+
+### Fixes
+- Class-life posts are no longer counted as homework to do.
+- An event is dated on its own day, not on the day it was published.
+
 ## 0.4.0 - 2026-11-24
 
 ### Features

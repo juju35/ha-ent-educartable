@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Spričevala za podpis"
+      },
+      "activities": {
+        "name": "Življenje razreda"
+      },
+      "notifications": {
+        "name": "Neprebrana obvestila"
+      },
+      "next_appointment": {
+        "name": "Naslednji termin"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Domače naloge"
+      },
+      "events_calendar": {
+        "name": "Šolski dogodki"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Ime, shranjeno s podpisom, vsaj 3 znaki, kot na portalu."
         }
       }
+    },
+    "like_activity": {
+      "name": "Všečkaj objavo",
+      "description": "Všečkaj objavo iz življenja razreda ali prekliči všeček.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "activity_id": {
+          "name": "Objava",
+          "description": "ID objave iz atributa activities senzorja Življenje razreda."
+        },
+        "liked": {
+          "name": "Všečkano",
+          "description": "Izklopljeno prekliče všeček."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Označi obvestila kot prebrana",
+      "description": "Označi obvestilo portala kot prebrano ali vsa.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "notification_id": {
+          "name": "Obvestilo",
+          "description": "ID obvestila iz atributa notifications senzorja Neprebrana obvestila; prazno za vsa."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Izbriši komentar",
+      "description": "Izbriši enega svojih komentarjev v pogovoru o sporočilu z učiteljem.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
+        },
+        "comment_id": {
+          "name": "Komentar",
+          "description": "ID enega vaših komentarjev v pogovoru."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Spričevalo za podpis: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Novo v življenju razreda za {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Domače naloge",
         "words": "Beležka",
         "news": "Novice",
-        "documents": "Spričevala"
+        "documents": "Spričevala",
+        "activities": "Življenje razreda"
       }
     },
     "hide_header": {

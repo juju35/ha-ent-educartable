@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Omdömen att skriva under"
+      },
+      "activities": {
+        "name": "Klassens liv"
+      },
+      "notifications": {
+        "name": "Olästa aviseringar"
+      },
+      "next_appointment": {
+        "name": "Nästa möte"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Läxor"
+      },
+      "events_calendar": {
+        "name": "Skolans evenemang"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Namnet som sparas med underskriften, minst 3 tecken, som i portalen."
         }
       }
+    },
+    "like_activity": {
+      "name": "Gilla ett inlägg",
+      "description": "Gilla ett inlägg i klassens liv, eller ta tillbaka gillningen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "activity_id": {
+          "name": "Inlägg",
+          "description": "Inläggets id, från attributet activities på sensorn Klassens liv."
+        },
+        "liked": {
+          "name": "Gillad",
+          "description": "Av för att ta tillbaka gillningen."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Markera aviseringar som lästa",
+      "description": "Markera en avisering från portalen som läst, eller alla.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "notification_id": {
+          "name": "Avisering",
+          "description": "Aviseringens id, från attributet notifications på sensorn Olästa aviseringar; tomt för alla."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Radera en kommentar",
+      "description": "Radera en av dina egna kommentarer i samtalet om ett meddelande med läraren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
+        },
+        "comment_id": {
+          "name": "Kommentar",
+          "description": "Id för en av dina kommentarer i samtalet."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Omdöme att skriva under för {child}"
+    },
+    "notify_new_activity": {
+      "message": "Nytt i klassens liv för {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Läxor",
         "words": "Kontaktbok",
         "news": "Nyheter",
-        "documents": "Omdömen"
+        "documents": "Omdömen",
+        "activities": "Klassens liv"
       }
     },
     "hide_header": {

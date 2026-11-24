@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Świadectwa do podpisania"
+      },
+      "activities": {
+        "name": "Życie klasy"
+      },
+      "notifications": {
+        "name": "Nieprzeczytane powiadomienia"
+      },
+      "next_appointment": {
+        "name": "Najbliższe spotkanie"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Zadania domowe"
+      },
+      "events_calendar": {
+        "name": "Wydarzenia szkolne"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Nazwa zapisana z podpisem, co najmniej 3 znaki, jak w portalu."
         }
       }
+    },
+    "like_activity": {
+      "name": "Polub wpis",
+      "description": "Polub wpis z życia klasy albo cofnij polubienie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "activity_id": {
+          "name": "Wpis",
+          "description": "Identyfikator wpisu z atrybutu activities czujnika Życie klasy."
+        },
+        "liked": {
+          "name": "Polubione",
+          "description": "Wyłączone, aby cofnąć polubienie."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Oznacz powiadomienia jako przeczytane",
+      "description": "Oznacz jedno powiadomienie portalu jako przeczytane albo wszystkie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "notification_id": {
+          "name": "Powiadomienie",
+          "description": "Identyfikator powiadomienia z atrybutu notifications czujnika Nieprzeczytane powiadomienia; puste oznacza wszystkie."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Usuń komentarz",
+      "description": "Usuń jeden ze swoich komentarzy w rozmowie o wiadomości z nauczycielem.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
+        },
+        "comment_id": {
+          "name": "Komentarz",
+          "description": "Identyfikator jednego z twoich komentarzy w rozmowie."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Świadectwo do podpisania: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Nowość w życiu klasy: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Zadania domowe",
         "words": "Dzienniczek",
         "news": "Aktualności",
-        "documents": "Świadectwa"
+        "documents": "Świadectwa",
+        "activities": "Życie klasy"
       }
     },
     "hide_header": {

@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Удостоверения за подпис"
+      },
+      "activities": {
+        "name": "Животът на класа"
+      },
+      "notifications": {
+        "name": "Непрочетени известия"
+      },
+      "next_appointment": {
+        "name": "Следваща среща"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Домашни"
+      },
+      "events_calendar": {
+        "name": "Училищни събития"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Името, записано с подписа, поне 3 знака, както в портала."
         }
       }
+    },
+    "like_activity": {
+      "name": "Харесай публикация",
+      "description": "Харесайте публикация от живота на класа или оттеглете харесването.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Профил",
+          "description": "Профилът в Educartable. Оставете празно, когато е настроен само един."
+        },
+        "activity_id": {
+          "name": "Публикация",
+          "description": "ID на публикацията от атрибута activities на сензора Животът на класа."
+        },
+        "liked": {
+          "name": "Харесано",
+          "description": "Изключено, за да се оттегли."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Маркирай известията като прочетени",
+      "description": "Маркирайте известие на портала като прочетено или всички.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Профил",
+          "description": "Профилът в Educartable. Оставете празно, когато е настроен само един."
+        },
+        "notification_id": {
+          "name": "Известие",
+          "description": "ID на известието от атрибута notifications на сензора Непрочетени известия; празно за всички."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Изтрий коментар",
+      "description": "Изтрийте един от своите коментари в разговора по съобщение с учителя.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Профил",
+          "description": "Профилът в Educartable. Оставете празно, когато е настроен само един."
+        },
+        "message_id": {
+          "name": "Съобщение",
+          "description": "ID на съобщението, от атрибута messages на сензора Бележник за подпис или Новини."
+        },
+        "comment_id": {
+          "name": "Коментар",
+          "description": "ID на един от вашите коментари в разговора."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Документ за подпис за {child}"
+    },
+    "notify_new_activity": {
+      "message": "Ново в живота на класа за {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Домашни",
         "words": "Бележник",
         "news": "Новини",
-        "documents": "Удостоверения"
+        "documents": "Удостоверения",
+        "activities": "Животът на класа"
       }
     },
     "hide_header": {

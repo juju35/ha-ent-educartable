@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Табелі на підпис"
+      },
+      "activities": {
+        "name": "Життя класу"
+      },
+      "notifications": {
+        "name": "Непрочитані сповіщення"
+      },
+      "next_appointment": {
+        "name": "Найближча зустріч"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Домашні завдання"
+      },
+      "events_calendar": {
+        "name": "Події школи"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Ім'я, збережене з підписом, щонайменше 3 символи, як на порталі."
         }
       }
+    },
+    "like_activity": {
+      "name": "Вподобати публікацію",
+      "description": "Вподобати публікацію з життя класу або зняти вподобання.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Обліковий запис",
+          "description": "Обліковий запис Educartable. Залиште порожнім, якщо налаштовано лише один."
+        },
+        "activity_id": {
+          "name": "Публікація",
+          "description": "ID публікації з атрибута activities датчика Життя класу."
+        },
+        "liked": {
+          "name": "Вподобано",
+          "description": "Вимкнено — зняти вподобання."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Позначити сповіщення прочитаними",
+      "description": "Позначити сповіщення порталу прочитаним або всі.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Обліковий запис",
+          "description": "Обліковий запис Educartable. Залиште порожнім, якщо налаштовано лише один."
+        },
+        "notification_id": {
+          "name": "Сповіщення",
+          "description": "ID сповіщення з атрибута notifications датчика Непрочитані сповіщення; порожньо — всі."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Видалити коментар",
+      "description": "Видалити один зі своїх коментарів у листуванні щодо повідомлення з учителем.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Обліковий запис",
+          "description": "Обліковий запис Educartable. Залиште порожнім, якщо налаштовано лише один."
+        },
+        "message_id": {
+          "name": "Повідомлення",
+          "description": "ID повідомлення з атрибута messages датчика Щоденник на підпис або Новини."
+        },
+        "comment_id": {
+          "name": "Коментар",
+          "description": "ID одного з ваших коментарів у листуванні."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Табель на підпис: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Нове в житті класу: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Домашні завдання",
         "words": "Щоденник",
         "news": "Новини",
-        "documents": "Табелі"
+        "documents": "Табелі",
+        "activities": "Життя класу"
       }
     },
     "hide_header": {

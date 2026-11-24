@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Сведочанства за потписивање"
+      },
+      "activities": {
+        "name": "Живот одељења"
+      },
+      "notifications": {
+        "name": "Непрочитана обавештења"
+      },
+      "next_appointment": {
+        "name": "Следећи термин"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Домаћи"
+      },
+      "events_calendar": {
+        "name": "Школски догађаји"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Име које се бележи уз потпис, најмање 3 знака, као на порталу."
         }
       }
+    },
+    "like_activity": {
+      "name": "Свиђа ми се објава",
+      "description": "Означите објаву из живота одељења са „свиђа ми се”, или то повуците.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Налог",
+          "description": "Educartable налог. Оставите празно када је подешен само један."
+        },
+        "activity_id": {
+          "name": "Објава",
+          "description": "ИД објаве, из атрибута activities сензора Живот одељења."
+        },
+        "liked": {
+          "name": "Свиђа ми се",
+          "description": "Искључено да се повуче."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Означи обавештења као прочитана",
+      "description": "Означите обавештење портала као прочитано, или сва.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Налог",
+          "description": "Educartable налог. Оставите празно када је подешен само један."
+        },
+        "notification_id": {
+          "name": "Обавештење",
+          "description": "ИД обавештења, из атрибута notifications сензора Непрочитана обавештења; празно за сва."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Обриши коментар",
+      "description": "Обришите један свој коментар у разговору о поруци са учитељем.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Налог",
+          "description": "Educartable налог. Оставите празно када је подешен само један."
+        },
+        "message_id": {
+          "name": "Порука",
+          "description": "ID поруке, из атрибута messages сензора Ђачка књижица за потписивање или Вести."
+        },
+        "comment_id": {
+          "name": "Коментар",
+          "description": "ИД једног вашег коментара у разговору."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Сведочанство за потписивање за {child}"
+    },
+    "notify_new_activity": {
+      "message": "Ново у животу одељења за {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Домаћи",
         "words": "Ђачка књижица",
         "news": "Вести",
-        "documents": "Сведочанства"
+        "documents": "Сведочанства",
+        "activities": "Живот одељења"
       }
     },
     "hide_header": {

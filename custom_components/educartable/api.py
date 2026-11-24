@@ -17,6 +17,7 @@ from typing import Any
 import aiohttp
 
 from .const import (
+    ACTIVITY_TYPES,
     API_CORE,
     API_EDUCARTABLE,
     API_EDUCORE,
@@ -202,6 +203,20 @@ class EducartableApi:
     async def news(self, parent_id: str) -> list[dict[str, Any]]:
         return await self._messages(parent_id, NEWS_TYPES, sort="visibility", direction="desc")
 
+    async def activities(self, parent_id: str, limit: int) -> list[dict[str, Any]]:
+        """The cahier de vie: the class's posts, newest first."""
+        return await self._messages(parent_id, ACTIVITY_TYPES, sort="date", direction="desc", limit=limit)
+
+    async def notifications(self, parent_id: str) -> list[dict[str, Any]]:
+        """The portal's notifications of the account (new message, reply, cancelled appointment…)."""
+        data = await self._get(f"{API_EDUCORE}/parent/{parent_id}/notifications", {"app": "Educartable"})
+        return data.get("data", []) if isinstance(data, dict) else []
+
+    async def next_appointments(self, start: str, stop: str) -> list[dict[str, Any]]:
+        """The appointment slots booked for the family's children between two days."""
+        data = await self.rpc("cartable.events.nextRegisteredEvents", {"start": start, "stop": stop})
+        return data if isinstance(data, list) else []
+
     # ── Writes (as the portal's web app) ────────────────────────────────────────────────────────────────────
 
     async def achieve(
@@ -257,6 +272,31 @@ class EducartableApi:
         """Sign a notebook or an attestation as consulted, with the signer's name."""
         route = {"notebook": "notebooks", "attestation": "attestations_validations"}[kind]
         await self._post(f"{API_LIVRET}/parent/{parent_id}/{route}/{document_id}/sign", {"name": name})
+
+    async def like(self, parent_id: str, activity_id: str) -> str:
+        """Like a post of the cahier de vie; the like's id is what unlikes it."""
+        data = await self._post(
+            f"{API_CORE}/parent/{parent_id}/likes", {"key": activity_id, "model": "HomeworkMessage"}
+        )
+        like = data.get("data") if isinstance(data, dict) else None
+        return str(like.get("id") or "") if isinstance(like, dict) else ""
+
+    async def unlike(self, parent_id: str, like_id: str) -> None:
+        await self._request("DELETE", f"{API_CORE}/parent/{parent_id}/likes/{like_id}")
+
+    async def read_notification(self, parent_id: str, notification_id: str) -> None:
+        await self._request(
+            "PUT", f"{API_EDUCORE}/parent/{parent_id}/notifications/{notification_id}", json={"read": True}
+        )
+
+    async def read_all_notifications(self, parent_id: str) -> None:
+        await self._request(
+            "PUT", f"{API_EDUCORE}/parent/{parent_id}/notifications/close_all", params={"app": "Educartable"}
+        )
+
+    async def delete_comment(self, parent_id: str, comment_id: str) -> None:
+        """Delete one of the family's own comments (the portal keeps a "deleted" trace)."""
+        await self._request("DELETE", f"{API_EDUCORE}/parent/{parent_id}/comments/{comment_id}/trash")
 
     async def rpc(self, method: str, params: dict[str, Any], payload: dict[str, Any] | None = None) -> Any:
         """Call a method of the portal's RPC API; its refusal ("code - text") is raised with its text."""

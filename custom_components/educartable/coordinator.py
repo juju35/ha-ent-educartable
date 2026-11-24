@@ -26,12 +26,15 @@ from .api import (
     EducartableUnavailableError,
 )
 from .const import (
+    ACTIVITIES_KEPT,
+    APPOINTMENT_DAYS,
     CONF_HOMEWORK_DAYS,
     CONF_NOTIFY,
     CONF_SCAN_INTERVAL,
     DEFAULT_HOMEWORK_DAYS,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    EVENT_NEW_ACTIVITY,
     EVENT_NEW_DOCUMENT,
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_MESSAGE,
@@ -39,6 +42,7 @@ from .const import (
     MESSAGES_KEPT,
     MIN_SCAN_INTERVAL,
     NEWS_KEPT,
+    NOTIFICATIONS_KEPT,
 )
 from .secret import SecretNotFoundError, async_credentials
 
@@ -62,6 +66,10 @@ class EducartableData:
     news: list[dict[str, Any]] = field(default_factory=list)
     # The pupils' livret: notebooks and attestations, signed as consulted.
     documents: list[dict[str, Any]] = field(default_factory=list)
+    # The cahier de vie, the portal's unread notifications and the appointments booked ahead.
+    activities: list[dict[str, Any]] = field(default_factory=list)
+    notifications: list[dict[str, Any]] = field(default_factory=list)
+    appointments: list[dict[str, Any]] = field(default_factory=list)
     # Sections whose last read failed: their content is the one of the update before.
     stale: list[str] = field(default_factory=list)
     # When this update read the portal.
@@ -152,6 +160,16 @@ def _medias(raw: dict[str, Any]) -> list[dict[str, str]]:
     return sorted(out, key=lambda m: m["name"].casefold())
 
 
+def _links(raw: dict[str, Any]) -> list[dict[str, str]]:
+    """Web links attached to a message (a video, a site): only http(s) addresses are kept."""
+    out = []
+    for link in raw.get("links") or []:
+        url = _str(link.get("url")) if isinstance(link, dict) else ""
+        if url.startswith(("https://", "http://")):
+            out.append({"url": url, "title": _str(link.get("title")) or url, "type": _str(link.get("type"))})
+    return out
+
+
 def _pupil_recipients(raw: dict[str, Any]) -> list[dict[str, Any]]:
     recipients = raw.get("recipients") or []
     return [r for r in recipients if isinstance(r, dict) and r.get("model") == "Pupil"]
@@ -180,6 +198,9 @@ def _common(raw: dict[str, Any]) -> dict[str, Any]:
         # The family did what the message asks once it has an achievement (the app's own test).
         "achieved": bool(raw.get("achievements")),
         "medias": _medias(raw),
+        "links": _links(raw),
+        # An archived message (a past school year) is read only.
+        "archived": bool(raw.get("archived")),
     }
 
 
@@ -295,8 +316,16 @@ def _message(raw: dict[str, Any]) -> dict[str, Any]:
     recipients = raw.get("recipients") or []
     return {
         **item,
-        "date": _iso(raw.get("visibility") or raw.get("date") or raw.get("created")),
+        # An event is shown on its own day; the other messages on the day they were published.
+        "date": _iso(
+            (raw.get("date") if raw.get("type") == "event" else None)
+            or raw.get("visibility")
+            or raw.get("date")
+            or raw.get("created")
+        ),
         "children": _children(raw),
+        # The child is expected at the parent meeting too.
+        "presence": bool(raw.get("pupil_present")),
         # Liaison book: still to sign when it asks for a signature that nobody gave yet.
         "to_sign": item["achievement"] == "sign" and not item["achieved"],
         "to_do": bool(item["achievement"]) and not item["achieved"],
@@ -307,6 +336,66 @@ def _message(raw: dict[str, Any]) -> dict[str, Any]:
         "slots": _slots(raw),
         # A message to the parents of a classroom without recipients is achieved by the parent, not the pupils.
         "parent_scope": raw.get("scope_model") == "Classroom" and not recipients,
+    }
+
+
+def _activity(raw: dict[str, Any]) -> dict[str, Any]:
+    """A post of the cahier de vie: its text and photos, its likes (the family's own one too) and its conversation."""
+    item = _common(raw)
+    return {
+        **item,
+        "date": _iso(raw.get("date") or raw.get("visibility") or raw.get("created")),
+        "children": _children(raw),
+        "likes": int(raw.get("likes_count") or 0),
+        # The family's like: its id, needed to take it back.
+        "like_id": _str(raw.get("liked")) if raw.get("liked") else "",
+        "commentable": bool(raw.get("commentable")) and not raw.get("archived"),
+        "comments": int(raw.get("comments_count") or 0),
+    }
+
+
+def _epoch_iso(value: Any) -> str | None:
+    """A time the portal gives in seconds (notification payloads), or as text."""
+    if isinstance(value, (int, float)) and value > 0:
+        return dt_util.utc_from_timestamp(value).isoformat()
+    return _iso(value)
+
+
+def _notification(raw: dict[str, Any]) -> dict[str, Any]:
+    """A notification of the portal: what it is about, its text, and for a cancelled appointment when it was."""
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else {}
+    author = payload.get("author") if isinstance(payload.get("author"), dict) else {}
+    return {
+        "id": _str(raw.get("id")),
+        "type": _str(raw.get("type")).replace(".parents", ""),
+        "subject": _str(payload.get("subject_type")),
+        "subject_id": _str(payload.get("subject_id")),
+        "text": plain_text(payload.get("content")),
+        "author": " ".join(p for p in (_str(author.get("firstname")), _str(author.get("name"))) if p),
+        "start": _epoch_iso(payload.get("start")),
+        "end": _epoch_iso(payload.get("stop")),
+        "date": _iso(raw.get("created")),
+    }
+
+
+def _for_family(raw: dict[str, Any]) -> bool:
+    """An unread notification of the family app (the portal's own filter)."""
+    app = _str(raw.get("app")).strip().lower()
+    return not raw.get("read") and (app in ("educartablefamily", "family") or ".parents" in _str(raw.get("type")))
+
+
+def _appointment(raw: dict[str, Any]) -> dict[str, Any]:
+    """A slot booked for a child, with the message it belongs to."""
+    message = raw.get("message") if isinstance(raw.get("message"), dict) else {}
+    registrations = [r for r in raw.get("registrations") or [] if isinstance(r, dict)]
+    return {
+        "id": _str(raw.get("id")),
+        "start": _iso(raw.get("start")),
+        "end": _iso(raw.get("stop") or raw.get("end")),
+        "location": _str(raw.get("location")),
+        "child_id": _str(registrations[0].get("pupil_id")) if registrations else "",
+        "message_id": _str(message.get("id")),
+        "title": _str(message.get("title")),
     }
 
 
@@ -405,6 +494,21 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         except EducartableUnavailableError:
             data.news, _ = previous.news, data.stale.append("news")
         await self._read_documents(parent_id, data, previous)
+        data.activities = await self._optional(
+            "activities", lambda: self.api.activities(parent_id, ACTIVITIES_KEPT), _activity, data, previous
+        )
+        data.notifications = await self._optional(
+            "notifications",
+            lambda: self._unread(parent_id),
+            _notification,
+            data,
+            previous,
+        )
+        stop = (today + timedelta(days=APPOINTMENT_DAYS)).isoformat()
+        data.appointments = await self._optional(
+            "appointments", lambda: self.api.next_appointments(start, stop), _appointment, data, previous
+        )
+        data.appointments.sort(key=lambda a: a["start"] or "")
         # The first names of the children a message concerns, for the card, the panel and the events.
         names = {p["id"]: p["firstname"] or p["name"] for p in data.pupils}
         for message in (*data.carnet, *data.news):
@@ -413,8 +517,31 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             message["slots"] = [s for s in message["slots"] if not s["booked"] or s["child_id"] in names]
         for document in data.documents:
             document["child"] = names.get(document["child_id"], "")
+        for activity in data.activities:
+            activity["child"] = " · ".join(names[c] for c in activity["children"] if c in names)
+        for appointment in data.appointments:
+            appointment["child"] = names.get(appointment["child_id"], "")
         self._fire_new(data)
         return data
+
+    async def _unread(self, parent_id: str) -> list[dict[str, Any]]:
+        return [n for n in await self.api.notifications(parent_id) if isinstance(n, dict) and _for_family(n)][
+            :NOTIFICATIONS_KEPT
+        ]
+
+    async def _optional(
+        self, kind: str, read: Any, parse: Any, data: EducartableData, previous: EducartableData
+    ) -> list[dict[str, Any]]:
+        """A part not every school has: its error shows nothing, a portal outage keeps what was read before."""
+        try:
+            raws = await read()
+        except EducartableUnavailableError:
+            data.stale.append(kind)
+            return list(getattr(previous, kind))
+        except EducartableError as err:
+            _LOGGER.debug("No %s on this account: %s", kind, err)
+            return []
+        return [parse(r) for r in raws if isinstance(r, dict) and r.get("id") is not None]
 
     async def _read_documents(self, parent_id: str, data: EducartableData, previous: EducartableData) -> None:
         """The livret: notebooks, then attestations. A school without it answers with an error: nothing to show."""
@@ -475,6 +602,13 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
                 ("child", "title", "achievement", "author"),
             ),
             "news": ("news", data.news, lambda _: True, EVENT_NEW_NEWS, ("title", "type", "author")),
+            "activity": (
+                "activities",
+                data.activities,
+                lambda _: True,
+                EVENT_NEW_ACTIVITY,
+                ("title", "author", "child"),
+            ),
             "document": (
                 "documents",
                 data.documents,
@@ -540,7 +674,11 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
 
     def _find_message(self, message_id: str) -> dict[str, Any]:
         data = self.data
-        for message in (*(data.carnet if data else []), *(data.news if data else [])):
+        for message in (
+            *(data.carnet if data else []),
+            *(data.news if data else []),
+            *(data.activities if data else []),
+        ):
             if message["id"] == message_id:
                 return message
         for items in data.homework.values() if data else []:
@@ -592,6 +730,7 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             self.data,
             carnet=[{**m, **change} if m["id"] == message_id else m for m in self.data.carnet],
             news=[{**m, **change} if m["id"] == message_id else m for m in self.data.news],
+            activities=[{**m, **change} if m["id"] == message_id else m for m in self.data.activities],
         )
         self.async_update_listeners()
 
@@ -751,6 +890,48 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         ]
         self.data = replace(self.data, documents=documents)
         self.async_update_listeners()
+
+    async def async_like(self, activity_id: str, liked: bool = True) -> None:
+        """Like a post of the cahier de vie, or take the like back."""
+        activity = next((a for a in self.data.activities if a["id"] == activity_id), None) if self.data else None
+        if activity is None:
+            raise EducartableError("unknown post")
+        if liked == bool(activity["like_id"]):
+            return
+        parent_id = self._parent_id()
+        if liked:
+            like_id = await self.api.like(parent_id, activity_id)
+            self._patch_messages(activity_id, {"like_id": like_id or "?", "likes": activity["likes"] + 1})
+            if not like_id:
+                await self.async_request_refresh()  # The portal did not say which like it is: read it back.
+            return
+        if activity["like_id"] == "?":
+            raise EducartableError("the like is still being recorded, try again in a moment")
+        await self.api.unlike(parent_id, activity["like_id"])
+        self._patch_messages(activity_id, {"like_id": "", "likes": max(0, activity["likes"] - 1)})
+
+    async def async_read_notifications(self, notification_id: str = "") -> None:
+        """Mark one notification of the portal as read, or all of them."""
+        parent_id = self._parent_id()
+        if notification_id:
+            if not any(n["id"] == notification_id for n in self.data.notifications):
+                raise EducartableError("unknown notification")
+            await self.api.read_notification(parent_id, notification_id)
+            left = [n for n in self.data.notifications if n["id"] != notification_id]
+        else:
+            await self.api.read_all_notifications(parent_id)
+            left = []
+        self.data = replace(self.data, notifications=left)
+        self.async_update_listeners()
+
+    async def async_delete_comment(self, message_id: str, comment_id: str) -> None:
+        """Delete one of the family's own comments in a message's conversation."""
+        comments = await self.async_comments(message_id)
+        comment = next((c for c in comments if c["id"] == comment_id), None)
+        if comment is None or not comment["mine"]:
+            raise EducartableError("only your own comments can be deleted")
+        if not comment["deleted"]:
+            await self.api.delete_comment(self._parent_id(), comment_id)
 
     async def async_document_file(self, document_id: str) -> tuple[bytes, str]:
         """A livret document's PDF, from the location read with the list (never one given by the browser)."""

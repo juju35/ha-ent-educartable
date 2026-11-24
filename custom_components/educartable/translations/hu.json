@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Aláírandó bizonyítványok"
+      },
+      "activities": {
+        "name": "Osztályélet"
+      },
+      "notifications": {
+        "name": "Olvasatlan értesítések"
+      },
+      "next_appointment": {
+        "name": "Következő időpont"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Házi feladatok"
+      },
+      "events_calendar": {
+        "name": "Iskolai események"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Az aláírással rögzített név, legalább 3 karakter, mint a portálon."
         }
       }
+    },
+    "like_activity": {
+      "name": "Bejegyzés kedvelése",
+      "description": "Az osztályélet egy bejegyzésének kedvelése vagy a kedvelés visszavonása.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "activity_id": {
+          "name": "Bejegyzés",
+          "description": "A bejegyzés azonosítója az Osztályélet érzékelő activities attribútumából."
+        },
+        "liked": {
+          "name": "Kedvelve",
+          "description": "Kikapcsolva visszavonja a kedvelést."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Értesítések olvasottnak jelölése",
+      "description": "A portál egy értesítésének vagy mindnek olvasottnak jelölése.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "notification_id": {
+          "name": "Értesítés",
+          "description": "Az értesítés azonosítója az Olvasatlan értesítések érzékelő notifications attribútumából; üresen mind."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Hozzászólás törlése",
+      "description": "Egy saját hozzászólás törlése egy üzenet tanárral folytatott beszélgetésében.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
+        },
+        "comment_id": {
+          "name": "Hozzászólás",
+          "description": "Egy saját hozzászólásod azonosítója a beszélgetésben."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Aláírandó bizonyítvány: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Új az osztályéletben: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Házi feladatok",
         "words": "Üzenőfüzet",
         "news": "Hírek",
-        "documents": "Bizonyítványok"
+        "documents": "Bizonyítványok",
+        "activities": "Osztályélet"
       }
     },
     "hide_header": {

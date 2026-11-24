@@ -8,9 +8,10 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, Sen
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .config_flow import hide_header, panel_tabs
-from .const import DOCUMENTS_KEPT, MESSAGES_KEPT, NEWS_KEPT
+from .const import ACTIVITIES_KEPT, DOCUMENTS_KEPT, MESSAGES_KEPT, NEWS_KEPT, NOTIFICATIONS_KEPT
 from .coordinator import EducartableConfigEntry, EducartableCoordinator
 from .entity import EducartableEntity, EducartablePupilEntity
 
@@ -25,6 +26,9 @@ async def async_setup_entry(
         CarnetToSignSensor(coordinator),
         NewsSensor(coordinator),
         DocumentsToSignSensor(coordinator),
+        ActivitiesSensor(coordinator),
+        NotificationsSensor(coordinator),
+        NextAppointmentSensor(coordinator),
         LastUpdateSensor(coordinator),
     ]
     known: set[str] = set()
@@ -77,6 +81,66 @@ class NewsSensor(EducartableEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         return {**self.base_attributes, "news": self.coordinator.data.news[:NEWS_KEPT]}
+
+
+class ActivitiesSensor(EducartableEntity, SensorEntity):
+    """Number of recent posts of the cahier de vie (the class's life: photos, likes, comments)."""
+
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: EducartableCoordinator) -> None:
+        super().__init__(coordinator, "activities")
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.data.activities)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {**self.base_attributes, "activities": self.coordinator.data.activities[:ACTIVITIES_KEPT]}
+
+
+class NotificationsSensor(EducartableEntity, SensorEntity):
+    """Number of unread notifications of the portal (new messages, replies, cancelled appointments…)."""
+
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: EducartableCoordinator) -> None:
+        super().__init__(coordinator, "notifications")
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.data.notifications)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {**self.base_attributes, "notifications": self.coordinator.data.notifications[:NOTIFICATIONS_KEPT]}
+
+
+class NextAppointmentSensor(EducartableEntity, SensorEntity):
+    """When the next appointment booked for a child is; every appointment booked ahead as attributes."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, coordinator: EducartableCoordinator) -> None:
+        super().__init__(coordinator, "next_appointment")
+
+    def _upcoming(self) -> list[dict]:
+        now = dt_util.now()
+        return [
+            a
+            for a in self.coordinator.data.appointments
+            if (end := dt_util.parse_datetime(a["end"] or a["start"] or "")) is None or end > now
+        ]
+
+    @property
+    def native_value(self) -> datetime | None:
+        nxt = next((a for a in self._upcoming() if a["start"]), None)
+        return dt_util.parse_datetime(nxt["start"]) if nxt else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {**self.base_attributes, "appointments": self._upcoming()}
 
 
 class DocumentsToSignSensor(EducartableEntity, SensorEntity):

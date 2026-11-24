@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Vysvědčení k podpisu"
+      },
+      "activities": {
+        "name": "Život třídy"
+      },
+      "notifications": {
+        "name": "Nepřečtená oznámení"
+      },
+      "next_appointment": {
+        "name": "Nejbližší schůzka"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Domácí úkoly"
+      },
+      "events_calendar": {
+        "name": "Školní akce"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Jméno uložené s podpisem, aspoň 3 znaky, jako v portálu."
         }
       }
+    },
+    "like_activity": {
+      "name": "Označit příspěvek Líbí se mi",
+      "description": "Označit příspěvek ze života třídy Líbí se mi, nebo to zrušit.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "activity_id": {
+          "name": "Příspěvek",
+          "description": "ID příspěvku z atributu activities senzoru Život třídy."
+        },
+        "liked": {
+          "name": "Líbí se mi",
+          "description": "Vypnuto zruší označení."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Označit oznámení jako přečtená",
+      "description": "Označit oznámení portálu jako přečtené, nebo všechna.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "notification_id": {
+          "name": "Oznámení",
+          "description": "ID oznámení z atributu notifications senzoru Nepřečtená oznámení; prázdné pro všechna."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Smazat komentář",
+      "description": "Smazat jeden z vlastních komentářů v rozhovoru ke zprávě s učitelem.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "message_id": {
+          "name": "Zpráva",
+          "description": "ID zprávy z atributu messages senzoru Žákovská knížka k podpisu nebo Novinky."
+        },
+        "comment_id": {
+          "name": "Komentář",
+          "description": "ID jednoho z vašich komentářů v rozhovoru."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Vysvědčení k podpisu: {child}"
+    },
+    "notify_new_activity": {
+      "message": "Novinka v životě třídy: {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Domácí úkoly",
         "words": "Žákovská knížka",
         "news": "Novinky",
-        "documents": "Vysvědčení"
+        "documents": "Vysvědčení",
+        "activities": "Život třídy"
       }
     },
     "hide_header": {

@@ -95,6 +95,16 @@ ICONS = {
     "poll": "M3,22V8H7V22H3M10,22V2H14V22H10M17,22V14H21V22H17Z",
     "email-edit-outline": "M19.07 13.88L13 19.94V22H15.06L21.12 15.93M22.7 13.58L21.42 12.3C21.32 12.19 21.18 12.13 21.04 12.13C20.89 12.14 20.75 12.19 20.65 12.3L19.65 13.3L21.7 15.3L22.7 14.3C22.89 14.1 22.89 13.78 22.7 13.58M11 18H4V8L12 13L20 8V10H22V6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H11V18M20 6L12 11L4 6H20Z",
     "email-alert-outline": "M24 7H22V13H24V7M24 15H22V17H24V15M20 6C20 4.9 19.1 4 18 4H2C.9 4 0 4.9 0 6V18C0 19.1 .9 20 2 20H18C19.1 20 20 19.1 20 18V6M18 6L10 11L2 6H18M18 18H2V8L10 13L18 8V18Z",
+    "image-multiple-outline": "M21,17H7V3H21M21,1H7A2,2 0 0,0 5,3V17A2,2 0 0,0 7,19H21A2,2 0 0,0 23,17V3A2,2 0 0,0 21,1M3,5H1V21A2,2 0 0,0 3,23H19V21H3M15.96,10.29L13.21,13.83L11.25,11.47L8.5,15H19.5L15.96,10.29Z",
+    "heart": "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z",
+    "heart-outline": "M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z",
+    "link-variant": "M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z",
+    "play-circle-outline": "M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z",
+    "calendar-account": "M12 9C14 9 15 11.42 13.59 12.84C12.17 14.26 9.75 13.25 9.75 11.25C9.75 10 10.75 9 12 9M16.5 18H7.5V16.88C7.5 15.63 9.5 14.63 12 14.63S16.5 15.63 16.5 16.88M19 19H5V8H19M16 1V3H8V1H6V3H5C3.9 3 3 3.9 3 5V19C3 20.11 3.9 21 5 21H19C20.11 21 21 20.11 21 19V5C21 3.9 20.11 3 19 3H18V1H16Z",
+    "bell-outline": "M10 21H14C14 22.1 13.1 23 12 23S10 22.1 10 21M21 19V20H3V19L5 17V11C5 7.9 7 5.2 10 4.3V4C10 2.9 10.9 2 12 2S14 2.9 14 4V4.3C17 5.2 19 7.9 19 11V17L21 19M17 11C17 8.2 14.8 6 12 6S7 8.2 7 11V18H17V11Z",
+    "calendar-remove": "M19,19H5V8H19M19,3H18V1H16V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M9.31,17L11.75,14.56L14.19,17L15.25,15.94L12.81,13.5L15.25,11.06L14.19,10L11.75,12.44L9.31,10L8.25,11.06L10.69,13.5L8.25,15.94L9.31,17Z",
+    "human-child": "M12,2A3,3 0 0,1 15,5A3,3 0 0,1 12,8A3,3 0 0,1 9,5A3,3 0 0,1 12,2M11,22H8V16H6V9H18V16H16V22H13V18H11V22Z",
+    "trash-can-outline": "M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z",
 }
 
 # Generic Material icons for the other rows of the mock Home Assistant sidebar.
@@ -421,6 +431,86 @@ DOCUMENTS = [
 ]
 
 
+ACTIVITIES = [
+    {
+        "id": "a1",
+        "title": "Pumpkin soup workshop",
+        "text": "This morning we cooked a pumpkin soup and tasted it together.",
+        "type": "activity",
+        "author": "Ms Brown",
+        "achievement": "",
+        "achieved": False,
+        "medias": [{"id": "m31", "name": "soup.jpg", "extension": "jpg"}],
+        "links": [{"url": "https://example.org/pumpkin-song", "title": "The pumpkin song", "type": "video"}],
+        "archived": False,
+        "date": "2026-11-20T10:00:00+01:00",
+        "children": ["p1"],
+        "child": "Alex",
+        "likes": 6,
+        "like_id": "12",
+        "commentable": True,
+        "comments": 0,
+    },
+    {
+        "id": "a2",
+        "title": "Autumn walk in the park",
+        "text": "We picked leaves for the class herbarium.",
+        "type": "activity",
+        "author": "Mr Green",
+        "achievement": "",
+        "achieved": False,
+        "medias": [],
+        "links": [],
+        "archived": False,
+        "date": "2026-11-17T15:00:00+01:00",
+        "children": ["p2"],
+        "child": "Sam",
+        "likes": 3,
+        "like_id": "",
+        "commentable": False,
+        "comments": 0,
+    },
+]
+
+NOTIFICATIONS = [
+    {
+        "id": "901",
+        "type": "message-event_canceled",
+        "subject": "message",
+        "subject_id": "n2",
+        "text": "",
+        "author": "Ms Brown",
+        "start": "2026-11-24T17:30:00+01:00",
+        "end": "2026-11-24T17:45:00+01:00",
+        "date": "2026-11-12T09:00:00+01:00",
+    },
+    {
+        "id": "902",
+        "type": "activity",
+        "subject": "activity",
+        "subject_id": "a1",
+        "text": "New post in the class life: Pumpkin soup workshop",
+        "author": "",
+        "start": None,
+        "end": None,
+        "date": "2026-11-11T10:05:00+01:00",
+    },
+]
+
+APPOINTMENTS = [
+    {
+        "id": "s1",
+        "start": "2026-11-24T17:00:00+01:00",
+        "end": "2026-11-24T17:15:00+01:00",
+        "location": "Room 4",
+        "child_id": "p1",
+        "child": "Alex",
+        "message_id": "n2",
+        "title": "Parents' evening",
+    }
+]
+
+
 # The map attached to the trip message: a neutral drawing, served as the signed URL of the file view.
 MOCK_IMAGE = "data:image/svg+xml," + quote(
     '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="140"><rect width="240" height="140" fill="#e8efe3"/>'
@@ -450,6 +540,11 @@ STATES = {
         _sensor("sensor.educartable_liaison_book_to_sign", 1, stale=[], messages=CARNET),
         _sensor("sensor.educartable_news", 3, stale=[], news=NEWS),
         _sensor("sensor.educartable_school_reports_to_sign", 1, stale=[], documents=DOCUMENTS),
+        _sensor("sensor.educartable_class_life", 2, stale=[], activities=ACTIVITIES),
+        _sensor("sensor.educartable_unread_notifications", 2, stale=[], notifications=NOTIFICATIONS),
+        _sensor(
+            "sensor.educartable_next_appointment", "2026-11-24T16:00:00+00:00", stale=[], appointments=APPOINTMENTS
+        ),
         *[_homework_sensor(ch, HOMEWORK[ch["id"]]) for ch in CHILDREN],
         _sensor(
             "sensor.educartable_last_update",
@@ -457,7 +552,7 @@ STATES = {
             stale=[],
             account={"name": "Parent"},
             children=CHILDREN,
-            panel_tabs=["homework", "words", "news", "documents"],
+            panel_tabs=["homework", "words", "news", "activities", "documents"],
             hide_header="off",
         ),
     ]
@@ -513,6 +608,8 @@ SHOTS = [
     {"file": "panel-words-dark", "theme": "dark", "panel": "words", "width": 960},
     {"file": "panel-news", "theme": "light", "panel": "news", "width": 960},
     {"file": "panel-news-dark", "theme": "dark", "panel": "news", "width": 960},
+    {"file": "panel-activities", "theme": "light", "panel": "activities", "width": 960},
+    {"file": "panel-activities-dark", "theme": "dark", "panel": "activities", "width": 960},
     {"file": "panel-documents", "theme": "light", "panel": "documents", "width": 960},
     {"file": "panel-documents-dark", "theme": "dark", "panel": "documents", "width": 960},
     # The conversation of a message with the teacher, opened under it (its survey above).

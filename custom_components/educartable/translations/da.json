@@ -107,11 +107,23 @@
       },
       "documents_to_sign": {
         "name": "Elevplaner der skal underskrives"
+      },
+      "activities": {
+        "name": "Klassens liv"
+      },
+      "notifications": {
+        "name": "Ulæste notifikationer"
+      },
+      "next_appointment": {
+        "name": "Næste aftale"
       }
     },
     "calendar": {
       "homework_calendar": {
         "name": "Lektier"
+      },
+      "events_calendar": {
+        "name": "Skolens begivenheder"
       }
     },
     "todo": {
@@ -274,6 +286,56 @@
           "description": "Navnet, der gemmes med underskriften, mindst 3 tegn, som i portalen."
         }
       }
+    },
+    "like_activity": {
+      "name": "Synes godt om et opslag",
+      "description": "Synes godt om et opslag i klassens liv, eller fortryd det.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "activity_id": {
+          "name": "Opslag",
+          "description": "Opslagets id, fra attributten activities på sensoren Klassens liv."
+        },
+        "liked": {
+          "name": "Synes godt om",
+          "description": "Slået fra for at fortryde."
+        }
+      }
+    },
+    "mark_notifications_read": {
+      "name": "Markér notifikationer som læst",
+      "description": "Markér en notifikation fra portalen som læst, eller alle.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "notification_id": {
+          "name": "Notifikation",
+          "description": "Notifikationens id, fra attributten notifications på sensoren Ulæste notifikationer; tom for alle."
+        }
+      }
+    },
+    "delete_comment": {
+      "name": "Slet en kommentar",
+      "description": "Slet en af dine egne kommentarer i samtalen om en besked med læreren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
+        },
+        "comment_id": {
+          "name": "Kommentar",
+          "description": "Id for en af dine kommentarer i samtalen."
+        }
+      }
     }
   },
   "exceptions": {
@@ -300,6 +362,9 @@
     },
     "notify_new_document": {
       "message": "Elevplan skal underskrives for {child}"
+    },
+    "notify_new_activity": {
+      "message": "Nyt i klassens liv for {child}"
     }
   },
   "selector": {
@@ -308,7 +373,8 @@
         "homework": "Lektier",
         "words": "Kontaktbog",
         "news": "Nyheder",
-        "documents": "Elevplaner"
+        "documents": "Elevplaner",
+        "activities": "Klassens liv"
       }
     },
     "hide_header": {
