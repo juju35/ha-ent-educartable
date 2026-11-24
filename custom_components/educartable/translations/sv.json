@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Logga in med användarnamnet (ofta din e-post) och lösenordet till Educartables föräldraportal som du fått av skolan.",
+        "data": {
+          "username": "Användarnamn",
+          "username_secret": "Användarnamnshemlighet",
+          "password": "Lösenord",
+          "password_secret": "Lösenordshemlighet",
+          "totp": "Engångskod"
+        },
+        "data_description": {
+          "username": "Lämna tomt för att läsa det från secrets.yaml.",
+          "username_secret": "Namnet på posten i secrets.yaml med användarnamnet, till exempel educartable_username.",
+          "password": "Lämna tomt för att läsa det från secrets.yaml.",
+          "password_secret": "Namnet på posten i secrets.yaml med lösenordet, till exempel educartable_password. Den läses igen vid varje uppdatering: efter ett lösenordsbyte räcker det att ändra hemligheten.",
+          "totp": "Bara om ditt konto har tvåstegsverifiering aktiverad."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable avvisade inloggningsuppgifterna för {username}. Ange de aktuella.",
+        "data": {
+          "username": "Användarnamn",
+          "username_secret": "Användarnamnshemlighet",
+          "password": "Lösenord",
+          "password_secret": "Lösenordshemlighet",
+          "totp": "Engångskod"
+        },
+        "data_description": {
+          "username": "Lämna tomt för att läsa det från secrets.yaml.",
+          "password": "Lämna tomt för att läsa det från secrets.yaml.",
+          "totp": "Bara om ditt konto har tvåstegsverifiering aktiverad."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ogiltigt användarnamn eller lösenord.",
+      "otp_required": "En engångskod krävs. Ange den aktuella koden från din autentiseringsapp.",
+      "cannot_connect": "Det går inte att nå Educartable. Försök igen.",
+      "password_or_secret": "Ange antingen ett lösenord eller ett hemlighetsnamn.",
+      "username_or_secret": "Ange antingen ett användarnamn eller ett hemlighetsnamn.",
+      "secret_not_found": "Posten saknas i secrets.yaml.",
+      "wrong_account": "Dessa inloggningsuppgifter hör till ett annat konto."
+    },
+    "abort": {
+      "already_configured": "Det här kontot är redan konfigurerat.",
+      "reauth_successful": "Inloggningsuppgifterna har uppdaterats.",
+      "wrong_account": "Dessa inloggningsuppgifter hör till ett annat konto."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable-alternativ",
+        "data": {
+          "scan_interval": "Uppdateringsintervall",
+          "homework_days": "Läxperiod",
+          "show_panel": "Visa den här panelen i sidofältet",
+          "panel_tabs": "Flikar som visas i panelen",
+          "hide_header": "Dölj det övre fältet"
+        },
+        "data_description": {
+          "scan_interval": "Educartable delas av hela skolan: minst 10 minuter.",
+          "homework_days": "Läxor med deadline inom så många dagar visas.",
+          "hide_header": "Den illustrerade rubriken ovanför flikarna; flikarna finns kvar och på en telefon flyttas menyknappen bredvid dem."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Kontaktbok att skriva under"
+      },
+      "news": {
+        "name": "Nyheter"
+      },
+      "homework": {
+        "name": "Läxor"
+      },
+      "last_update": {
+        "name": "Senaste uppdatering"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Uppdatera",
+      "description": "Hämta de senaste uppgifterna från Educartable direkt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot som ska uppdateras. Lämna tomt när bara ett är konfigurerat."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Det gick inte att uppdatera Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Inget Educartable-konto är konfigurerat."
+    },
+    "several_accounts": {
+      "message": "Flera Educartable-konton är konfigurerade: ange vilket som ska användas."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Läxor",
+        "words": "Kontaktbok",
+        "news": "Nyheter"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nej",
+        "all": "För alla",
+        "non_admin": "För icke-administratörer"
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Prihláste sa používateľským menom (často váš e-mail) a heslom rodinného portálu Educartable, ktoré ste dostali zo školy.",
+        "data": {
+          "username": "Používateľské meno",
+          "username_secret": "Tajomstvo používateľského mena",
+          "password": "Heslo",
+          "password_secret": "Tajomstvo hesla",
+          "totp": "Jednorazový kód"
+        },
+        "data_description": {
+          "username": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "username_secret": "Názov položky v secrets.yaml s používateľským menom, napríklad educartable_username.",
+          "password": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "password_secret": "Názov položky v secrets.yaml s heslom, napríklad educartable_password. Načíta sa znova pri každej aktualizácii: po zmene hesla stačí upraviť secret.",
+          "totp": "Len ak má váš účet zapnuté dvojfaktorové overenie."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable odmietol prihlasovacie údaje {username}. Zadajte aktuálne.",
+        "data": {
+          "username": "Používateľské meno",
+          "username_secret": "Tajomstvo používateľského mena",
+          "password": "Heslo",
+          "password_secret": "Tajomstvo hesla",
+          "totp": "Jednorazový kód"
+        },
+        "data_description": {
+          "username": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "password": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "totp": "Len ak má váš účet zapnuté dvojfaktorové overenie."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neplatné používateľské meno alebo heslo.",
+      "otp_required": "Vyžaduje sa jednorazový kód. Zadajte aktuálny kód z overovacej aplikácie.",
+      "cannot_connect": "Educartable nie je dostupný. Skúste to znova.",
+      "password_or_secret": "Zadajte buď heslo, alebo názov tajomstva.",
+      "username_or_secret": "Zadajte buď používateľské meno, alebo názov tajomstva.",
+      "secret_not_found": "Táto položka v secrets.yaml chýba.",
+      "wrong_account": "Tieto prihlasovacie údaje patria inému účtu."
+    },
+    "abort": {
+      "already_configured": "Tento účet je už nastavený.",
+      "reauth_successful": "Prihlasovacie údaje aktualizované.",
+      "wrong_account": "Tieto prihlasovacie údaje patria inému účtu."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Educartable",
+        "data": {
+          "scan_interval": "Interval aktualizácie",
+          "homework_days": "Obdobie úloh",
+          "show_panel": "Zobraziť tento panel na bočnom paneli",
+          "panel_tabs": "Karty zobrazené v paneli",
+          "hide_header": "Skryť horný panel"
+        },
+        "data_description": {
+          "scan_interval": "Educartable používa celá škola: minimálne 10 minút.",
+          "homework_days": "Zobrazujú sa úlohy s termínom v rámci tohto počtu dní.",
+          "hide_header": "Ilustrovaná hlavička nad kartami; karty zostanú a na telefóne sa tlačidlo ponuky presunie vedľa nich."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Žiacka knižka na podpis"
+      },
+      "news": {
+        "name": "Novinky"
+      },
+      "homework": {
+        "name": "Domáce úlohy"
+      },
+      "last_update": {
+        "name": "Posledná aktualizácia"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Obnoviť",
+      "description": "Hneď načítať najnovšie údaje z Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable na obnovenie. Nechajte prázdne, ak je nastavený len jeden."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Educartable sa nepodarilo obnoviť: {error}"
+    },
+    "no_account": {
+      "message": "Nie je nastavený žiadny účet Educartable."
+    },
+    "several_accounts": {
+      "message": "Je nastavených viac účtov Educartable: uveďte, ktorý sa má použiť."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Domáce úlohy",
+        "words": "Žiacka knižka",
+        "news": "Novinky"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nie",
+        "all": "Pre všetkých",
+        "non_admin": "Pre neadministrátorov"
+      }
+    }
+  }
+}

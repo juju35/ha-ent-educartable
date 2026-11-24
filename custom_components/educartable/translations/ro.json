@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Conectează-te cu numele de utilizator (adesea adresa ta de e-mail) și parola portalului pentru familii Educartable primite de la școală.",
+        "data": {
+          "username": "Nume de utilizator",
+          "username_secret": "Secretul numelui de utilizator",
+          "password": "Parolă",
+          "password_secret": "Secretul parolei",
+          "totp": "Cod unic"
+        },
+        "data_description": {
+          "username": "Lasă gol pentru a-l citi din secrets.yaml.",
+          "username_secret": "Numele intrării din secrets.yaml care conține numele de utilizator, de exemplu educartable_username.",
+          "password": "Lasă gol pentru a o citi din secrets.yaml.",
+          "password_secret": "Numele intrării din secrets.yaml care conține parola, de exemplu educartable_password. Este citită din nou la fiecare actualizare: după o schimbare de parolă, e suficient să editezi secretul.",
+          "totp": "Doar dacă pe contul tău este activată autentificarea în doi pași."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable a refuzat datele de autentificare ale {username}. Introdu-le pe cele actuale.",
+        "data": {
+          "username": "Nume de utilizator",
+          "username_secret": "Secretul numelui de utilizator",
+          "password": "Parolă",
+          "password_secret": "Secretul parolei",
+          "totp": "Cod unic"
+        },
+        "data_description": {
+          "username": "Lasă gol pentru a-l citi din secrets.yaml.",
+          "password": "Lasă gol pentru a-l citi din secrets.yaml.",
+          "totp": "Doar dacă pe contul tău este activată autentificarea în doi pași."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nume de utilizator sau parolă nevalide.",
+      "otp_required": "Este necesar un cod unic. Introdu codul actual din aplicația de autentificare.",
+      "cannot_connect": "Educartable nu poate fi contactat. Încearcă din nou.",
+      "password_or_secret": "Introdu fie o parolă, fie numele unui secret.",
+      "username_or_secret": "Introdu fie un nume de utilizator, fie numele unui secret.",
+      "secret_not_found": "Această intrare lipsește din secrets.yaml.",
+      "wrong_account": "Aceste date de autentificare aparțin altui cont."
+    },
+    "abort": {
+      "already_configured": "Acest cont este deja configurat.",
+      "reauth_successful": "Date de autentificare actualizate.",
+      "wrong_account": "Aceste date de autentificare aparțin altui cont."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opțiuni Educartable",
+        "data": {
+          "scan_interval": "Interval de actualizare",
+          "homework_days": "Perioada temelor",
+          "show_panel": "Afișează acest panou în bara laterală",
+          "panel_tabs": "File afișate în panou",
+          "hide_header": "Ascunde bara de sus"
+        },
+        "data_description": {
+          "scan_interval": "Educartable este folosit de toată școala: minimum 10 minute.",
+          "homework_days": "Sunt afișate temele cu termen în acest număr de zile.",
+          "hide_header": "Antetul ilustrat de deasupra filelor; filele rămân, iar pe telefon butonul de meniu trece lângă ele."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Carnet de corespondență de semnat"
+      },
+      "news": {
+        "name": "Noutăți"
+      },
+      "homework": {
+        "name": "Teme"
+      },
+      "last_update": {
+        "name": "Ultima actualizare"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Reîmprospătează",
+      "description": "Preia imediat cele mai noi date de la Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable de reîmprospătat. Lasă gol când este configurat unul singur."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Educartable nu a putut fi reîmprospătat: {error}"
+    },
+    "no_account": {
+      "message": "Niciun cont Educartable configurat."
+    },
+    "several_accounts": {
+      "message": "Sunt configurate mai multe conturi Educartable: indică pe care să-l folosești."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Teme",
+        "words": "Carnet de corespondență",
+        "news": "Noutăți"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nu",
+        "all": "Pentru toți",
+        "non_admin": "Pentru non-administratori"
+      }
+    }
+  }
+}

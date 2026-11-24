@@ -1,0 +1,169 @@
+// Educartable's sidebar badge, loaded on every page: the number of things to deal with on the panel's sidebar item —
+// liaison-book messages to sign and homework to do, summed over every account and child — in the accent colour, like
+// Home Assistant's own notifications count. The counts are the states of the sensors (carnet_to_sign, one homework
+// sensor per child), found by their own attributes, which Home Assistant keeps up to date; the badge
+// follows them. The last value is kept by the browser, so the sidebar shows it at once.
+var EDUCARTABLE_COUNT_KEY = 'educartable-count';
+var EDUCARTABLE_EVERY_MS = 15000;
+// The badge takes the accent colour; its text is white.
+var EDUCARTABLE_BADGE_COLOR = 'var(--primary-color, #3f51b5)';
+// A sensor counted in the badge carries one of these attributes: `messages` is the liaison book to sign, `homework`
+// a child's homework to do (news are left out on purpose).
+var EDUCARTABLE_COUNT_ATTRS = ['homework', 'messages'];
+
+function educartableBadgeSaved() {
+  try {
+    var n = parseInt(localStorage.getItem(EDUCARTABLE_COUNT_KEY), 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  } catch (_err) {
+    return 0;
+  }
+}
+window.__educartableBadgeCount ??= educartableBadgeSaved();
+
+// The Educartable item in Home Assistant's sidebar, or null until the sidebar is drawn. The recent sidebar gives each
+// item the id `sidebar-panel-<path>` and sets its href as a property (not an attribute), so the id is the reliable
+// hook; `[href]` and `[data-panel]` catch the older sidebars (an <a> wrapping a paper-icon-item).
+function educartableSidebarItem() {
+  var ha = document.querySelector('home-assistant')?.shadowRoot;
+  var sidebar = ha?.querySelector('home-assistant-main')?.shadowRoot?.querySelector('ha-sidebar')?.shadowRoot;
+  if (!sidebar) return null;
+  return (
+    sidebar.querySelector('#sidebar-panel-educartable') ||
+    sidebar.querySelector('[href="/educartable"]') ||
+    sidebar.querySelector('[data-panel="educartable"]')
+  );
+}
+
+// One badge span, styled as Home Assistant's own sidebar badge (class `badge`, so the sidebar's CSS places it and
+// shows or hides it by slot and expanded state) but in the accent colour instead of the default.
+function educartableBadgeSpan(text, slot, key) {
+  var el = document.createElement('span');
+  el.className = 'badge educartable-badge';
+  el.slot = slot;
+  el.dataset.key = key;
+  el.textContent = text;
+  // The start badge (shown collapsed, over the icon) is placed by Home Assistant's `ha-svg-icon + .badge` rule — but a
+  // custom panel's sidebar icon is an <ha-icon>, not a bare <ha-svg-icon>, so that rule does not match and the badge
+  // would sit in the start slot, beside the icon. Position it ourselves (over the icon, like Home Assistant's own: top
+  // var(--ha-space-1), left 26px) so it never affects the row's layout; the end badge stays in flow at the trailing
+  // edge. The host's expanded/collapsed opacity rules still show the right one by slot.
+  var place = slot === 'start' ? 'position:absolute; top:var(--ha-space-1, 4px); left:26px; z-index:1; pointer-events:none; ' : '';
+  el.style.cssText = `${place}display:inline-flex; justify-content:center; min-width:18px; height:18px; box-sizing:border-box; padding:0 5px; align-items:center; border-radius:9px; font-size:11px; font-weight:500; line-height:1; color:#fff; background:${EDUCARTABLE_BADGE_COLOR};`;
+  return el;
+}
+
+// The badge on the sidebar item: the number of things to deal with, like the notifications count; none when there is
+// nothing. On the recent sidebar (ha-list-item-button / ha-md-list-item) it mirrors Home Assistant's own badge — a
+// span in the start slot (shown when the sidebar is collapsed, over the icon) and one in the end slot (shown when
+// expanded) — so the sidebar's CSS handles the placement and the collapsed/expanded switch. On the older sidebar (an
+// <a>) a single span is placed at the right. Redrawn when Home Assistant rebuilds its items; unchanged, it writes
+// nothing (so the observer below does not loop).
+function educartableBadgeRedraw() {
+  var item = educartableSidebarItem();
+  if (!item) return false;
+  var count = window.__educartableBadgeCount;
+  var spans = item.querySelectorAll(':scope > .educartable-badge');
+  if (!count) {
+    for (var b of spans) b.remove();
+    return true;
+  }
+  var text = count > 99 ? '99+' : String(count);
+  var key = text;
+  if (item.localName === 'a') {
+    var badge = spans[0];
+    if (badge && badge.dataset.key === key) return true;
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'educartable-badge';
+      item.style.position = 'relative';
+      item.appendChild(badge);
+    }
+    badge.dataset.key = key;
+    badge.textContent = text;
+    badge.style.cssText = `position:absolute; right:12px; top:50%; transform:translateY(-50%); min-width:18px; height:18px; box-sizing:border-box; padding:0 5px; display:inline-flex; align-items:center; justify-content:center; border-radius:9px; font-size:11px; font-weight:500; line-height:1; pointer-events:none; z-index:1; color:#fff; background:${EDUCARTABLE_BADGE_COLOR};`;
+    return true;
+  }
+  if (spans.length === 2 && spans[0].dataset.key === key) return true;
+  for (var old of spans) old.remove();
+  // The start badge goes right after the icon, so the sidebar's `ha-svg-icon + .badge` rule places it over the icon.
+  var icon = item.querySelector(':scope > ha-svg-icon[slot="start"]') || item.querySelector(':scope > ha-icon[slot="start"]');
+  var start = educartableBadgeSpan(text, 'start', key);
+  if (icon) item.insertBefore(start, icon.nextSibling);
+  else item.appendChild(start);
+  item.appendChild(educartableBadgeSpan(text, 'end', key));
+  return true;
+}
+
+// Until the sidebar has drawn the item (it may come after this module): every 250 ms for 5 seconds
+function educartableBadgeRedrawSoon(tries = 20) {
+  if (educartableBadgeRedraw() || tries <= 1) return;
+  setTimeout(() => educartableBadgeRedrawSoon(tries - 1), 250);
+}
+
+// The sidebar rebuilds its items (opened, folded, panels changed): the badge is added again when it is dropped
+function educartableBadgeObserve() {
+  var item = educartableSidebarItem();
+  var sidebar = item?.getRootNode();
+  if (!sidebar) {
+    setTimeout(educartableBadgeObserve, 500);
+    return;
+  }
+  if (sidebar.__educartableBadgeObserved) return;
+  sidebar.__educartableBadgeObserved = true;
+  new MutationObserver(() => {
+    if (window.__educartableBadgeRaf) return;
+    window.__educartableBadgeRaf = requestAnimationFrame(() => {
+      window.__educartableBadgeRaf = 0;
+      educartableBadgeRedraw();
+    });
+  }).observe(sidebar, { childList: true, subtree: true });
+}
+
+// The count: the badge drawn again when it changes, kept for the next page
+function educartableSetBadge(count) {
+  count = Math.max(0, parseInt(count, 10) || 0);
+  if (window.__educartableBadgeCount === count) return;
+  window.__educartableBadgeCount = count;
+  try {
+    localStorage.setItem(EDUCARTABLE_COUNT_KEY, String(count));
+  } catch (_err) {
+    // drawn anyway, not kept
+  }
+  educartableBadgeRedraw();
+}
+
+// The things to deal with: the sum of the Educartable count sensors' states (liaison book to sign, homework to do),
+// over every account and child. A sensor is one of those when it carries the matching attribute; the platform
+// is checked too when the registry is loaded.
+function educartableCount(hass) {
+  var states = hass?.states;
+  if (!states) return 0;
+  var total = 0;
+  for (var id in states) {
+    if (!id.startsWith('sensor.')) continue;
+    var st = states[id];
+    var attrs = st?.attributes;
+    if (!attrs || !EDUCARTABLE_COUNT_ATTRS.some((a) => a in attrs)) continue;
+    if (hass.entities?.[id] && hass.entities[id].platform !== 'educartable') continue;
+    var n = Number(st.state);
+    if (Number.isFinite(n)) total += n;
+  }
+  return total;
+}
+
+// The counts read from the sensors, reported for the sidebar badge
+function educartableFollow() {
+  var hass = document.querySelector('home-assistant')?.hass;
+  if (!hass?.user?.is_admin || document.hidden) return;
+  educartableSetBadge(educartableCount(hass));
+}
+
+if (!window.__educartableBadge_init) {
+  window.__educartableBadge_init = true;
+  educartableBadgeRedrawSoon();
+  educartableBadgeObserve();
+  // The counts read a few seconds after the page, once Home Assistant has drawn it, then every 15 seconds
+  setTimeout(educartableFollow, 3000);
+  setInterval(educartableFollow, EDUCARTABLE_EVERY_MS);
+}

@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Увійдіть з іменем користувача (часто це ваш e-mail) і паролем сімейного порталу Educartable, виданими школою.",
+        "data": {
+          "username": "Ім'я користувача",
+          "username_secret": "Секрет імені користувача",
+          "password": "Пароль",
+          "password_secret": "Секрет пароля",
+          "totp": "Одноразовий код"
+        },
+        "data_description": {
+          "username": "Залиште порожнім, щоб читати його з secrets.yaml.",
+          "username_secret": "Назва запису в secrets.yaml з іменем користувача, наприклад educartable_username.",
+          "password": "Залиште порожнім, щоб читати його з secrets.yaml.",
+          "password_secret": "Назва запису в secrets.yaml з паролем, наприклад educartable_password. Його заново читають під час кожного оновлення: після зміни пароля досить змінити секрет.",
+          "totp": "Лише якщо для вашого облікового запису ввімкнено двофакторну автентифікацію."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable відхилив облікові дані {username}. Введіть чинні.",
+        "data": {
+          "username": "Ім'я користувача",
+          "username_secret": "Секрет імені користувача",
+          "password": "Пароль",
+          "password_secret": "Секрет пароля",
+          "totp": "Одноразовий код"
+        },
+        "data_description": {
+          "username": "Залиште порожнім, щоб читати його з secrets.yaml.",
+          "password": "Залиште порожнім, щоб читати його з secrets.yaml.",
+          "totp": "Лише якщо для вашого облікового запису ввімкнено двофакторну автентифікацію."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неправильне ім'я користувача або пароль.",
+      "otp_required": "Потрібен одноразовий код. Введіть поточний код із застосунку-автентифікатора.",
+      "cannot_connect": "Не вдається зв'язатися з Educartable. Спробуйте ще раз.",
+      "password_or_secret": "Введіть або пароль, або ім'я секрету.",
+      "username_or_secret": "Введіть або ім'я користувача, або ім'я секрету.",
+      "secret_not_found": "Цього запису немає в secrets.yaml.",
+      "wrong_account": "Ці облікові дані належать іншому обліковому запису."
+    },
+    "abort": {
+      "already_configured": "Цей обліковий запис уже налаштовано.",
+      "reauth_successful": "Облікові дані оновлено.",
+      "wrong_account": "Ці облікові дані належать іншому обліковому запису."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметри Educartable",
+        "data": {
+          "scan_interval": "Інтервал оновлення",
+          "homework_days": "Період домашніх завдань",
+          "show_panel": "Показувати цю панель на бічній панелі",
+          "panel_tabs": "Вкладки на панелі",
+          "hide_header": "Приховати верхню панель"
+        },
+        "data_description": {
+          "scan_interval": "Educartable використовує вся школа: щонайменше 10 хвилин.",
+          "homework_days": "Показуються домашні завдання з терміном у межах цієї кількості днів.",
+          "hide_header": "Ілюстрований заголовок над вкладками; вкладки залишаються, а на телефоні кнопка меню переходить до них."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Щоденник на підпис"
+      },
+      "news": {
+        "name": "Новини"
+      },
+      "homework": {
+        "name": "Домашні завдання"
+      },
+      "last_update": {
+        "name": "Останнє оновлення"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Оновити",
+      "description": "Одразу отримати найсвіжіші дані з Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Обліковий запис",
+          "description": "Обліковий запис Educartable для оновлення. Залиште порожнім, якщо налаштовано лише один."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Не вдалося оновити Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Не налаштовано жодного облікового запису Educartable."
+    },
+    "several_accounts": {
+      "message": "Налаштовано кілька облікових записів Educartable: укажіть, який використовувати."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Домашні завдання",
+        "words": "Щоденник",
+        "news": "Новини"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Ні",
+        "all": "Для всіх",
+        "non_admin": "Для не-адміністраторів"
+      }
+    }
+  }
+}

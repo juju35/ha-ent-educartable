@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for the ENT ONE integration
+about: Suggest an idea for the Educartable integration
 title: "[Feature] "
 labels: enhancement
 assignees: ""

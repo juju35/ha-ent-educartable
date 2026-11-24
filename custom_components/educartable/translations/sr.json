@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Пријавите се корисничким именом (често вашом е-адресом) и лозинком за породични портал Educartable које сте добили од школе.",
+        "data": {
+          "username": "Корисничко име",
+          "username_secret": "Тајна корисничког имена",
+          "password": "Лозинка",
+          "password_secret": "Тајна лозинке",
+          "totp": "Једнократни код"
+        },
+        "data_description": {
+          "username": "Оставите празно да би се читало из secrets.yaml.",
+          "username_secret": "Назив ставке у secrets.yaml која садржи корисничко име, на пример educartable_username.",
+          "password": "Оставите празно да би се читала из secrets.yaml.",
+          "password_secret": "Назив ставке у secrets.yaml која садржи лозинку, на пример educartable_password. Чита се поново при сваком ажурирању: после промене лозинке довољно је изменити тајну.",
+          "totp": "Само ако је на вашем налогу укључена двофакторска аутентификација."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable је одбио податке за пријаву за {username}. Унесите тренутне.",
+        "data": {
+          "username": "Корисничко име",
+          "username_secret": "Тајна корисничког имена",
+          "password": "Лозинка",
+          "password_secret": "Тајна лозинке",
+          "totp": "Једнократни код"
+        },
+        "data_description": {
+          "username": "Оставите празно да би се читало из secrets.yaml.",
+          "password": "Оставите празно да би се читало из secrets.yaml.",
+          "totp": "Само ако је на вашем налогу укључена двофакторска аутентификација."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неважеће корисничко име или лозинка.",
+      "otp_required": "Потребан је једнократни код. Унесите тренутни код из апликације за аутентификацију.",
+      "cannot_connect": "Educartable није доступан. Покушајте поново.",
+      "password_or_secret": "Унесите или лозинку или назив тајне.",
+      "username_or_secret": "Унесите или корисничко име или назив тајне.",
+      "secret_not_found": "Овај унос недостаје у secrets.yaml.",
+      "wrong_account": "Ови подаци за пријаву припадају другом налогу."
+    },
+    "abort": {
+      "already_configured": "Овај налог је већ подешен.",
+      "reauth_successful": "Подаци за пријаву су ажурирани.",
+      "wrong_account": "Ови подаци за пријаву припадају другом налогу."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Опције Educartable",
+        "data": {
+          "scan_interval": "Интервал ажурирања",
+          "homework_days": "Период домаћих задатака",
+          "show_panel": "Прикажи овај панел на бочној траци",
+          "panel_tabs": "Картице приказане на панелу",
+          "hide_header": "Сакриј горњу траку"
+        },
+        "data_description": {
+          "scan_interval": "Educartable користи цела школа: најмање 10 минута.",
+          "homework_days": "Приказују се домаћи задаци са роком у оквиру овог броја дана.",
+          "hide_header": "Илустровано заглавље изнад картица; картице остају, а на телефону дугме менија прелази поред њих."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Ђачка књижица за потписивање"
+      },
+      "news": {
+        "name": "Вести"
+      },
+      "homework": {
+        "name": "Домаћи задаци"
+      },
+      "last_update": {
+        "name": "Последње ажурирање"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Освежи",
+      "description": "Одмах преузми најновије податке са Educartable.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Налог",
+          "description": "Educartable налог за освежавање. Оставите празно када је подешен само један."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Освежавање Educartable није успело: {error}"
+    },
+    "no_account": {
+      "message": "Није подешен ниједан Educartable налог."
+    },
+    "several_accounts": {
+      "message": "Подешено је више Educartable налога: наведите који да се користи."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Домаћи",
+        "words": "Ђачка књижица",
+        "news": "Вести"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Не",
+        "all": "За све",
+        "non_admin": "За кориснике који нису администратори"
+      }
+    }
+  }
+}

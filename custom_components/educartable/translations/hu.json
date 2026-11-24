@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Jelentkezz be az iskolától kapott Educartable családi portál felhasználónevével (gyakran az e-mail-címed) és jelszavával.",
+        "data": {
+          "username": "Felhasználónév",
+          "username_secret": "Felhasználónév titok",
+          "password": "Jelszó",
+          "password_secret": "Jelszó titok",
+          "totp": "Egyszer használatos kód"
+        },
+        "data_description": {
+          "username": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "username_secret": "A felhasználónevet tartalmazó secrets.yaml bejegyzés neve, például educartable_username.",
+          "password": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "password_secret": "A jelszót tartalmazó secrets.yaml bejegyzés neve, például educartable_password. Minden frissítéskor újra beolvassa: jelszócsere után elég a titkot módosítani.",
+          "totp": "Csak ha a fiókodban be van kapcsolva a kétlépcsős azonosítás."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Az Educartable elutasította {username} belépési adatait. Add meg az aktuálisakat.",
+        "data": {
+          "username": "Felhasználónév",
+          "username_secret": "Felhasználónév titok",
+          "password": "Jelszó",
+          "password_secret": "Jelszó titok",
+          "totp": "Egyszer használatos kód"
+        },
+        "data_description": {
+          "username": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "password": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "totp": "Csak ha a fiókodban be van kapcsolva a kétlépcsős azonosítás."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Érvénytelen felhasználónév vagy jelszó.",
+      "otp_required": "Egyszer használatos kód szükséges. Add meg a hitelesítő alkalmazásod aktuális kódját.",
+      "cannot_connect": "Az Educartable nem érhető el. Próbáld újra.",
+      "password_or_secret": "Adj meg vagy egy jelszót, vagy egy titok nevét.",
+      "username_or_secret": "Adj meg vagy egy felhasználónevet, vagy egy titok nevét.",
+      "secret_not_found": "Ez a bejegyzés hiányzik a secrets.yaml fájlból.",
+      "wrong_account": "Ezek a belépési adatok egy másik fiókhoz tartoznak."
+    },
+    "abort": {
+      "already_configured": "Ez a fiók már be van állítva.",
+      "reauth_successful": "A belépési adatok frissítve.",
+      "wrong_account": "Ezek a belépési adatok egy másik fiókhoz tartoznak."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable beállításai",
+        "data": {
+          "scan_interval": "Frissítési időköz",
+          "homework_days": "Házi feladatok időszaka",
+          "show_panel": "A panel megjelenítése az oldalsávon",
+          "panel_tabs": "A panelen látható lapok",
+          "hide_header": "Felső sáv elrejtése"
+        },
+        "data_description": {
+          "scan_interval": "Az Educartable-t az egész iskola használja: legalább 10 perc.",
+          "homework_days": "Az ennyi napon belül esedékes házi feladatok jelennek meg.",
+          "hide_header": "A fülek feletti illusztrált fejléc; a fülek megmaradnak, telefonon a menügomb melléjük kerül."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Aláírandó üzenőfüzet"
+      },
+      "news": {
+        "name": "Hírek"
+      },
+      "homework": {
+        "name": "Házi feladatok"
+      },
+      "last_update": {
+        "name": "Utolsó frissítés"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Frissítés",
+      "description": "Azonnal lekéri a legfrissebb adatokat az Educartable-ből.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "A frissítendő Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Az Educartable frissítése nem sikerült: {error}"
+    },
+    "no_account": {
+      "message": "Nincs beállított Educartable-fiók."
+    },
+    "several_accounts": {
+      "message": "Több Educartable-fiók van beállítva: add meg, melyiket használja."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Házi feladatok",
+        "words": "Üzenőfüzet",
+        "news": "Hírek"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nem",
+        "all": "Mindenkinek",
+        "non_admin": "Nem rendszergazdáknak"
+      }
+    }
+  }
+}

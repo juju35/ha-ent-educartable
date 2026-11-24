@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug with the ENT ONE integration
+about: Report a bug with the Educartable integration
 title: "[Bug] "
 labels: bug
 assignees: ""
@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Card configuration (never share your password or children's data):**
 ```yaml
-type: custom:ent-one-card
+type: custom:educartable-card
 config_entry_id: <optional>
 ```
 

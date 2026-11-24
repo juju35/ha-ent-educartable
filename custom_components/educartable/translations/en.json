@@ -57,11 +57,15 @@
         "title": "Educartable options",
         "data": {
           "scan_interval": "Update interval",
-          "homework_days": "Homework window"
+          "homework_days": "Homework window",
+          "show_panel": "Show the Educartable panel in the sidebar",
+          "panel_tabs": "Tabs shown in the panel",
+          "hide_header": "Hide the top bar"
         },
         "data_description": {
           "scan_interval": "Educartable is shared by the whole school: 10 minutes minimum.",
-          "homework_days": "Homework due within this many days is shown."
+          "homework_days": "Homework due within this many days is shown.",
+          "hide_header": "The illustrated header above the tabs; the tabs stay, and on a phone the menu button moves beside them."
         }
       }
     }
@@ -76,6 +80,9 @@
       },
       "homework": {
         "name": "Homework to do"
+      },
+      "last_update": {
+        "name": "Last update"
       }
     }
   },
@@ -100,6 +107,22 @@
     },
     "several_accounts": {
       "message": "Several Educartable accounts are configured: name the one to use."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Homework",
+        "words": "Liaison book",
+        "news": "News"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "No",
+        "all": "For everyone",
+        "non_admin": "For non-admins"
+      }
     }
   }
 }

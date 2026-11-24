@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Educartable",
+        "description": "Log ind med brugernavnet (ofte din e-mail) og adgangskoden til Educartables forældreportal, som du har fået af skolen.",
+        "data": {
+          "username": "Brugernavn",
+          "username_secret": "Brugernavn-secret",
+          "password": "Adgangskode",
+          "password_secret": "Adgangskode-secret",
+          "totp": "Engangskode"
+        },
+        "data_description": {
+          "username": "Lad stå tomt for at læse det fra secrets.yaml.",
+          "username_secret": "Navnet på posten i secrets.yaml med brugernavnet, for eksempel educartable_username.",
+          "password": "Lad stå tomt for at læse den fra secrets.yaml.",
+          "password_secret": "Navnet på posten i secrets.yaml med adgangskoden, for eksempel educartable_password. Den læses igen ved hver opdatering: efter en ændring af adgangskoden er det nok at rette secret'en.",
+          "totp": "Kun hvis din konto har totrinsbekræftelse slået til."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Educartable",
+        "description": "Educartable afviste loginoplysningerne for {username}. Indtast de nuværende.",
+        "data": {
+          "username": "Brugernavn",
+          "username_secret": "Brugernavn-secret",
+          "password": "Adgangskode",
+          "password_secret": "Adgangskode-secret",
+          "totp": "Engangskode"
+        },
+        "data_description": {
+          "username": "Lad stå tomt for at læse det fra secrets.yaml.",
+          "password": "Lad stå tomt for at læse det fra secrets.yaml.",
+          "totp": "Kun hvis din konto har totrinsbekræftelse slået til."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ugyldigt brugernavn eller adgangskode.",
+      "otp_required": "Der kræves en engangskode. Indtast den aktuelle kode fra din godkendelsesapp.",
+      "cannot_connect": "Kan ikke nå Educartable. Prøv igen.",
+      "password_or_secret": "Angiv enten en adgangskode eller et secret-navn.",
+      "username_or_secret": "Angiv enten et brugernavn eller et secret-navn.",
+      "secret_not_found": "Denne post mangler i secrets.yaml.",
+      "wrong_account": "Disse loginoplysninger hører til en anden konto."
+    },
+    "abort": {
+      "already_configured": "Denne konto er allerede konfigureret.",
+      "reauth_successful": "Loginoplysninger opdateret.",
+      "wrong_account": "Disse loginoplysninger hører til en anden konto."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Educartable-indstillinger",
+        "data": {
+          "scan_interval": "Opdateringsinterval",
+          "homework_days": "Lektieperiode",
+          "show_panel": "Vis dette panel i sidebjælken",
+          "panel_tabs": "Faner vist i panelet",
+          "hide_header": "Skjul den øverste bjælke"
+        },
+        "data_description": {
+          "scan_interval": "Educartable deles af hele skolen: mindst 10 minutter.",
+          "homework_days": "Lektier med frist inden for så mange dage vises.",
+          "hide_header": "Den illustrerede overskrift over fanerne; fanerne bliver, og på en telefon flytter menuknappen ved siden af dem."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "carnet_to_sign": {
+        "name": "Kontaktbog til underskrift"
+      },
+      "news": {
+        "name": "Nyheder"
+      },
+      "homework": {
+        "name": "Lektier"
+      },
+      "last_update": {
+        "name": "Seneste opdatering"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Opdater",
+      "description": "Hent de nyeste data fra Educartable med det samme.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Den Educartable-konto, der skal opdateres. Lad stå tomt, når der kun er én."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Kunne ikke opdatere Educartable: {error}"
+    },
+    "no_account": {
+      "message": "Ingen Educartable-konto er sat op."
+    },
+    "several_accounts": {
+      "message": "Flere Educartable-konti er sat op: angiv, hvilken der skal bruges."
+    }
+  },
+  "selector": {
+    "panel_tabs": {
+      "options": {
+        "homework": "Lektier",
+        "words": "Kontaktbog",
+        "news": "Nyheder"
+      }
+    },
+    "hide_header": {
+      "options": {
+        "off": "Nej",
+        "all": "For alle",
+        "non_admin": "For ikke-administratorer"
+      }
+    }
+  }
+}

@@ -9,6 +9,9 @@
       },
       "homework": {
         "default": "mdi:book-open-variant"
+      },
+      "last_update": {
+        "default": "mdi:clock-check-outline"
       }
     }
   },
