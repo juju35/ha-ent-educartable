@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Pēdējā atjaunināšana"
+      },
+      "documents_to_sign": {
+        "name": "Parakstāmās liecības"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
         }
       }
+    },
+    "reply": {
+      "name": "Atbildēt skolotājam",
+      "description": "Rakstīt privātajā saziņā par ziņu ar skolotāju. Gaidītā atbilde tiek reģistrēta kā sniegta.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
+        },
+        "text": {
+          "name": "Teksts",
+          "description": "Ko rakstīt skolotājam."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Rakstīt skolotājam",
+      "description": "Nosūtīt jaunu ziņu izvēlēto bērnu skolotājam (viena ziņa katrai klasei).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "children": {
+          "name": "Bērni",
+          "description": "Bērnu ID no sensora Pēdējā atjaunināšana atribūta children."
+        },
+        "title": {
+          "name": "Temats",
+          "description": "Ziņas temats."
+        },
+        "text": {
+          "name": "Teksts",
+          "description": "Ziņa."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Atbildēt uz aptauju",
+      "description": "Atbildēt uz ziņas aptauju par attiecīgajiem bērniem; iepriekšējā atbilde tiek aizstāta.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
+        },
+        "answers": {
+          "name": "Atbildes",
+          "description": "Katrs jautājuma ID ar izvēlēto variantu ID no ziņas atribūta survey."
+        },
+        "children": {
+          "name": "Bērni",
+          "description": "Bērnu ID, par kuriem atbildēt; tukšs — par visiem."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Rezervēt tikšanos",
+      "description": "Rezervēt brīvu vecāku sapulces laiku bērnam.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "slot_id": {
+          "name": "Laiks",
+          "description": "Laika ID no ziņas atribūta slots."
+        },
+        "child_id": {
+          "name": "Bērns",
+          "description": "Bērns, kuram ir tikšanās; vajadzīgs, ja vairākiem bērniem tās vēl nav."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Atcelt tikšanos",
+      "description": "Atcelt laiku, kas rezervēts kādam no bērniem.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "slot_id": {
+          "name": "Laiks",
+          "description": "Rezervēta laika ID no ziņas atribūta slots."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Parakstīt liecību",
+      "description": "Parakstīt liecību vai apliecinājumu kā apskatītu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "document_id": {
+          "name": "Dokuments",
+          "description": "Dokumenta ID no sensora Parakstāmās liecības atribūta documents."
+        },
+        "name": {
+          "name": "Parakstītāja vārds",
+          "description": "Vārds, kas tiek saglabāts ar parakstu, vismaz 3 rakstzīmes, kā portālā."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Skolas jaunums"
+    },
+    "notify_new_document": {
+      "message": "Parakstāma liecība: {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Mājasdarbi",
         "words": "Dienasgrāmata",
-        "news": "Jaunumi"
+        "news": "Jaunumi",
+        "documents": "Liecības"
       }
     },
     "hide_header": {

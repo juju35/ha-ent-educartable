@@ -83,6 +83,7 @@ export function educartableAccounts(hass) {
     if (!entry) return;
     var acc = (accounts[entry] = accounts[entry] || { entryId: entry, homework: [] });
     if ('children' in at) acc.last = st;
+    else if ('documents' in at) acc.documents = st;
     else if ('homework' in at) acc.homework.push(st);
     else if ('news' in at) acc.news = st;
     else if ('messages' in at) acc.carnet = st;
@@ -101,7 +102,7 @@ export function educartableData(hass, entryId) {
   var down = (st) => !st || st.state === 'unavailable' || st.state === 'unknown';
   var last = acc.last;
   var stale = [];
-  [acc.carnet, acc.news, last].forEach((st) => {
+  [acc.carnet, acc.news, acc.documents, last].forEach((st) => {
     (st?.attributes?.stale || []).forEach((s) => {
       if (stale.indexOf(s) === -1) stale.push(s);
     });
@@ -121,16 +122,18 @@ export function educartableData(hass, entryId) {
     words: a(acc.carnet, 'messages').map((m) => Object.assign({}, m, { signed: !m.to_sign })),
     homework: homework,
     news: a(acc.news, 'news'),
+    // The livret: school reports and attestations, signed as consulted.
+    documents: a(acc.documents, 'documents'),
     children: a(last, 'children').map((ch) => Object.assign({}, ch, { first_name: ch.firstname || ch.name || '' })),
     account: last?.attributes?.account || {},
     url: EDUCARTABLE_URL,
     // Tabs of the panel shown (integration option); all of them before the option exists.
-    panelTabs: Array.isArray(last?.attributes?.panel_tabs) ? last.attributes.panel_tabs : ['homework', 'words', 'news'],
+    panelTabs: Array.isArray(last?.attributes?.panel_tabs) ? last.attributes.panel_tabs : ['homework', 'words', 'news', 'documents'],
     // Who the panel's top bar is hidden for (integration option): off, all or non_admin.
     hideHeader: last?.attributes?.hide_header || 'off',
     updated: last && !down(last) ? last.state : null,
     stale: stale,
-    states: [acc.carnet, acc.news, last].concat(acc.homework),
+    states: [acc.carnet, acc.news, acc.documents, last].concat(acc.homework),
   };
 }
 
@@ -223,17 +226,51 @@ export function educartableSetDone(hass, entryId, item, done) {
   return hass.callWS({ type: 'educartable/homework_done', config_entry_id: entryId, child_id: String(item.child_id), homework_id: String(item.id), done: !!done });
 }
 
+// The private conversation of a message with the teacher, and writing in it or to the teacher (administrators).
+export function educartableComments(hass, entryId, id) {
+  return hass.callWS({ type: 'educartable/comments', config_entry_id: entryId, message_id: String(id) }).then((res) => res.comments || []);
+}
+
+export function educartableReply(hass, entryId, id, text) {
+  return hass.callService('educartable', 'reply', { config_entry_id: entryId, message_id: String(id), text: String(text) });
+}
+
+export function educartableWrite(hass, entryId, children, title, text) {
+  return hass.callService('educartable', 'write_message', { config_entry_id: entryId, children: children.map(String), title: String(title), text: String(text) });
+}
+
+// answers: question id → the option ids chosen.
+export function educartableAnswerSurvey(hass, entryId, id, answers) {
+  return hass.callService('educartable', 'answer_survey', { config_entry_id: entryId, message_id: String(id), answers: answers });
+}
+
+export function educartableBook(hass, entryId, slotId, childId) {
+  var data = { config_entry_id: entryId, slot_id: String(slotId) };
+  if (childId) data.child_id = String(childId);
+  return hass.callService('educartable', 'book_appointment', data);
+}
+
+export function educartableCancelBooking(hass, entryId, slotId) {
+  return hass.callService('educartable', 'cancel_appointment', { config_entry_id: entryId, slot_id: String(slotId) });
+}
+
+export function educartableSignDocument(hass, entryId, id, name) {
+  return hass.callService('educartable', 'sign_document', { config_entry_id: entryId, document_id: String(id), name: String(name || '') });
+}
+
 // Attachments are fetched through Home Assistant (the browser has no portal session) with a signed URL, signed for an
 // hour and reused for 50 minutes; images and PDFs shown in the page are drawn from a blob: URL, kept for the page's life.
 export var educartableSigned = {};
 export var EDUCARTABLE_SIGN_REUSE = 50 * 60 * 1000;
 export var educartableBlobs = {};
 
+// A media of a message ({id, name}) or a livret document's PDF ({document, name}).
 export function educartableFileUrl(hass, entryId, media) {
-  var key = entryId + ' ' + media.id;
+  var key = entryId + ' ' + (media.document ? 'doc ' + media.document : media.id);
   var hit = educartableSigned[key];
   if (hit && Date.now() - hit.at < EDUCARTABLE_SIGN_REUSE) return hit.promise;
-  var path = `/api/educartable/file/${entryId}?media=${encodeURIComponent(media.id)}&name=${encodeURIComponent(media.name || '')}`;
+  var which = media.document ? 'document=' + encodeURIComponent(media.document) : 'media=' + encodeURIComponent(media.id);
+  var path = `/api/educartable/file/${entryId}?${which}&name=${encodeURIComponent(media.name || '')}`;
   var entry = { at: Date.now() };
   entry.promise = hass.callWS({ type: 'auth/sign_path', path: path, expires: 3600 }).then((res) => res.path);
   entry.promise.catch(() => {
@@ -333,6 +370,8 @@ function educartableMore(item, key, opts) {
   var open = !!(opts?.full || opts?.isOpen?.(key));
   var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0);
   var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) : '';
+  // The panel adds what can be done on the message (survey, appointment, conversation) under it.
+  if (open && opts?.extra) body += opts.extra(item);
   return { tg: tg, body: body };
 }
 
@@ -387,13 +426,31 @@ export function educartableNewsRow(n, t, locale, opts) {
     '<div class="item-meta">' + educartableEsc([t[kind[1]], n.author, educartableDay(n.date, t, locale)].filter(Boolean).join(' · ')) + '</div>' + m.body + '</div>' + m.tg.chevron + '</div>';
 }
 
+// A livret document: school report or attestation, its PDF (administrators) and Sign, or its state.
+export function educartableDocumentRow(d, t, opts) {
+  var meta = [opts?.child === false ? '' : d.child, d.kind === 'attestation' ? t.kind_attestation : t.kind_notebook, d.type, d.year].filter(Boolean).join(' · ');
+  var action = d.signed
+    ? '<span class="chip ok">' + educartableEsc(t.doc_signed) + '</span>'
+    : d.to_sign && opts?.canAct
+      ? '<button class="act" data-action="doc-sign" data-id="' + educartableEsc(d.id) + '">' + educartableEsc(t.sign) + '</button>'
+      : d.to_sign ? '<span class="chip">' + educartableEsc(t.tile_documents) + '</span>' : '';
+  var file = d.file
+    ? '<button class="file" data-action="doc-file" data-doc="' + educartableEsc(d.id) + '" data-name="' + educartableEsc(d.title + (d.year ? ' ' + d.year : '') + '.pdf') + '"' + (opts?.canAct ? '' : ' disabled') + '><ha-icon icon="mdi:file-pdf-box"></ha-icon><span>' + educartableEsc(t.open_pdf) + '</span></button>'
+    : '';
+  return '<div class="item doc' + (d.to_sign ? '' : ' done') + '">' +
+    '<ha-icon class="item-icon" icon="' + (d.kind === 'attestation' ? 'mdi:certificate-outline' : 'mdi:file-document-outline') + '"></ha-icon>' +
+    '<div class="item-main"><div class="item-title">' + educartableEsc(d.title || '—') + '</div>' +
+    '<div class="item-meta">' + educartableEsc(meta) + '</div>' + (file ? '<div class="files doc-files">' + file + '</div>' : '') + '</div>' + action + '</div>';
+}
+
 // Styles of the rows and chips, shared by the card and the panel.
 export function educartableItemStyles(accent) {
   return [
     '.item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-top: 1px solid var(--divider-color, rgba(0,0,0,.12)); }',
     '.item:first-child, .section-title + .item, h2 + .item, h3 + .item { border-top: none; }',
     '.item-icon { flex: none; color: var(--secondary-text-color); --mdc-icon-size: 20px; margin-top: 1px; }',
-    '.word:not(.done) .item-icon { color: ' + accent + '; }',
+    '.word:not(.done) .item-icon, .doc:not(.done) .item-icon { color: ' + accent + '; }',
+    '.doc-files { margin-top: 6px; }',
     '.hw.done .item-icon { color: var(--success-color, #43a047); }',
     '.item-main { flex: 1; min-width: 0; }',
     '.item-title { font-weight: 500; color: var(--primary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
@@ -462,6 +519,7 @@ window.Educartable = {
   data: educartableData,
   changed: educartableChanged,
   day: educartableDay,
+  parse: educartableParse,
   time: educartableTime,
   setTimeFormat: educartableSetTimeFormat,
   refresh: educartableRefresh,
@@ -469,9 +527,16 @@ window.Educartable = {
   sign: educartableSign,
   markRead: educartableMarkRead,
   setDone: educartableSetDone,
+  comments: educartableComments,
+  reply: educartableReply,
+  write: educartableWrite,
+  answerSurvey: educartableAnswerSurvey,
+  book: educartableBook,
+  cancelBooking: educartableCancelBooking,
+  signDocument: educartableSignDocument,
   openFile: educartableOpenFile,
   hydrate: educartableHydrate,
   sortedHomework: educartableSortedHomework,
-  rows: { word: educartableWordRow, homework: educartableHomeworkRow, news: educartableNewsRow },
+  rows: { word: educartableWordRow, homework: educartableHomeworkRow, news: educartableNewsRow, document: educartableDocumentRow, files: educartableFiles },
   itemStyles: educartableItemStyles,
 };

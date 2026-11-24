@@ -36,3 +36,120 @@ mark_read:
       example: "12345"
       selector:
         text:
+
+reply:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+    text:
+      required: true
+      example: "Bonjour, c'est noté, merci."
+      selector:
+        text:
+          multiline: true
+
+write_message:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    children:
+      required: true
+      example: '["4567"]'
+      selector:
+        text:
+          multiple: true
+    title:
+      required: true
+      example: "Absence"
+      selector:
+        text:
+    text:
+      required: true
+      example: "Camille est malade aujourd'hui."
+      selector:
+        text:
+          multiline: true
+
+answer_survey:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+    answers:
+      required: true
+      example: '{"1": ["2"]}'
+      selector:
+        object:
+    children:
+      required: false
+      example: '["4567"]'
+      selector:
+        text:
+          multiple: true
+
+book_appointment:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    slot_id:
+      required: true
+      example: "987"
+      selector:
+        text:
+    child_id:
+      required: false
+      example: "4567"
+      selector:
+        text:
+
+cancel_appointment:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    slot_id:
+      required: true
+      example: "987"
+      selector:
+        text:
+
+sign_document:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    document_id:
+      required: true
+      example: "notebook:321"
+      selector:
+        text:
+    name:
+      required: true
+      example: "Camille Martin"
+      selector:
+        text:

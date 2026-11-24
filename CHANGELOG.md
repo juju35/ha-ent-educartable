@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - 2026-11-24
+
+### Features
+- Reply to the teacher: each message's private conversation opens under it in the panel, with a reply box; a reply the message asks for is recorded as given. `educartable.reply` action.
+- Write a new message to the teacher from the Liaison book (*New message*: children, subject, text; one message per classroom, children whose teacher paused messages left out). `educartable.write_message` action.
+- Answer surveys: the questions and options under the message, sent for the children concerned and changed until the deadline. `educartable.answer_survey` action.
+- Book parent meetings: the slot booked for each child and the free ones, day by day, with a confirmation and the child to book for; cancel a booking. `educartable.book_appointment` and `educartable.cancel_appointment` actions.
+- The livret: a **School reports to sign** sensor, a **School reports** tab in the panel (school reports and attestations of each child, their PDF) and *Sign* as consulted with the signer's name. `educartable.sign_document` action and `educartable_new_document` event (also notified).
+- The sidebar badge and the panel's home page count the school reports to sign.
+- Accounts that chose their panel tabs before get the new School reports tab.
+
 ## 0.3.0 - 2026-11-24
 
 ### Features

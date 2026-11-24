@@ -15,6 +15,10 @@ SCOPE: Final = "openid"
 API_BASE: Final = "https://app.educartable.com/api/1.0"
 API_EDUCORE: Final = f"{API_BASE}/educore"
 API_EDUCARTABLE: Final = f"{API_BASE}/educartable"
+API_LIVRET: Final = f"{API_BASE}/livret"
+API_CORE: Final = f"{API_BASE}/core"
+# Surveys and appointments go through the portal's RPC API: POST {RPC_BASE}/<method> with {params, payload}.
+RPC_BASE: Final = "https://api.edumoov.com/rpc"
 
 # The unified "message" object is discriminated by its `type`.
 LESSON_TYPES: Final = ("lesson", "activity")  # homework / cahier de textes (per pupil)
@@ -39,24 +43,39 @@ DEFAULT_HOMEWORK_DAYS: Final = 14
 # Items kept in the attributes: enough for a card, small enough for the state machine.
 MESSAGES_KEPT: Final = 10
 NEWS_KEPT: Final = 5
+DOCUMENTS_KEPT: Final = 30
 
 SERVICE_REFRESH: Final = "refresh"
 SERVICE_SIGN: Final = "sign"
 SERVICE_MARK_READ: Final = "mark_read"
+SERVICE_REPLY: Final = "reply"
+SERVICE_WRITE: Final = "write_message"
+SERVICE_ANSWER_SURVEY: Final = "answer_survey"
+SERVICE_BOOK: Final = "book_appointment"
+SERVICE_CANCEL_BOOKING: Final = "cancel_appointment"
+SERVICE_SIGN_DOCUMENT: Final = "sign_document"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
 ATTR_MESSAGE_ID: Final = "message_id"
 ATTR_NAME: Final = "name"
+ATTR_TEXT: Final = "text"
+ATTR_TITLE: Final = "title"
+ATTR_CHILDREN: Final = "children"
+ATTR_CHILD_ID: Final = "child_id"
+ATTR_ANSWERS: Final = "answers"
+ATTR_SLOT_ID: Final = "slot_id"
+ATTR_DOCUMENT_ID: Final = "document_id"
 
 # Fired on the bus for what appeared since the last update (never on the first one).
 EVENT_NEW_HOMEWORK: Final = f"{DOMAIN}_new_homework"
 EVENT_NEW_MESSAGE: Final = f"{DOMAIN}_new_message"
 EVENT_NEW_NEWS: Final = f"{DOMAIN}_new_news"
+EVENT_NEW_DOCUMENT: Final = f"{DOMAIN}_new_document"
 
 CONF_SHOW_PANEL: Final = "show_panel"
 DEFAULT_SHOW_PANEL: Final = True
 # Tabs of the panel (and sections of its home page) shown; Home and Settings always are.
 CONF_PANEL_TABS: Final = "panel_tabs"
-PANEL_TABS: Final = ("homework", "words", "news")
+PANEL_TABS: Final = ("homework", "words", "news", "documents")
 # Who the panel's top bar (the illustrated header) is hidden for; the tabs stay.
 CONF_HIDE_HEADER: Final = "hide_header"
 HIDE_HEADER_OFF: Final = "off"

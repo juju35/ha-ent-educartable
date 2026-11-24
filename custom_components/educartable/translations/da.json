@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Seneste opdatering"
+      },
+      "documents_to_sign": {
+        "name": "Elevplaner der skal underskrives"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
         }
       }
+    },
+    "reply": {
+      "name": "Svar læreren",
+      "description": "Skriv i den private samtale om en besked med læreren. Et forventet svar registreres som givet.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Hvad du skriver til læreren."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Skriv til læreren",
+      "description": "Send en ny besked til læreren for de valgte børn (én besked pr. klasse).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "children": {
+          "name": "Børn",
+          "description": "Id’er for børnene, fra attributten children på sensoren Seneste opdatering."
+        },
+        "title": {
+          "name": "Emne",
+          "description": "Beskedens emne."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Beskeden."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Besvar et spørgeskema",
+      "description": "Besvar spørgeskemaet i en besked for de berørte børn; et tidligere svar erstattes.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
+        },
+        "answers": {
+          "name": "Svar",
+          "description": "Hvert spørgsmåls-id med id’erne for de valgte muligheder, fra beskedens attribut survey."
+        },
+        "children": {
+          "name": "Børn",
+          "description": "Id’er for de børn, der svares for; tom for alle berørte børn."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Book en aftale",
+      "description": "Book et ledigt tidspunkt til en forældresamtale for et barn.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "slot_id": {
+          "name": "Tidspunkt",
+          "description": "Tidspunktets id, fra beskedens attribut slots."
+        },
+        "child_id": {
+          "name": "Barn",
+          "description": "Barnet, aftalen gælder; nødvendigt når flere børn endnu ikke har en."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Annullér en aftale",
+      "description": "Annullér et tidspunkt booket for et af børnene.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "slot_id": {
+          "name": "Tidspunkt",
+          "description": "Id for et booket tidspunkt, fra beskedens attribut slots."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Underskriv en elevplan",
+      "description": "Underskriv en elevplan eller en attest som set.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "Dokumentets id, fra attributten documents på sensoren Elevplaner der skal underskrives."
+        },
+        "name": {
+          "name": "Underskriverens navn",
+          "description": "Navnet, der gemmes med underskriften, mindst 3 tegn, som i portalen."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Nyhed fra skolen"
+    },
+    "notify_new_document": {
+      "message": "Elevplan skal underskrives for {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Lektier",
         "words": "Kontaktbog",
-        "news": "Nyheder"
+        "news": "Nyheder",
+        "documents": "Elevplaner"
       }
     },
     "hide_header": {

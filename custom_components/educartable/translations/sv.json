@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Senaste uppdatering"
+      },
+      "documents_to_sign": {
+        "name": "Omdömen att skriva under"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
         }
       }
+    },
+    "reply": {
+      "name": "Svara läraren",
+      "description": "Skriv i det privata samtalet om ett meddelande med läraren. Ett förväntat svar registreras som givet.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Vad du skriver till läraren."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Skriv till läraren",
+      "description": "Skicka ett nytt meddelande till läraren för de valda barnen (ett meddelande per klass).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "children": {
+          "name": "Barn",
+          "description": "Barnens id, från attributet children på sensorn Senaste uppdatering."
+        },
+        "title": {
+          "name": "Ämne",
+          "description": "Meddelandets ämne."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Meddelandet."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Svara på en enkät",
+      "description": "Svara på ett meddelandes enkät för de berörda barnen; ett tidigare svar ersätts.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
+        },
+        "answers": {
+          "name": "Svar",
+          "description": "Varje fråge-id med id för de valda alternativen, från meddelandets attribut survey."
+        },
+        "children": {
+          "name": "Barn",
+          "description": "Id för barnen att svara för; tomt för alla berörda barn."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Boka ett möte",
+      "description": "Boka en ledig tid för ett föräldramöte för ett barn.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "slot_id": {
+          "name": "Tid",
+          "description": "Tidens id, från meddelandets attribut slots."
+        },
+        "child_id": {
+          "name": "Barn",
+          "description": "Barnet mötet gäller; behövs när flera barn ännu saknar en tid."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Avboka ett möte",
+      "description": "Avboka en tid som bokats för ett av barnen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "slot_id": {
+          "name": "Tid",
+          "description": "Id för en bokad tid, från meddelandets attribut slots."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Skriv under ett omdöme",
+      "description": "Skriv under ett omdöme eller ett intyg som läst.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "Dokumentets id, från attributet documents på sensorn Omdömen att skriva under."
+        },
+        "name": {
+          "name": "Undertecknarens namn",
+          "description": "Namnet som sparas med underskriften, minst 3 tecken, som i portalen."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Nyhet från skolan"
+    },
+    "notify_new_document": {
+      "message": "Omdöme att skriva under för {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Läxor",
         "words": "Kontaktbok",
-        "news": "Nyheter"
+        "news": "Nyheter",
+        "documents": "Omdömen"
       }
     },
     "hide_header": {

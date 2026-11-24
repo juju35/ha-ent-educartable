@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Utolsó frissítés"
+      },
+      "documents_to_sign": {
+        "name": "Aláírandó bizonyítványok"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
         }
       }
+    },
+    "reply": {
+      "name": "Válasz a tanárnak",
+      "description": "Írás egy üzenet privát beszélgetésébe a tanárral. Az elvárt válasz megadottként rögzül.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
+        },
+        "text": {
+          "name": "Szöveg",
+          "description": "Amit a tanárnak írsz."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Írás a tanárnak",
+      "description": "Új üzenet küldése a kiválasztott gyerekek tanárának (osztályonként egy üzenet).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "children": {
+          "name": "Gyerekek",
+          "description": "A gyerekek azonosítói az Utolsó frissítés érzékelő children attribútumából."
+        },
+        "title": {
+          "name": "Tárgy",
+          "description": "Az üzenet tárgya."
+        },
+        "text": {
+          "name": "Szöveg",
+          "description": "Az üzenet."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Válasz egy kérdőívre",
+      "description": "Egy üzenet kérdőívének megválaszolása az érintett gyerekek nevében; a korábbi válasz lecserélődik.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
+        },
+        "answers": {
+          "name": "Válaszok",
+          "description": "Minden kérdésazonosító a választott opciók azonosítóival, az üzenet survey attribútumából."
+        },
+        "children": {
+          "name": "Gyerekek",
+          "description": "A gyerekek azonosítói, akiknek a nevében válaszolsz; üresen minden érintett gyerek."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Időpont foglalása",
+      "description": "Egy szülői fogadóóra szabad időpontjának lefoglalása egy gyereknek.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "slot_id": {
+          "name": "Időpont",
+          "description": "Az időpont azonosítója az üzenet slots attribútumából."
+        },
+        "child_id": {
+          "name": "Gyerek",
+          "description": "A gyerek, akinek az időpont szól; akkor kell, ha több gyereknek sincs még."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Időpont lemondása",
+      "description": "Egy gyereknek lefoglalt időpont lemondása.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "slot_id": {
+          "name": "Időpont",
+          "description": "Egy lefoglalt időpont azonosítója az üzenet slots attribútumából."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Bizonyítvány aláírása",
+      "description": "Bizonyítvány vagy igazolás aláírása megtekintettként.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "document_id": {
+          "name": "Dokumentum",
+          "description": "A dokumentum azonosítója az Aláírandó bizonyítványok érzékelő documents attribútumából."
+        },
+        "name": {
+          "name": "Aláíró neve",
+          "description": "Az aláírással rögzített név, legalább 3 karakter, mint a portálon."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Iskolai hír"
+    },
+    "notify_new_document": {
+      "message": "Aláírandó bizonyítvány: {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Házi feladatok",
         "words": "Üzenőfüzet",
-        "news": "Hírek"
+        "news": "Hírek",
+        "documents": "Bizonyítványok"
       }
     },
     "hide_header": {

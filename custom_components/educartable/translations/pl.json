@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Ostatnia aktualizacja"
+      },
+      "documents_to_sign": {
+        "name": "Świadectwa do podpisania"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
         }
       }
+    },
+    "reply": {
+      "name": "Odpowiedz nauczycielowi",
+      "description": "Napisz w prywatnej rozmowie o wiadomości z nauczycielem. Oczekiwana odpowiedź zostaje zapisana jako udzielona.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Co napisać nauczycielowi."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Napisz do nauczyciela",
+      "description": "Wyślij nową wiadomość do nauczyciela wybranych dzieci (jedna wiadomość na klasę).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "children": {
+          "name": "Dzieci",
+          "description": "Identyfikatory dzieci z atrybutu children czujnika Ostatnia aktualizacja."
+        },
+        "title": {
+          "name": "Temat",
+          "description": "Temat wiadomości."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Treść wiadomości."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Odpowiedz na ankietę",
+      "description": "Odpowiedz na ankietę wiadomości za dzieci, których dotyczy; wcześniejsza odpowiedź zostaje zastąpiona.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
+        },
+        "answers": {
+          "name": "Odpowiedzi",
+          "description": "Każdy identyfikator pytania z identyfikatorami wybranych opcji, z atrybutu survey wiadomości."
+        },
+        "children": {
+          "name": "Dzieci",
+          "description": "Identyfikatory dzieci, za które odpowiadasz; puste oznacza wszystkie."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Zarezerwuj spotkanie",
+      "description": "Zarezerwuj wolny termin zebrania z rodzicami dla dziecka.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "Identyfikator terminu z atrybutu slots wiadomości."
+        },
+        "child_id": {
+          "name": "Dziecko",
+          "description": "Dziecko, którego dotyczy spotkanie; potrzebne, gdy kilkoro dzieci jeszcze nie ma terminu."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Anuluj spotkanie",
+      "description": "Anuluj termin zarezerwowany dla jednego z dzieci.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "slot_id": {
+          "name": "Termin",
+          "description": "Identyfikator zarezerwowanego terminu z atrybutu slots wiadomości."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Podpisz świadectwo",
+      "description": "Podpisz świadectwo lub zaświadczenie jako przejrzane.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "Identyfikator dokumentu z atrybutu documents czujnika Świadectwa do podpisania."
+        },
+        "name": {
+          "name": "Imię i nazwisko podpisującego",
+          "description": "Nazwa zapisana z podpisem, co najmniej 3 znaki, jak w portalu."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Aktualność ze szkoły"
+    },
+    "notify_new_document": {
+      "message": "Świadectwo do podpisania: {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Zadania domowe",
         "words": "Dzienniczek",
-        "news": "Aktualności"
+        "news": "Aktualności",
+        "documents": "Świadectwa"
       }
     },
     "hide_header": {

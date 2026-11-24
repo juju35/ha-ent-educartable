@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Ultimo aggiornamento"
+      },
+      "documents_to_sign": {
+        "name": "Pagelle da firmare"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "L'id del messaggio, dall'attributo messages del sensore Diario da firmare o Notizie."
         }
       }
+    },
+    "reply": {
+      "name": "Rispondi all’insegnante",
+      "description": "Scrivere nella conversazione privata di un messaggio con l’insegnante. Una risposta attesa viene registrata come data.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "message_id": {
+          "name": "Messaggio",
+          "description": "L'id del messaggio, dall'attributo messages del sensore Diario da firmare o Notizie."
+        },
+        "text": {
+          "name": "Testo",
+          "description": "Cosa scrivere all’insegnante."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Scrivi all’insegnante",
+      "description": "Invia un nuovo messaggio all’insegnante dei figli scelti (un messaggio per classe).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "children": {
+          "name": "Figli",
+          "description": "Id dei figli, dall’attributo children del sensore Ultimo aggiornamento."
+        },
+        "title": {
+          "name": "Oggetto",
+          "description": "L’oggetto del messaggio."
+        },
+        "text": {
+          "name": "Testo",
+          "description": "Il messaggio."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Rispondi a un sondaggio",
+      "description": "Rispondi al sondaggio di un messaggio per i figli interessati; una risposta già data viene sostituita.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "message_id": {
+          "name": "Messaggio",
+          "description": "L'id del messaggio, dall'attributo messages del sensore Diario da firmare o Notizie."
+        },
+        "answers": {
+          "name": "Risposte",
+          "description": "Ogni id di domanda con gli id delle opzioni scelte, dall’attributo survey del messaggio."
+        },
+        "children": {
+          "name": "Figli",
+          "description": "Id dei figli per cui rispondere; tutti quelli interessati se vuoto."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Prenota un appuntamento",
+      "description": "Prenota un orario libero di un colloquio per un figlio.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "slot_id": {
+          "name": "Orario",
+          "description": "L’id dell’orario, dall’attributo slots del messaggio."
+        },
+        "child_id": {
+          "name": "Figlio",
+          "description": "Il figlio per cui è l’appuntamento; necessario quando più figli non ne hanno ancora."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Annulla un appuntamento",
+      "description": "Annulla un orario prenotato per uno dei figli.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "slot_id": {
+          "name": "Orario",
+          "description": "L’id di un orario prenotato, dall’attributo slots del messaggio."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Firma una pagella",
+      "description": "Firma come consultata una pagella o un attestato.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "document_id": {
+          "name": "Documento",
+          "description": "L’id del documento, dall’attributo documents del sensore Pagelle da firmare."
+        },
+        "name": {
+          "name": "Nome del firmatario",
+          "description": "Il nome registrato con la firma, almeno 3 caratteri, come nel portale."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Notizia della scuola"
+    },
+    "notify_new_document": {
+      "message": "Pagella da firmare per {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Compiti",
         "words": "Diario",
-        "news": "Notizie"
+        "news": "Notizie",
+        "documents": "Pagelle"
       }
     },
     "hide_header": {

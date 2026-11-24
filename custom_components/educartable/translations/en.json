@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Last update"
+      },
+      "documents_to_sign": {
+        "name": "School reports to sign"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
         }
       }
+    },
+    "reply": {
+      "name": "Reply to the teacher",
+      "description": "Write in the private conversation of a message with the teacher. A reply the message asks for is recorded as given.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
+        },
+        "text": {
+          "name": "Text",
+          "description": "What to write to the teacher."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Write to the teacher",
+      "description": "Send a new message to the teacher of the chosen children (one message per classroom).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "children": {
+          "name": "Children",
+          "description": "Ids of the children, from the children attribute of the Last update sensor."
+        },
+        "title": {
+          "name": "Subject",
+          "description": "The subject of the message."
+        },
+        "text": {
+          "name": "Text",
+          "description": "The message."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Answer a survey",
+      "description": "Answer the survey of a message for the children it concerns; an answer given before is replaced.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
+        },
+        "answers": {
+          "name": "Answers",
+          "description": "Each question id with the ids of the options chosen, from the survey attribute of the message."
+        },
+        "children": {
+          "name": "Children",
+          "description": "Ids of the children to answer for; all the children the message concerns when empty."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Book an appointment",
+      "description": "Book a free slot of a parent meeting for a child.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "slot_id": {
+          "name": "Slot",
+          "description": "The id of the slot, from the slots attribute of the message."
+        },
+        "child_id": {
+          "name": "Child",
+          "description": "The child the appointment is for; needed when several children still have none."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Cancel an appointment",
+      "description": "Cancel a slot booked for one of the children.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "slot_id": {
+          "name": "Slot",
+          "description": "The id of a booked slot, from the slots attribute of the message."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Sign a school report",
+      "description": "Sign a school report or an attestation of the livret as consulted.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "document_id": {
+          "name": "Document",
+          "description": "The id of the document, from the documents attribute of the School reports to sign sensor."
+        },
+        "name": {
+          "name": "Signer's name",
+          "description": "The name recorded with the signature, 3 characters or more, as in the portal."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "School news"
+    },
+    "notify_new_document": {
+      "message": "School report to sign for {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Homework",
         "words": "Liaison book",
-        "news": "News"
+        "news": "News",
+        "documents": "School reports"
       }
     },
     "hide_header": {

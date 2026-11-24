@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Poslední aktualizace"
+      },
+      "documents_to_sign": {
+        "name": "Vysvědčení k podpisu"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "ID zprávy z atributu messages senzoru Žákovská knížka k podpisu nebo Novinky."
         }
       }
+    },
+    "reply": {
+      "name": "Odpovědět učiteli",
+      "description": "Psát v soukromém rozhovoru ke zprávě s učitelem. Očekávaná odpověď se zaznamená jako daná.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "message_id": {
+          "name": "Zpráva",
+          "description": "ID zprávy z atributu messages senzoru Žákovská knížka k podpisu nebo Novinky."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Co napsat učiteli."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Napsat učiteli",
+      "description": "Poslat novou zprávu učiteli vybraných dětí (jedna zpráva na třídu).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "children": {
+          "name": "Děti",
+          "description": "ID dětí z atributu children senzoru Poslední aktualizace."
+        },
+        "title": {
+          "name": "Předmět",
+          "description": "Předmět zprávy."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Zpráva."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Odpovědět na anketu",
+      "description": "Odpovědět na anketu zprávy za dotčené děti; dřívější odpověď se nahradí.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "message_id": {
+          "name": "Zpráva",
+          "description": "ID zprávy z atributu messages senzoru Žákovská knížka k podpisu nebo Novinky."
+        },
+        "answers": {
+          "name": "Odpovědi",
+          "description": "Každé ID otázky s ID vybraných možností z atributu survey zprávy."
+        },
+        "children": {
+          "name": "Děti",
+          "description": "ID dětí, za které se odpovídá; prázdné pro všechny dotčené děti."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Rezervovat schůzku",
+      "description": "Rezervovat volný termín třídních schůzek pro dítě.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "slot_id": {
+          "name": "Termín",
+          "description": "ID termínu z atributu slots zprávy."
+        },
+        "child_id": {
+          "name": "Dítě",
+          "description": "Dítě, pro které je schůzka; nutné, když víc dětí ještě termín nemá."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Zrušit schůzku",
+      "description": "Zrušit termín rezervovaný pro jedno z dětí.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "slot_id": {
+          "name": "Termín",
+          "description": "ID rezervovaného termínu z atributu slots zprávy."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Podepsat vysvědčení",
+      "description": "Podepsat vysvědčení nebo potvrzení jako prohlédnuté.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "document_id": {
+          "name": "Dokument",
+          "description": "ID dokumentu z atributu documents senzoru Vysvědčení k podpisu."
+        },
+        "name": {
+          "name": "Jméno podepisujícího",
+          "description": "Jméno uložené s podpisem, aspoň 3 znaky, jako v portálu."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Novinka ze školy"
+    },
+    "notify_new_document": {
+      "message": "Vysvědčení k podpisu: {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Domácí úkoly",
         "words": "Žákovská knížka",
-        "news": "Novinky"
+        "news": "Novinky",
+        "documents": "Vysvědčení"
       }
     },
     "hide_header": {

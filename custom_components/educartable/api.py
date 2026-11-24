@@ -1,9 +1,11 @@
 """Client for the Educartable (EDUMOOV family portal) unofficial API.
 
 Unofficial API — it can change without notice. Authentication is OpenID Connect (Keycloak); the data routes
-are plain REST with the access token as a Bearer header. Routes follow the portal's own web app
-(mobile.educartable.com): reads, the achievement of a message (sign, read…), the done box of a homework and the
-attachments (medias).
+are plain REST with the access token as a Bearer header; surveys and appointments go through the portal's RPC API
+(POST <method> with {params, payload}, answered with {success, data, error}). Routes follow the portal's own web app
+(mobile.educartable.com): reads, the achievement of a message (sign, read, comment…), the done box of a homework, the
+private conversation of a message, new messages to the teacher, surveys, appointment slots, the pupil's livret
+(notebooks and attestations, signed as consulted) and the attachments (medias, livret PDFs).
 """
 
 from __future__ import annotations
@@ -15,12 +17,15 @@ from typing import Any
 import aiohttp
 
 from .const import (
+    API_CORE,
     API_EDUCARTABLE,
     API_EDUCORE,
+    API_LIVRET,
     CARNET_TYPES,
     CLIENT_ID,
     LESSON_TYPES,
     NEWS_TYPES,
+    RPC_BASE,
     SCOPE,
     TOKEN_URL,
 )
@@ -30,6 +35,8 @@ _TIMEOUT = aiohttp.ClientTimeout(total=30)
 MEDIA_MAX_BYTES = 25 * 1024 * 1024
 # A media id is a plain identifier: anything else would let a caller reach another route.
 MEDIA_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+# The language comments are written in (the portal translates them for teachers who ask).
+COMMENT_LANG = "fr"
 
 
 class EducartableError(Exception):
@@ -213,22 +220,99 @@ class EducartableApi:
             {"recipient_id": recipient_id, "checked": checked},
         )
 
+    async def comments(self, parent_id: str, message_id: str) -> list[dict[str, Any]]:
+        """The private conversation of a message with the teacher, oldest first."""
+        data = await self._get(
+            f"{API_EDUCORE}/parent/{parent_id}/comments",
+            {"model": "HomeworkMessage", "key": message_id, "sort": "created"},
+        )
+        return data.get("data", []) if isinstance(data, dict) else []
+
+    async def comment(self, parent_id: str, message_id: str, body: str, reply_to: str | None) -> dict[str, Any]:
+        """Write in that conversation: `reply_to` is its first comment (none starts it)."""
+        data = await self._post(
+            f"{API_EDUCORE}/parent/{parent_id}/comments",
+            {"key": message_id, "model": "HomeworkMessage", "body": body, "lang": COMMENT_LANG, "reply": reply_to},
+        )
+        return (data.get("data") or {}) if isinstance(data, dict) else {}
+
+    async def write_message(self, parent_id: str, children: list[str], title: str, body: str) -> dict[str, Any]:
+        """A new message to the teacher of these children (one classroom per call, as the portal's app does)."""
+        data = await self._post(
+            f"{API_EDUCARTABLE}/parent/{parent_id}/messages", {"children": children, "title": title, "body": body}
+        )
+        return (data.get("data") or {}) if isinstance(data, dict) else {}
+
+    async def notebooks(self, parent_id: str) -> list[dict[str, Any]]:
+        """The pupils' livrets (school reports), each with its PDF and its signatures."""
+        data = await self._get(f"{API_LIVRET}/parent/{parent_id}/notebooks")
+        return data.get("data", []) if isinstance(data, dict) else []
+
+    async def attestations(self, parent_id: str) -> list[dict[str, Any]]:
+        """The pupils' attestations (swimming, first aid…), each with its PDF and its signatures."""
+        data = await self._get(f"{API_LIVRET}/parent/{parent_id}/attestations_validations")
+        return data.get("data", []) if isinstance(data, dict) else []
+
+    async def sign_document(self, parent_id: str, kind: str, document_id: str, name: str) -> None:
+        """Sign a notebook or an attestation as consulted, with the signer's name."""
+        route = {"notebook": "notebooks", "attestation": "attestations_validations"}[kind]
+        await self._post(f"{API_LIVRET}/parent/{parent_id}/{route}/{document_id}/sign", {"name": name})
+
+    async def rpc(self, method: str, params: dict[str, Any], payload: dict[str, Any] | None = None) -> Any:
+        """Call a method of the portal's RPC API; its refusal ("code - text") is raised with its text."""
+        data = await self._request("POST", f"{RPC_BASE}/{method}", json={"params": params, "payload": payload or {}})
+        if not isinstance(data, dict):
+            raise EducartableError(f"unexpected answer to {method}")
+        if not data.get("success"):
+            error = data.get("error") or {}
+            message = str(error.get("message") or "refused") if isinstance(error, dict) else str(error)
+            raise EducartableError(message.split(" - ", 1)[-1])
+        return data.get("data")
+
+    async def answer_survey(self, message_id: str, pupil_id: str, answers: dict[str, list[str]]) -> None:
+        await self.rpc("parent.messages.answerSurvey", {"id": message_id, "pupil_id": pupil_id}, {"answers": answers})
+
+    async def delete_survey_answer(self, message_id: str, pupil_id: str) -> None:
+        await self.rpc("parent.messages.deleteAnswerSurvey", {"id": message_id, "pupil_id": pupil_id})
+
+    async def book(self, slot_id: str, pupil_id: str) -> None:
+        """Book an appointment slot of a message for a pupil."""
+        await self.rpc("parent.events.register", {"id": slot_id}, {"pupil_id": pupil_id})
+
+    async def cancel_booking(self, slot_id: str) -> None:
+        await self.rpc("parent.events.unregister", {"id": slot_id})
+
     # ── Files ───────────────────────────────────────────────────────────────────────────────────────────────
 
     async def media(self, media_id: str) -> tuple[bytes, str]:
         """An attachment of a message: its bytes and the type the portal declares."""
         if not MEDIA_ID.fullmatch(media_id):
             raise EducartableError("invalid media id")
+        return await self._download(f"{API_EDUCORE}/medias/{media_id}/file", f"media {media_id}")
+
+    async def notebook_file(self, file_id: str, direct_hash: str) -> tuple[bytes, str]:
+        """The PDF of a livret, stored on the portal's file service."""
+        if not (MEDIA_ID.fullmatch(file_id) and MEDIA_ID.fullmatch(direct_hash)):
+            raise EducartableError("invalid file id")
+        return await self._download(f"{API_CORE}/cloudy_files/{file_id}/file/{direct_hash}/educartable", "livret")
+
+    async def attestation_file(self, attestation_id: str, file_hash: str) -> tuple[bytes, str]:
+        """The PDF of an attestation."""
+        if not (MEDIA_ID.fullmatch(attestation_id) and MEDIA_ID.fullmatch(file_hash)):
+            raise EducartableError("invalid file id")
+        return await self._download(
+            f"{API_LIVRET}/attestations_validations/pdf/{attestation_id}", "attestation", {"hash": file_hash}
+        )
+
+    async def _download(self, url: str, what: str, params: dict[str, str] | None = None) -> tuple[bytes, str]:
         await self._ensure_token()
         headers = {"Authorization": f"Bearer {self._access_token}"}
         try:
-            async with self._session.get(
-                f"{API_EDUCORE}/medias/{media_id}/file", headers=headers, timeout=_TIMEOUT
-            ) as resp:
+            async with self._session.get(url, params=params, headers=headers, timeout=_TIMEOUT) as resp:
                 if resp.status >= 500:
                     raise EducartableUnavailableError(f"HTTP {resp.status}")
                 if resp.status != 200:
-                    raise EducartableError(f"HTTP {resp.status} on media {media_id}")
+                    raise EducartableError(f"HTTP {resp.status} on {what}")
                 if (resp.content_length or 0) > MEDIA_MAX_BYTES:
                     raise EducartableError("file too large")
                 body = await resp.read()

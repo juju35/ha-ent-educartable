@@ -37,6 +37,11 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: Educart
             "news": len(data.news) if data else 0,
             "achievements": sorted({m["achievement"] for m in [*messages, *homework] if m["achievement"]}),
             "medias": sum(len(m["medias"]) for m in [*messages, *homework]),
+            "surveys": sum(1 for m in messages if m.get("survey")),
+            "slots": sum(len(m.get("slots") or []) for m in messages),
+            "commentable": sum(1 for m in messages if m.get("commentable")),
+            "documents": len(data.documents) if data else 0,
+            "documents_to_sign": sum(1 for d in data.documents if d["to_sign"]) if data else 0,
             "stale": data.stale if data else [],
         },
     }

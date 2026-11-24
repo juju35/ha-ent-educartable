@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Laatste update"
+      },
+      "documents_to_sign": {
+        "name": "Rapporten te ondertekenen"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
         }
       }
+    },
+    "reply": {
+      "name": "De leerkracht antwoorden",
+      "description": "Schrijven in het privégesprek van een bericht met de leerkracht. Een verwacht antwoord wordt als gegeven vastgelegd.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Wat je de leerkracht schrijft."
+        }
+      }
+    },
+    "write_message": {
+      "name": "De leerkracht schrijven",
+      "description": "Een nieuw bericht sturen aan de leerkracht van de gekozen kinderen (één bericht per klas).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "children": {
+          "name": "Kinderen",
+          "description": "Id’s van de kinderen, uit het attribuut children van de sensor Laatste update."
+        },
+        "title": {
+          "name": "Onderwerp",
+          "description": "Het onderwerp van het bericht."
+        },
+        "text": {
+          "name": "Tekst",
+          "description": "Het bericht."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Enquête beantwoorden",
+      "description": "De enquête van een bericht beantwoorden voor de betrokken kinderen; een eerder antwoord wordt vervangen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
+        },
+        "answers": {
+          "name": "Antwoorden",
+          "description": "Elk vraag-id met de id’s van de gekozen opties, uit het attribuut survey van het bericht."
+        },
+        "children": {
+          "name": "Kinderen",
+          "description": "Id’s van de kinderen voor wie je antwoordt; leeg voor alle betrokken kinderen."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Afspraak boeken",
+      "description": "Een vrij tijdstip van een oudergesprek boeken voor een kind.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "slot_id": {
+          "name": "Tijdstip",
+          "description": "Het id van het tijdstip, uit het attribuut slots van het bericht."
+        },
+        "child_id": {
+          "name": "Kind",
+          "description": "Het kind voor wie de afspraak is; nodig als meerdere kinderen er nog geen hebben."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Afspraak annuleren",
+      "description": "Een geboekt tijdstip van een van de kinderen annuleren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "slot_id": {
+          "name": "Tijdstip",
+          "description": "Het id van een geboekt tijdstip, uit het attribuut slots van het bericht."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Rapport ondertekenen",
+      "description": "Een rapport of attest als ingezien ondertekenen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "document_id": {
+          "name": "Document",
+          "description": "Het id van het document, uit het attribuut documents van de sensor Rapporten te ondertekenen."
+        },
+        "name": {
+          "name": "Naam van de ondertekenaar",
+          "description": "De naam die met de handtekening wordt vastgelegd, minstens 3 tekens, zoals in het portaal."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Nieuws van de school"
+    },
+    "notify_new_document": {
+      "message": "Rapport te ondertekenen voor {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Huiswerk",
         "words": "Heen-en-weerschrift",
-        "news": "Nieuws"
+        "news": "Nieuws",
+        "documents": "Rapporten"
       }
     },
     "hide_header": {

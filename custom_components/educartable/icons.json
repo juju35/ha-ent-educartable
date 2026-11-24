@@ -12,6 +12,9 @@
       },
       "last_update": {
         "default": "mdi:clock-check-outline"
+      },
+      "documents_to_sign": {
+        "default": "mdi:file-certificate"
       }
     },
     "calendar": {
@@ -34,6 +37,24 @@
     },
     "mark_read": {
       "service": "mdi:email-open-outline"
+    },
+    "reply": {
+      "service": "mdi:reply"
+    },
+    "write_message": {
+      "service": "mdi:email-edit-outline"
+    },
+    "answer_survey": {
+      "service": "mdi:poll"
+    },
+    "book_appointment": {
+      "service": "mdi:calendar-plus"
+    },
+    "cancel_appointment": {
+      "service": "mdi:calendar-remove"
+    },
+    "sign_document": {
+      "service": "mdi:file-sign"
     }
   }
 }

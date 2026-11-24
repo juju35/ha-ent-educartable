@@ -104,6 +104,9 @@
       },
       "last_update": {
         "name": "Ultima actualizare"
+      },
+      "documents_to_sign": {
+        "name": "Rapoarte școlare de semnat"
       }
     },
     "calendar": {
@@ -159,6 +162,118 @@
           "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
         }
       }
+    },
+    "reply": {
+      "name": "Răspunde profesorului",
+      "description": "Scrie în conversația privată a unui mesaj cu profesorul. Un răspuns așteptat este înregistrat ca dat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Ce îi scrii profesorului."
+        }
+      }
+    },
+    "write_message": {
+      "name": "Scrie-i profesorului",
+      "description": "Trimite un mesaj nou profesorului copiilor aleși (un mesaj pe clasă).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "children": {
+          "name": "Copii",
+          "description": "ID-urile copiilor, din atributul children al senzorului Ultima actualizare."
+        },
+        "title": {
+          "name": "Subiect",
+          "description": "Subiectul mesajului."
+        },
+        "text": {
+          "name": "Text",
+          "description": "Mesajul."
+        }
+      }
+    },
+    "answer_survey": {
+      "name": "Răspunde la un sondaj",
+      "description": "Răspunde la sondajul unui mesaj pentru copiii vizați; un răspuns dat înainte este înlocuit.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
+        },
+        "answers": {
+          "name": "Răspunsuri",
+          "description": "Fiecare ID de întrebare cu ID-urile opțiunilor alese, din atributul survey al mesajului."
+        },
+        "children": {
+          "name": "Copii",
+          "description": "ID-urile copiilor pentru care răspunzi; toți copiii vizați dacă e gol."
+        }
+      }
+    },
+    "book_appointment": {
+      "name": "Rezervă o programare",
+      "description": "Rezervă un interval liber al unei ședințe cu părinții pentru un copil.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "slot_id": {
+          "name": "Interval",
+          "description": "ID-ul intervalului, din atributul slots al mesajului."
+        },
+        "child_id": {
+          "name": "Copil",
+          "description": "Copilul pentru care e programarea; necesar când mai mulți copii nu au încă una."
+        }
+      }
+    },
+    "cancel_appointment": {
+      "name": "Anulează o programare",
+      "description": "Anulează un interval rezervat pentru unul dintre copii.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "slot_id": {
+          "name": "Interval",
+          "description": "ID-ul unui interval rezervat, din atributul slots al mesajului."
+        }
+      }
+    },
+    "sign_document": {
+      "name": "Semnează un raport școlar",
+      "description": "Semnează ca fiind consultat un raport școlar sau o adeverință.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "document_id": {
+          "name": "Document",
+          "description": "ID-ul documentului, din atributul documents al senzorului Rapoarte școlare de semnat."
+        },
+        "name": {
+          "name": "Numele semnatarului",
+          "description": "Numele înregistrat cu semnătura, cel puțin 3 caractere, ca în portal."
+        }
+      }
     }
   },
   "exceptions": {
@@ -182,6 +297,9 @@
     },
     "notify_new_news": {
       "message": "Noutate de la școală"
+    },
+    "notify_new_document": {
+      "message": "Raport școlar de semnat pentru {child}"
     }
   },
   "selector": {
@@ -189,7 +307,8 @@
       "options": {
         "homework": "Teme",
         "words": "Carnet de corespondență",
-        "news": "Noutăți"
+        "news": "Noutăți",
+        "documents": "Rapoarte școlare"
       }
     },
     "hide_header": {

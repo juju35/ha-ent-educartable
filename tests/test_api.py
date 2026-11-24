@@ -9,9 +9,17 @@ import pytest
 from custom_components.educartable.api import (
     EducartableApi,
     EducartableAuthError,
+    EducartableError,
     EducartableOTPRequired,
 )
-from custom_components.educartable.coordinator import _homework, _message, _pupil, parse_when, plain_text
+from custom_components.educartable.coordinator import (
+    _document,
+    _homework,
+    _message,
+    _pupil,
+    parse_when,
+    plain_text,
+)
 
 
 def test_parse_when_handles_millis_iso_and_date() -> None:
@@ -30,6 +38,8 @@ def test_pupil_builds_a_name() -> None:
         "classroom": "CE2 A",
         "teacher": "",
         "grade": "",
+        "classroom_id": "",
+        "writable": True,
     }
 
 
@@ -114,8 +124,13 @@ class _FakeSession:
     def __init__(self, status: int, payload: dict[str, Any]) -> None:
         self._status = status
         self._payload = payload
+        self.requests: list[tuple[str, str, Any]] = []
 
     def post(self, *args: Any, **kwargs: Any) -> _FakeResponse:
+        return _FakeResponse(self._status, self._payload)
+
+    def request(self, method: str, url: str, **kwargs: Any) -> _FakeResponse:
+        self.requests.append((method, url, kwargs.get("json")))
         return _FakeResponse(self._status, self._payload)
 
 
@@ -136,3 +151,68 @@ async def test_login_detects_required_otp() -> None:
     session = _FakeSession(401, {"error": "invalid_grant", "error_description": "Missing totp"})
     with pytest.raises(EducartableOTPRequired):
         await EducartableApi(session, "parent", "secret").login()  # type: ignore[arg-type]
+
+
+def _logged_in(session: _FakeSession) -> EducartableApi:
+    api = EducartableApi(session, "parent", "secret")  # type: ignore[arg-type]
+    api._access_token, api._expires_at = "a", 4e9
+    return api
+
+
+async def test_rpc_posts_params_and_payload() -> None:
+    session = _FakeSession(200, {"success": True, "data": {"id": 3}})
+    await _logged_in(session).book("51", "e1")
+    assert session.requests == [
+        (
+            "POST",
+            "https://api.edumoov.com/rpc/parent.events.register",
+            {"params": {"id": "51"}, "payload": {"pupil_id": "e1"}},
+        )
+    ]
+
+
+async def test_rpc_refusal_keeps_the_portal_text() -> None:
+    session = _FakeSession(200, {"success": False, "error": {"message": "409 - Ce créneau est déjà réservé"}})
+    with pytest.raises(EducartableError, match=r"^Ce créneau est déjà réservé$"):
+        await _logged_in(session).answer_survey("c5", "e1", {"q1": ["a"]})
+
+
+async def test_comment_starts_or_continues_the_thread() -> None:
+    session = _FakeSession(200, {"data": {"id": 9}})
+    await _logged_in(session).comment("p1", "c6", "Bonjour", None)
+    _method, url, body = session.requests[0]
+    assert url.endswith("/educore/parent/p1/comments")
+    assert body == {"key": "c6", "model": "HomeworkMessage", "body": "Bonjour", "lang": "fr", "reply": None}
+
+
+def test_message_survey_slots_and_conversation() -> None:
+    message = _message(
+        {
+            "id": "c5",
+            "commentable": True,
+            "comments_count": 2,
+            "survey": '{"deadline": "2026-12-01", "uniqByPupil": true, "content": [{"value": 1, "label": "Q",'
+            ' "options": [{"value": "a", "label": "A"}]}, {"value": 2, "label": "Empty", "options": []}]}',
+            "form_answers": [{"pupil_id": 7, "answers": '{"1": ["a"]}'}],
+            "meetings": [
+                {"id": 2, "start": "2026-12-01T17:15:00", "status": "FREE"},
+                {"id": 1, "start": "2026-12-01T17:00:00", "status": "BOOKED", "registrations": [{"pupil_id": 7}]},
+                {"id": 3, "start": "2026-12-01T17:30:00", "status": "CANCELED"},
+            ],
+        }
+    )
+    assert message["commentable"] and message["comments"] == 2
+    survey = message["survey"]
+    assert [q["id"] for q in survey["questions"]] == ["1"]  # a question without options is left out
+    assert survey["answers"] == {"7": {"1": ["a"]}} and survey["one_per_child"]
+    assert [(s["id"], s["booked"], s["child_id"]) for s in message["slots"]] == [("1", True, "7"), ("2", False, "")]
+    assert _message({"id": "x", "survey": "not json"})["survey"] is None
+
+
+def test_documents_to_sign() -> None:
+    notebook = _document({"id": 3, "pupil_id": 7, "title": "Livret", "year": "2025-2026", "signatures": []}, "notebook")
+    assert notebook["id"] == "notebook:3" and notebook["to_sign"] and notebook["year"] == "2025-2026"
+    old = _document({"id": 2, "title": "Livret", "year": 2018, "signatures": []}, "notebook")
+    assert not old["to_sign"]  # the portal does not ask for those
+    attestation = _document({"id": 4, "type": "APER", "date": "2026-06-01", "signatures": [{"id": 1}]}, "attestation")
+    assert attestation["title"] == "APER" and attestation["signed"] and attestation["year"] == "2026"

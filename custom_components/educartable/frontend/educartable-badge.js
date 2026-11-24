@@ -1,5 +1,5 @@
 // Educartable's sidebar badge, loaded on every page: the number of things to deal with on the panel's sidebar item —
-// liaison-book messages to sign and homework to do, summed over every account and child — in the accent colour, like
+// liaison-book messages to sign, homework to do and school reports to sign, summed over every account and child — in the accent colour, like
 // Home Assistant's own notifications count. The counts are the states of the sensors (carnet_to_sign, one homework
 // sensor per child), found by their own attributes, which Home Assistant keeps up to date; the badge
 // follows them. The last value is kept by the browser, so the sidebar shows it at once.
@@ -8,8 +8,8 @@ var EDUCARTABLE_EVERY_MS = 15000;
 // The badge takes the accent colour; its text is white.
 var EDUCARTABLE_BADGE_COLOR = 'var(--primary-color, #3f51b5)';
 // A sensor counted in the badge carries one of these attributes: `messages` is the liaison book to sign, `homework`
-// a child's homework to do (news are left out on purpose).
-var EDUCARTABLE_COUNT_ATTRS = ['homework', 'messages'];
+// a child's homework to do, `documents` the livret to sign (news are left out on purpose).
+var EDUCARTABLE_COUNT_ATTRS = ['homework', 'messages', 'documents'];
 
 function educartableBadgeSaved() {
   try {
