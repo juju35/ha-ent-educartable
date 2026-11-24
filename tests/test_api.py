@@ -11,7 +11,7 @@ from custom_components.educartable.api import (
     EducartableAuthError,
     EducartableOTPRequired,
 )
-from custom_components.educartable.coordinator import _homework, _message, _pupil, parse_when
+from custom_components.educartable.coordinator import _homework, _message, _pupil, parse_when, plain_text
 
 
 def test_parse_when_handles_millis_iso_and_date() -> None:
@@ -35,13 +35,64 @@ def test_pupil_builds_a_name() -> None:
 
 def test_homework_done_flag_follows_achievements() -> None:
     assert _homework({"id": "h1", "title": "x", "achievements": []})["done"] is False
-    assert _homework({"id": "h2", "title": "y", "achievements": [{"action": "read"}]})["done"] is True
+    assert _homework({"id": "h2", "title": "y", "achievement": "read", "achievements": [7]})["done"] is True
 
 
-def test_message_to_sign_when_a_recipient_is_unchecked() -> None:
-    assert _message({"id": "c1", "recipients": [{"id": "r", "checked": False}]})["to_sign"] is True
-    assert _message({"id": "c2", "recipients": [{"id": "r", "checked": True}]})["to_sign"] is False
-    assert _message({"id": "c3"})["to_sign"] is False
+def test_homework_to_check_is_ticked_pupil_by_pupil() -> None:
+    raw = {
+        "id": "h3",
+        "achievement": "check",
+        "achievements": [],
+        "recipients": [
+            {"model": "Pupil", "key": 1, "id": 11, "checked": True},
+            {"model": "Pupil", "key": 2, "id": 12, "checked": False},
+            {"model": "Classroom", "key": 9, "id": 19, "checked": True},
+        ],
+    }
+    first, second = _homework(raw, "1"), _homework(raw, "2")
+    assert (first["done"], first["recipient_id"]) == (True, "11")
+    assert (second["done"], second["recipient_id"]) == (False, "12")
+    assert _homework(raw, "3")["recipient_id"] == ""
+
+
+def test_message_to_sign_follows_its_achievement() -> None:
+    to_sign = _message({"id": "c1", "achievement": "sign", "achievements": [], "targetChildren": {"7": True}})
+    assert (to_sign["to_sign"], to_sign["to_do"], to_sign["children"]) == (True, True, ["7"])
+    # Signed once it has an achievement, whatever its recipients say
+    signed = _message({"id": "c2", "achievement": "sign", "achievements": [3], "recipients": [{"checked": False}]})
+    assert (signed["to_sign"], signed["to_do"]) == (False, False)
+    to_read = _message({"id": "c3", "achievement": "read", "achievements": []})
+    assert (to_read["to_sign"], to_read["to_do"]) == (False, True)
+    assert _message({"id": "c4"})["to_do"] is False
+    assert _message({"id": "c5", "achievement": "whatever"})["achievement"] == ""
+
+
+def test_message_keeps_its_text_author_and_attachments() -> None:
+    message = _message(
+        {
+            "id": "c1",
+            "title": "Trip",
+            "body": "<p>Bring a <b>lunch</b>&nbsp;box.</p><ul><li>Hat</li><li>Coat</li></ul>",
+            "user": {"firstname": "Ann", "name": "Brown"},
+            "visibility": "2026-11-20T08:00:00+01:00",
+            "medias": [{"id": 5, "name": "Map", "extension": "PDF"}, {"id": 4, "name": "a.jpg", "extension": "jpg"}],
+            "pupils": [{"id": 7}],
+        }
+    )
+    assert message["text"] == "Bring a lunch\xa0box.\n• Hat\n• Coat"
+    assert message["author"] == "Ann Brown"
+    assert message["children"] == ["7"]
+    assert message["date"] is not None
+    assert message["medias"] == [
+        {"id": "4", "name": "a.jpg", "extension": "jpg"},
+        {"id": "5", "name": "Map.PDF", "extension": "pdf"},
+    ]
+
+
+def test_plain_text() -> None:
+    assert plain_text(None) == ""
+    assert plain_text("Line 1<br>Line 2<br/><br><br>Line 3") == "Line 1\nLine 2\n\nLine 3"
+    assert plain_text("&lt;b&gt; &amp; <script>x</script>") == "<b> & x"
 
 
 class _FakeResponse:

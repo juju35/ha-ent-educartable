@@ -34,6 +34,24 @@
           "password": "Atstājiet tukšu, lai to nolasītu no secrets.yaml.",
           "totp": "Tikai tad, ja jūsu kontā ir ieslēgta divu faktoru autentifikācija."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Mainiet {username} pieteikšanās datus vai pārslēdziet katru starp saglabātu vērtību un secrets.yaml ierakstu.",
+        "data": {
+          "username": "Lietotājvārds",
+          "username_secret": "Lietotājvārda noslēpums",
+          "password": "Parole",
+          "password_secret": "Paroles noslēpums",
+          "totp": "Vienreizējs kods"
+        },
+        "data_description": {
+          "username": "Atstājiet tukšu, lai to nolasītu no secrets.yaml.",
+          "username_secret": "secrets.yaml ieraksta nosaukums ar lietotājvārdu, piemēram, educartable_username.",
+          "password": "Atstājiet tukšu, lai to nolasītu no secrets.yaml.",
+          "password_secret": "secrets.yaml ieraksta nosaukums ar paroli, piemēram, educartable_password. Tas tiek nolasīts katrā atjaunināšanā: pēc paroles maiņas pietiek labot noslēpumu.",
+          "totp": "Tikai tad, ja jūsu kontā ir ieslēgta divu faktoru autentifikācija."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Šis konts jau ir iestatīts.",
       "reauth_successful": "Pieteikšanās dati atjaunināti.",
-      "wrong_account": "Šie pieteikšanās dati pieder citam kontam."
+      "wrong_account": "Šie pieteikšanās dati pieder citam kontam.",
+      "reconfigure_successful": "Pieteikšanās dati atjaunināti."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Atjaunināšanas intervāls",
           "homework_days": "Mājasdarbu periods",
+          "notify_services": "Paziņojumu darbības",
           "show_panel": "Rādīt šo paneli sānjoslā",
           "panel_tabs": "Panelī rādītās cilnes",
           "hide_header": "Paslēpt augšējo joslu"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable izmanto visa skola: vismaz 10 minūtes.",
           "homework_days": "Tiek rādīti mājasdarbi, kuru termiņš ir šajā dienu skaitā.",
-          "hide_header": "Ilustrētā galvene virs cilnēm; cilnes paliek, un tālrunī izvēlnes poga pārvietojas blakus tām."
+          "hide_header": "Ilustrētā galvene virs cilnēm; cilnes paliek, un tālrunī izvēlnes poga pārvietojas blakus tām.",
+          "notify_services": "Paziņot šīm darbībām (notify.mobile_app_…) par jauniem mājasdarbiem, dienasgrāmatas ziņām un jaunumiem. Atstājiet tukšu, lai nepaziņotu."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Pēdējā atjaunināšana"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Mājasdarbi"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Mājasdarbi"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Konts",
           "description": "Atsvaidzināmais Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        }
+      }
+    },
+    "sign": {
+      "name": "Parakstīt",
+      "description": "Parakstīt dienasgrāmatas ziņu, kurai nepieciešams paraksts.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai atribūta messages."
+        },
+        "name": {
+          "name": "Parakstītāja vārds",
+          "description": "Vārds, kas tiek saglabāts ar parakstu, vismaz 3 rakstzīmes, kā portālā."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Atzīmēt kā izlasītu",
+      "description": "Atzīmēt kā izlasītu ziņu, kuru jāizlasa.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Iestatīti vairāki Educartable konti: norādiet, kuru izmantot."
+    },
+    "action_failed": {
+      "message": "Educartable noraidīja darbību: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Jauni mājasdarbi: {child}"
+    },
+    "notify_new_message": {
+      "message": "Dienasgrāmata: jauna ziņa – {child}"
+    },
+    "notify_new_news": {
+      "message": "Skolas jaunums"
     }
   },
   "selector": {

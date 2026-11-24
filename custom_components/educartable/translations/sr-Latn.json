@@ -34,6 +34,24 @@
           "password": "Ostavite prazno da bi se čitalo iz secrets.yaml.",
           "totp": "Samo ako je na vašem nalogu uključena dvofaktorska autentifikacija."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Promenite podatke za prijavu za {username} ili prebacite svaki između sačuvane vrednosti i stavke u secrets.yaml.",
+        "data": {
+          "username": "Korisničko ime",
+          "username_secret": "Tajna korisničkog imena",
+          "password": "Lozinka",
+          "password_secret": "Tajna lozinke",
+          "totp": "Jednokratni kod"
+        },
+        "data_description": {
+          "username": "Ostavite prazno da bi se čitalo iz secrets.yaml.",
+          "username_secret": "Naziv stavke u secrets.yaml koja sadrži korisničko ime, na primer educartable_username.",
+          "password": "Ostavite prazno da bi se čitala iz secrets.yaml.",
+          "password_secret": "Naziv stavke u secrets.yaml koja sadrži lozinku, na primer educartable_password. Čita se ponovo pri svakom ažuriranju: posle promene lozinke dovoljno je izmeniti tajnu.",
+          "totp": "Samo ako je na vašem nalogu uključena dvofaktorska autentifikacija."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Ovaj nalog je već podešen.",
       "reauth_successful": "Podaci za prijavu su ažurirani.",
-      "wrong_account": "Ovi podaci za prijavu pripadaju drugom nalogu."
+      "wrong_account": "Ovi podaci za prijavu pripadaju drugom nalogu.",
+      "reconfigure_successful": "Podaci za prijavu su ažurirani."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Interval ažuriranja",
           "homework_days": "Period domaćih zadataka",
+          "notify_services": "Radnje obaveštenja",
           "show_panel": "Prikaži ovaj panel na bočnoj traci",
           "panel_tabs": "Kartice prikazane na panelu",
           "hide_header": "Sakrij gornju traku"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable koristi cela škola: najmanje 10 minuta.",
           "homework_days": "Prikazuju se domaći zadaci sa rokom u okviru ovog broja dana.",
-          "hide_header": "Ilustrovano zaglavlje iznad kartica; kartice ostaju, a na telefonu dugme menija prelazi pored njih."
+          "hide_header": "Ilustrovano zaglavlje iznad kartica; kartice ostaju, a na telefonu dugme menija prelazi pored njih.",
+          "notify_services": "Obavesti ove akcije (notify.mobile_app_…) o novim domaćim zadacima, porukama u đačkoj knjižici i vestima. Ostavite prazno za nijednu."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Poslednje ažuriranje"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Domaći"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Domaći"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Nalog",
           "description": "Educartable nalog za osvežavanje. Ostavite prazno kada je podešen samo jedan."
+        }
+      }
+    },
+    "sign": {
+      "name": "Potpiši",
+      "description": "Potpiši poruku u đačkoj knjižici koja traži potpis.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje."
+        },
+        "name": {
+          "name": "Ime potpisnika",
+          "description": "Ime koje se beleži uz potpis, najmanje 3 znaka, kao na portalu."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Označi kao pročitano",
+      "description": "Označi kao pročitanu poruku koja traži da bude pročitana.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Podešeno je više Educartable naloga: navedite koji da se koristi."
+    },
+    "action_failed": {
+      "message": "Educartable je odbio radnju: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Novi domaći zadatak za {child}"
+    },
+    "notify_new_message": {
+      "message": "Đačka knjižica: nova poruka za {child}"
+    },
+    "notify_new_news": {
+      "message": "Vest iz škole"
     }
   },
   "selector": {

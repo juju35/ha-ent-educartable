@@ -20,6 +20,9 @@ export class EducartablePanel extends HTMLElement {
     // Day picked in the week strip of the home page ('' = the whole week), not remembered.
     this._day = '';
     this._entry = this._entry || '';
+    // Rows unfolded on the home page, and the signature being confirmed.
+    this._open = {};
+    this._confirm = null;
   }
 
   set panel(panel) {
@@ -64,6 +67,7 @@ export class EducartablePanel extends HTMLElement {
     window.removeEventListener('popstate', this._onPop);
     this._fold?.detach();
     this._fold = null;
+    this._confirm = null;
   }
 
   // The account, from the address (the card's counts add it when there are several).
@@ -100,6 +104,7 @@ export class EducartablePanel extends HTMLElement {
   _setTab(tab) {
     if (tab === this._tab) return;
     this._tab = tab;
+    this._confirm = null;
     var params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
     window.history.pushState(null, '', `${window.location.pathname}?${params}`);
@@ -118,6 +123,15 @@ export class EducartablePanel extends HTMLElement {
       '<div class="hbtns"></div></div><div class="tabbar"><div class="tabs" role="tablist"></div><div class="tb-side"></div></div><div class="content"></div>';
     this._root.addEventListener('click', this._onClick.bind(this));
     this._root.addEventListener('change', this._onChange.bind(this));
+    this._root.addEventListener('keydown', (ev) => {
+      if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.hasAttribute?.('data-toggle')) {
+        ev.preventDefault();
+        ev.target.click();
+      } else if (ev.key === 'Enter' && ev.target.classList?.contains('signer') && this._data) {
+        ev.preventDefault();
+        this._doSign(this._data);
+      }
+    });
     // Tabs: arrows, Home and End move between them (WAI-ARIA tabs pattern).
     this._root.querySelector('.tabs').addEventListener('keydown', (ev) => {
       var tabs = this._shownTabs || EDUCARTABLE_PANEL_TABS;
@@ -223,7 +237,11 @@ export class EducartablePanel extends HTMLElement {
       return;
     }
     var html = { home: this._home, homework: this._homework, words: this._words, news: this._news }[this._tab].call(this, t, data);
-    content.innerHTML = '<div class="page">' + (this._error ? '<div class="error-text errbar">' + E.esc(this._error) + '</div>' : '') + html + '</div>';
+    // The signer's name being typed survives the redraw (the input is drawn again).
+    var typed = content.querySelector('.signer');
+    if (typed && this._confirm) this._confirm.name = typed.value;
+    content.innerHTML = '<div class="page">' + (this._error ? '<div class="error-text errbar">' + E.esc(this._error) + '</div>' : '') + this._popup(t, data) + html + '</div>';
+    E.hydrate(content, this._hass, data.entryId);
   }
 
   _count(tab, data) {
@@ -342,12 +360,14 @@ export class EducartablePanel extends HTMLElement {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
     var R = E.rows;
+    var opts = { isOpen: (key) => !!this._open[key], entryId: data.entryId, canAct: E.canAct(this._hass) };
     var on = (tab) => data.panelTabs.indexOf(tab) !== -1;
     // The week strip counts homework: left out with the Homework tab, its day filter cleared.
     if (!on('homework')) this._day = '';
     var day = this._day;
     var several = this._children(data).length > 1;
     var toSign = data.words.filter((w) => !w.signed);
+    var pending = data.words.filter((w) => w.achievement && !w.achieved);
     var todo = E.sortedHomework(this._myHomework(data), false).filter((h) => !day || String(h.date).slice(0, 10) === day);
     var latest = data.news[0];
     var tiles = [
@@ -356,9 +376,9 @@ export class EducartablePanel extends HTMLElement {
       on('news') ? this._tile('news', 'mdi:newspaper-variant-outline', 'blue', t.section_news, latest ? [latest.title, E.day(latest.date, t, locale)].filter(Boolean).join(' · ') : t.no_news, 0) : '',
     ].filter(Boolean);
     var see = (tab) => (on(tab) ? '<button class="see" data-tab="' + tab + '">' + E.esc(t.see_all) + ' ›</button>' : '');
-    var todoRows = (on('words') ? toSign.map((w) => R.word(w, t, locale)) : [])
-      .concat(on('homework') ? todo.slice(0, 6).map((h) => R.homework(h, t, locale, { child: several && !this._child })) : []);
-    var newsRows = data.news.slice(0, 5).map((n) => R.news(n, t, locale));
+    var todoRows = (on('words') ? pending.map((w) => R.word(w, t, locale, opts)) : [])
+      .concat(on('homework') ? todo.slice(0, 6).map((h) => R.homework(h, t, locale, Object.assign({}, opts, { child: several && !this._child }))) : []);
+    var newsRows = data.news.slice(0, 5).map((n) => R.news(n, t, locale, opts));
     var box = (cls, title, side, rows, empty) =>
       '<section class="box ' + cls + '"><div class="bh"><h2>' + E.esc(title) + '</h2>' + side + '</div>' + this._list(rows, empty) + '</section>';
     return this._childChips(t, data) + (on('homework') ? this._week(t, data) : '') +
@@ -389,7 +409,7 @@ export class EducartablePanel extends HTMLElement {
       var full = done === d.all.length;
       return '<section class="box day' + (full ? ' full' : '') + '"><div class="bh"><h2>' + E.esc(d.date ? E.day(d.date, t, locale) : '—') + '</h2><span class="ratio">' + done + ' / ' + d.all.length + '</span></div>' +
         '<div class="bar"><span style="width:' + Math.round((done / d.all.length) * 100) + '%"></span></div>' +
-        items.map((h) => E.rows.homework(h, t, locale, { child: several && !this._child })).join('') + '</section>';
+        items.map((h) => E.rows.homework(h, t, locale, { child: several && !this._child, full: true, entryId: data.entryId, canAct: E.canAct(this._hass) })).join('') + '</section>';
     }).join('');
     return chips + (tiles ? '<div class="days">' + tiles + '</div>' : this._box('', '<div class="empty">' + E.esc(t.no_homework) + '</div>', true));
   }
@@ -399,13 +419,59 @@ export class EducartablePanel extends HTMLElement {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
     var words = data.words.slice().sort((a, b) => (a.signed === b.signed ? 0 : a.signed ? 1 : -1));
-    return this._box('', this._list(words.map((w) => E.rows.word(w, t, locale)), t.no_words), true);
+    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass) };
+    return this._box('', this._list(words.map((w) => E.rows.word(w, t, locale, opts)), t.no_words), true);
   }
 
   _news(t, data) {
     var E = window.Educartable;
     var locale = E.locale(this._hass);
-    return this._box('', this._list(data.news.map((n) => E.rows.news(n, t, locale)), t.no_news), true);
+    var opts = { full: true, entryId: data.entryId, canAct: E.canAct(this._hass) };
+    return this._box('', this._list(data.news.map((n) => E.rows.news(n, t, locale, opts)), t.no_news), true);
+  }
+
+  // Signing a liaison-book message: a confirmation at the top of the page with the signer's name (as the portal asks
+  // for it), prefilled with the account's name.
+  _popup(t, data) {
+    var E = window.Educartable;
+    var w = this._confirm ? data.words.find((x) => String(x.id) === this._confirm.id) : null;
+    if (!w) return '';
+    return '<div class="popup"><div class="popup-title">' + E.esc(t.sign_title) + '</div>' +
+      '<div class="popup-text">' + E.esc(E.format(t.sign_text, { title: w.title || '—' })) + '</div>' +
+      '<label class="signer-label">' + E.esc(t.signer) + '<input class="signer" type="text" autocomplete="name" value="' + E.esc(this._confirm.name) + '"></label>' +
+      '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
+      '<button class="act" data-action="confirm"' + (this._confirm.busy ? ' disabled' : '') + '>' + E.esc(this._confirm.busy ? t.signing : t.sign) + '</button></div></div>';
+  }
+
+  _doSign(data) {
+    var E = window.Educartable;
+    var t = E.t(this._hass);
+    var input = this._root.querySelector('.signer');
+    if (input) this._confirm.name = input.value;
+    var w = data.words.find((x) => String(x.id) === this._confirm.id);
+    if (!w || this._confirm.busy) return;
+    if (String(this._confirm.name || '').trim().length < 3) {
+      this._error = t.signer_short;
+      this._render();
+      return;
+    }
+    this._confirm.busy = true;
+    this._error = '';
+    this._render();
+    E.sign(this._hass, data.entryId, w, this._confirm.name.trim())
+      .catch((err) => this._fail(err))
+      .finally(() => {
+        this._confirm = null;
+        this._render();
+      });
+  }
+
+  _fail(err) {
+    var E = window.Educartable;
+    E.errorText(this._hass, err).then((text) => {
+      this._error = `${E.t(this._hass).action_failed} ${text}`;
+      this._render();
+    });
   }
 
   _renderSettings(content, t) {
@@ -442,15 +508,17 @@ export class EducartablePanel extends HTMLElement {
         '<div class="form" data-entry="' + E.esc(acc.entry_id) + '"></div>' +
         (s.admin ? '<div class="popup-actions"><span class="msg"></span><button class="act" data-action="save" data-entry="' + E.esc(acc.entry_id) + '">' + E.esc(t.save) + '</button></div>' : ''),
         true)).join('') + '</div>';
-    var labels = { scan_interval: t.settings_scan, homework_days: t.settings_days, show_panel: t.settings_panel, panel_tabs: t.settings_tabs, hide_header: t.settings_hide_header };
-    var helpers = { scan_interval: t.settings_scan_hint, hide_header: t.settings_hide_header_hint };
+    var labels = { scan_interval: t.settings_scan, homework_days: t.settings_days, notify_services: t.settings_notify, show_panel: t.settings_panel, panel_tabs: t.settings_tabs, hide_header: t.settings_hide_header };
+    var helpers = { scan_interval: t.settings_scan_hint, notify_services: t.settings_notify_hint, hide_header: t.settings_hide_header_hint };
     s.accounts.forEach((acc) => {
       var form = document.createElement('ha-form');
+      var notify = s.notify_services.concat((acc.options.notify_services || []).filter((n) => s.notify_services.indexOf(n) === -1));
       form.hass = this._hass;
       form.disabled = !s.admin;
       form.schema = [
         { name: 'scan_interval', selector: { number: { min: 10, max: 360, step: 5, mode: 'box', unit_of_measurement: 'min' } } },
         { name: 'homework_days', selector: { number: { min: 1, max: 60, step: 1, mode: 'box', unit_of_measurement: 'd' } } },
+        { name: 'notify_services', selector: { select: { multiple: true, custom_value: true, mode: 'dropdown', options: notify } } },
         { name: 'show_panel', selector: { boolean: {} } },
         {
           name: 'panel_tabs',
@@ -492,6 +560,7 @@ export class EducartablePanel extends HTMLElement {
         options: {
           scan_interval: Number(options.scan_interval),
           homework_days: Number(options.homework_days),
+          notify_services: options.notify_services || [],
           show_panel: !!options.show_panel,
           panel_tabs: options.panel_tabs || [],
           hide_header: options.hide_header || 'off',
@@ -522,7 +591,16 @@ export class EducartablePanel extends HTMLElement {
   }
 
   _onClick(ev) {
-    var childEl = ev.target.closest('[data-child]');
+    var E = window.Educartable;
+    var toggle = ev.target.closest('[data-toggle]');
+    if (toggle && !ev.target.closest('[data-action], a')) {
+      var key = toggle.getAttribute('data-toggle');
+      if (this._open[key]) delete this._open[key];
+      else this._open[key] = true;
+      this._render();
+      return;
+    }
+    var childEl = ev.target.closest('[data-child]:not([data-action])');
     if (childEl) {
       this._child = childEl.getAttribute('data-child');
       this._saveFilters();
@@ -552,6 +630,22 @@ export class EducartablePanel extends HTMLElement {
       return;
     } else if (action === 'refresh') this._refresh(data);
     else if (action === 'open') window.open(data.url, '_blank', 'noopener');
+    else if (action === 'sign' && E.canAct(this._hass)) {
+      this._confirm = { id: el.getAttribute('data-id'), name: data.account.name || '' };
+      this._render();
+      this._root.querySelector('.popup')?.scrollIntoView?.({ block: 'nearest' });
+      this._root.querySelector('.signer')?.focus?.({ preventScroll: true });
+    } else if (action === 'cancel') {
+      this._confirm = null;
+      this._render();
+    } else if (action === 'confirm') this._doSign(data);
+    else if (action === 'read') {
+      var w = data.words.find((x) => String(x.id) === el.getAttribute('data-id'));
+      if (w && E.canAct(this._hass)) E.markRead(this._hass, data.entryId, w).catch((err) => this._fail(err));
+    } else if (action === 'homework') {
+      var item = data.homework.find((h) => String(h.id) === el.getAttribute('data-id') && String(h.child_id) === el.getAttribute('data-child'));
+      if (item && E.canAct(this._hass)) E.setDone(this._hass, data.entryId, item, !item.done).catch((err) => this._fail(err));
+    } else if (action === 'file') E.openFile(this._hass, data.entryId, { id: el.getAttribute('data-media'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err));
   }
 
   _refresh(data) {
@@ -683,12 +777,13 @@ export class EducartablePanel extends HTMLElement {
       '.filter.on { color: color-mix(in srgb, ' + A + ' 60%, var(--primary-text-color)); border-color: color-mix(in srgb, ' + A + ' 50%, transparent); background: color-mix(in srgb, ' + A + ' 10%, transparent); }',
       '.toggle { margin-left: auto; font-size: 13px; color: var(--secondary-text-color); display: flex; align-items: center; gap: 6px; }',
       '.item-title { white-space: normal; }',
+      '.popup { padding: 12px 16px; border-radius: 12px; border: 1px solid color-mix(in srgb, ' + A + ' 40%, transparent); background: color-mix(in srgb, ' + A + ' 6%, var(--card-background-color, #fff)); }',
+      '.popup-title { font-weight: 500; }',
+      '.popup-text { font-size: 13px; color: var(--secondary-text-color); margin-top: 2px; }',
+      '.signer-label { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 12px; color: var(--secondary-text-color); max-width: 360px; }',
+      '.signer { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--divider-color, rgba(0,0,0,.2)); background: var(--card-background-color, #fff); color: var(--primary-text-color); }',
       // Settings: the Save button, outlined (never filled), its message at its left.
       '.popup-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }',
-      '.act { flex: none; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; padding: 3px 10px; border-radius: 10px; background: transparent;' +
-        ' color: color-mix(in srgb, ' + A + ' 60%, var(--primary-text-color)); border: 1px solid color-mix(in srgb, ' + A + ' 50%, transparent); }',
-      '.act:hover { background: color-mix(in srgb, ' + A + ' 10%, transparent); }',
-      '.act:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }',
       '.errbar { padding: 8px 12px; border-radius: 8px; background: color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }',
       '.msg { font-size: 13px; margin-right: auto; }',
       '.msg.ok { color: color-mix(in srgb, var(--success-color, #43a047) 55%, var(--primary-text-color)); }',

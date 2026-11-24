@@ -20,7 +20,7 @@ const context = {
   Intl,
 };
 vm.createContext(context);
-vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
+vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
 const E = context.e;
 
 const sensor = (id, state, attrs) => ({ entity_id: id, state: String(state), attributes: { config_entry_id: 'abc', ...attrs } });
@@ -112,17 +112,59 @@ test('homework order: undone first by date, done hidden on request', () => {
   assert.deepEqual(E.educartableSortedHomework(list, false).map((h) => h.id), ['c', 'b']);
 });
 
-test('rows show the state only: no button acts on the portal in this release', () => {
+test('liaison book: Sign and Mark as read for administrators, the state for the others and once done', () => {
   const t = E.educartableT({ language: 'en' });
-  const word = E.educartableWordRow({ id: '1', title: 'Trip', signed: false }, t, 'en');
-  assert.match(word, /To sign|to sign/);
-  assert.doesNotMatch(word, /<button|data-action/);
-  assert.match(E.educartableWordRow({ id: '2', title: 'Pool', signed: true }, t, 'en'), /Signed/);
-  const hw = { id: 'h1', title: 'Poem', subject: 'French', child: 'Alex', date: '2026-11-26', done: false };
-  assert.doesNotMatch(E.educartableHomeworkRow(hw, t, 'en', {}), /<button|data-action/);
+  const sign = { id: '1', title: 'Trip', achievement: 'sign', achieved: false, signed: false };
+  assert.match(E.educartableWordRow(sign, t, 'en', { canAct: true }), /data-action="sign" data-id="1"/);
+  assert.doesNotMatch(E.educartableWordRow(sign, t, 'en', { canAct: false }), /data-action=/);
+  assert.match(E.educartableWordRow(sign, t, 'en', { canAct: false }), /class="chip">to sign/);
+  const read = { id: '2', title: 'Pool', achievement: 'read', achieved: false };
+  assert.match(E.educartableWordRow(read, t, 'en', { canAct: true }), /data-action="read" data-id="2"/);
+  assert.match(E.educartableWordRow({ ...sign, achieved: true }, t, 'en', { canAct: true }), /class="chip ok">Signed/);
+  assert.match(E.educartableWordRow({ ...read, achieved: true }, t, 'en', { canAct: true }), /class="chip ok">Read/);
+  assert.match(E.educartableWordRow({ id: '3', title: 'Survey', achievement: 'survey', achieved: false }, t, 'en', { canAct: true }), /survey to answer/);
+  assert.equal(E.educartableCanAct({ user: { is_admin: false } }), false);
+  assert.equal(E.educartableCanAct({}), true, 'unknown user: the backend still refuses non-admins');
+});
+
+test('homework: a box to tick only for homework that can be ticked, greyed out for non-administrators', () => {
+  const t = E.educartableT({ language: 'en' });
+  const hw = { id: 'h1', title: 'Poem', subject: 'French', child: 'Alex', child_id: 'p1', date: '2026-11-26', done: false, recipient_id: 'r1' };
+  assert.match(E.educartableHomeworkRow(hw, t, 'en', { canAct: true }), /data-action="homework" data-id="h1" data-child="p1">/);
+  assert.match(E.educartableHomeworkRow(hw, t, 'en', { canAct: false }), /data-action="homework"[^>]*disabled/);
+  assert.doesNotMatch(E.educartableHomeworkRow({ ...hw, recipient_id: '' }, t, 'en', { canAct: true }), /data-action=/);
   assert.match(E.educartableHomeworkRow(hw, t, 'en', {}), /Alex · French/);
   assert.doesNotMatch(E.educartableHomeworkRow(hw, t, 'en', { child: false }), /Alex/);
   assert.match(E.educartableHomeworkRow({ ...hw, done: true }, t, 'en', {}), /class="item hw done"/);
+});
+
+test('rows unfold to their text and attachments', () => {
+  const t = E.educartableT({ language: 'en' });
+  const w = { id: '1', title: 'Trip', text: 'Bring lunch', achievement: 'sign', achieved: false, medias: [{ id: '7', name: 'Map.jpg', extension: 'jpg' }, { id: '8', name: 'Slip.pdf', extension: 'pdf' }] };
+  const closed = E.educartableWordRow(w, t, 'en', { isOpen: () => false, entryId: 'abc', canAct: true });
+  assert.match(closed, /data-toggle="word:1"/);
+  assert.doesNotMatch(closed, /Bring lunch/);
+  const open = E.educartableWordRow(w, t, 'en', { isOpen: () => true, entryId: 'abc', canAct: true });
+  assert.match(open, /Bring lunch/);
+  assert.match(open, /<img alt="Map.jpg" data-src="1" data-media="7"/);
+  assert.match(open, /data-action="file" data-media="8" data-name="Slip.pdf"/);
+  // The panel shows everything, without a chevron
+  assert.doesNotMatch(E.educartableWordRow(w, t, 'en', { full: true, entryId: 'abc', canAct: true }), /data-toggle/);
+  // Attachments are fetched with the parent's account: names only for the others
+  const others = E.educartableFiles(w.medias, t, 'abc', false);
+  assert.doesNotMatch(others, /<img/);
+  assert.match(others, /data-media="7"[^>]*disabled/);
+});
+
+test('actions send the account, the message and the child', async () => {
+  const calls = [];
+  const hass = { callWS: (m) => calls.push(m) && Promise.resolve(), callService: (...a) => calls.push(a) && Promise.resolve() };
+  await E.educartableSign(hass, 'abc', { id: 7 }, 'Parent Test');
+  await E.educartableSetDone(hass, 'abc', { id: 'h1', child_id: 'p1' }, true);
+  assert.deepEqual(plain(calls), [
+    ['educartable', 'sign', { config_entry_id: 'abc', message_id: '7', name: 'Parent Test' }],
+    { type: 'educartable/homework_done', config_entry_id: 'abc', child_id: 'p1', homework_id: 'h1', done: true },
+  ]);
 });
 
 test('news rows say what they are: event, parent meeting or news', () => {

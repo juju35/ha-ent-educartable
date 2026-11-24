@@ -27,6 +27,8 @@ CONF_USERNAME_SECRET: Final = "username_secret"
 SECRETS_FILE: Final = "secrets.yaml"
 
 CONF_SCAN_INTERVAL: Final = "scan_interval"
+# Notify actions (notify.mobile_app_…) told about new homework, liaison-book messages and news.
+CONF_NOTIFY: Final = "notify_services"
 CONF_HOMEWORK_DAYS: Final = "homework_days"
 
 # The ENT is a school server shared by many families: never poll it faster than every 10 minutes.
@@ -39,7 +41,16 @@ MESSAGES_KEPT: Final = 10
 NEWS_KEPT: Final = 5
 
 SERVICE_REFRESH: Final = "refresh"
+SERVICE_SIGN: Final = "sign"
+SERVICE_MARK_READ: Final = "mark_read"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
+ATTR_MESSAGE_ID: Final = "message_id"
+ATTR_NAME: Final = "name"
+
+# Fired on the bus for what appeared since the last update (never on the first one).
+EVENT_NEW_HOMEWORK: Final = f"{DOMAIN}_new_homework"
+EVENT_NEW_MESSAGE: Final = f"{DOMAIN}_new_message"
+EVENT_NEW_NEWS: Final = f"{DOMAIN}_new_news"
 
 CONF_SHOW_PANEL: Final = "show_panel"
 DEFAULT_SHOW_PANEL: Final = True

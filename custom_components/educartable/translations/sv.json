@@ -34,6 +34,24 @@
           "password": "Lämna tomt för att läsa det från secrets.yaml.",
           "totp": "Bara om ditt konto har tvåstegsverifiering aktiverad."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Ändra inloggningsuppgifterna för {username}, eller växla var och en mellan ett sparat värde och en post i secrets.yaml.",
+        "data": {
+          "username": "Användarnamn",
+          "username_secret": "Användarnamnshemlighet",
+          "password": "Lösenord",
+          "password_secret": "Lösenordshemlighet",
+          "totp": "Engångskod"
+        },
+        "data_description": {
+          "username": "Lämna tomt för att läsa det från secrets.yaml.",
+          "username_secret": "Namnet på posten i secrets.yaml med användarnamnet, till exempel educartable_username.",
+          "password": "Lämna tomt för att läsa det från secrets.yaml.",
+          "password_secret": "Namnet på posten i secrets.yaml med lösenordet, till exempel educartable_password. Den läses igen vid varje uppdatering: efter ett lösenordsbyte räcker det att ändra hemligheten.",
+          "totp": "Bara om ditt konto har tvåstegsverifiering aktiverad."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Det här kontot är redan konfigurerat.",
       "reauth_successful": "Inloggningsuppgifterna har uppdaterats.",
-      "wrong_account": "Dessa inloggningsuppgifter hör till ett annat konto."
+      "wrong_account": "Dessa inloggningsuppgifter hör till ett annat konto.",
+      "reconfigure_successful": "Inloggningsuppgifterna har uppdaterats."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Uppdateringsintervall",
           "homework_days": "Läxperiod",
+          "notify_services": "Aviseringsåtgärder",
           "show_panel": "Visa den här panelen i sidofältet",
           "panel_tabs": "Flikar som visas i panelen",
           "hide_header": "Dölj det övre fältet"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable delas av hela skolan: minst 10 minuter.",
           "homework_days": "Läxor med deadline inom så många dagar visas.",
-          "hide_header": "Den illustrerade rubriken ovanför flikarna; flikarna finns kvar och på en telefon flyttas menyknappen bredvid dem."
+          "hide_header": "Den illustrerade rubriken ovanför flikarna; flikarna finns kvar och på en telefon flyttas menyknappen bredvid dem.",
+          "notify_services": "Meddela dessa åtgärder (notify.mobile_app_…) om nya läxor, meddelanden i kontaktboken och nyheter. Lämna tomt för ingen."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Senaste uppdatering"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Läxor"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Läxor"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Konto",
           "description": "Educartable-kontot som ska uppdateras. Lämna tomt när bara ett är konfigurerat."
+        }
+      }
+    },
+    "sign": {
+      "name": "Skriv under",
+      "description": "Skriv under ett meddelande i kontaktboken som kräver en underskrift.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under."
+        },
+        "name": {
+          "name": "Undertecknarens namn",
+          "description": "Namnet som sparas med underskriften, minst 3 tecken, som i portalen."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Markera som läst",
+      "description": "Markera ett meddelande som ska läsas som läst.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Flera Educartable-konton är konfigurerade: ange vilket som ska användas."
+    },
+    "action_failed": {
+      "message": "Educartable avvisade åtgärden: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nya läxor för {child}"
+    },
+    "notify_new_message": {
+      "message": "Kontaktbok: nytt meddelande för {child}"
+    },
+    "notify_new_news": {
+      "message": "Nyhet från skolan"
     }
   },
   "selector": {

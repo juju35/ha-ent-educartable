@@ -34,6 +34,24 @@
           "password": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
           "totp": "Len ak má váš účet zapnuté dvojfaktorové overenie."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Zmeňte prihlasovacie údaje {username} alebo prepnite každý medzi uloženou hodnotou a položkou v secrets.yaml.",
+        "data": {
+          "username": "Používateľské meno",
+          "username_secret": "Tajomstvo používateľského mena",
+          "password": "Heslo",
+          "password_secret": "Tajomstvo hesla",
+          "totp": "Jednorazový kód"
+        },
+        "data_description": {
+          "username": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "username_secret": "Názov položky v secrets.yaml s používateľským menom, napríklad educartable_username.",
+          "password": "Nechajte prázdne, ak ho chcete čítať zo secrets.yaml.",
+          "password_secret": "Názov položky v secrets.yaml s heslom, napríklad educartable_password. Načíta sa znova pri každej aktualizácii: po zmene hesla stačí upraviť secret.",
+          "totp": "Len ak má váš účet zapnuté dvojfaktorové overenie."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Tento účet je už nastavený.",
       "reauth_successful": "Prihlasovacie údaje aktualizované.",
-      "wrong_account": "Tieto prihlasovacie údaje patria inému účtu."
+      "wrong_account": "Tieto prihlasovacie údaje patria inému účtu.",
+      "reconfigure_successful": "Prihlasovacie údaje aktualizované."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Interval aktualizácie",
           "homework_days": "Obdobie úloh",
+          "notify_services": "Akcie upozornení",
           "show_panel": "Zobraziť tento panel na bočnom paneli",
           "panel_tabs": "Karty zobrazené v paneli",
           "hide_header": "Skryť horný panel"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable používa celá škola: minimálne 10 minút.",
           "homework_days": "Zobrazujú sa úlohy s termínom v rámci tohto počtu dní.",
-          "hide_header": "Ilustrovaná hlavička nad kartami; karty zostanú a na telefóne sa tlačidlo ponuky presunie vedľa nich."
+          "hide_header": "Ilustrovaná hlavička nad kartami; karty zostanú a na telefóne sa tlačidlo ponuky presunie vedľa nich.",
+          "notify_services": "Upozorniť tieto akcie (notify.mobile_app_…) na nové domáce úlohy, správy v žiackej knižke a novinky. Nechajte prázdne pre žiadnu."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Posledná aktualizácia"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Domáce úlohy"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Domáce úlohy"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Účet",
           "description": "Účet Educartable na obnovenie. Nechajte prázdne, ak je nastavený len jeden."
+        }
+      }
+    },
+    "sign": {
+      "name": "Podpísať",
+      "description": "Podpísať správu v žiackej knižke, ktorá vyžaduje podpis.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "message_id": {
+          "name": "Správa",
+          "description": "ID správy z atribútu messages senzora Žiacka knižka na podpis."
+        },
+        "name": {
+          "name": "Meno podpisujúceho",
+          "description": "Meno uložené s podpisom, aspoň 3 znaky, ako v portáli."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Označiť ako prečítané",
+      "description": "Označiť ako prečítanú správu, ktorá sa má prečítať.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "message_id": {
+          "name": "Správa",
+          "description": "ID správy z atribútu messages senzora Žiacka knižka na podpis alebo Novinky."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Je nastavených viac účtov Educartable: uveďte, ktorý sa má použiť."
+    },
+    "action_failed": {
+      "message": "Educartable odmietol akciu: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nové domáce úlohy pre {child}"
+    },
+    "notify_new_message": {
+      "message": "Žiacka knižka: nová správa pre {child}"
+    },
+    "notify_new_news": {
+      "message": "Novinka zo školy"
     }
   },
   "selector": {

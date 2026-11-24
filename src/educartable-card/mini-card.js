@@ -53,6 +53,7 @@ export class EducartableMiniCard extends EducartableCard {
 
   _setZoom(zoomed) {
     this._zoomed = zoomed;
+    if (!zoomed) this._confirm = null;
     this._render(true);
   }
 }

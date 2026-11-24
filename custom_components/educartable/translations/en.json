@@ -34,6 +34,24 @@
           "password": "Leave empty to read it from secrets.yaml instead.",
           "totp": "Only if your account has two-factor authentication enabled."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Change the credentials of {username}, or switch each one between a stored value and a secrets.yaml entry.",
+        "data": {
+          "username": "Username",
+          "username_secret": "Username secret",
+          "password": "Password",
+          "password_secret": "Password secret",
+          "totp": "One-time code"
+        },
+        "data_description": {
+          "username": "Leave empty to read it from secrets.yaml instead.",
+          "username_secret": "Name of the secrets.yaml entry holding the username, for example educartable_username.",
+          "password": "Leave empty to read it from secrets.yaml instead.",
+          "password_secret": "Name of the secrets.yaml entry holding the password, for example educartable_password. It is read again at every update: after a password change, editing the secret is enough.",
+          "totp": "Only if your account has two-factor authentication enabled."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "This account is already configured.",
       "reauth_successful": "Credentials updated.",
-      "wrong_account": "These credentials belong to another account."
+      "wrong_account": "These credentials belong to another account.",
+      "reconfigure_successful": "Credentials updated."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Update interval",
           "homework_days": "Homework window",
+          "notify_services": "Notify actions",
           "show_panel": "Show the Educartable panel in the sidebar",
           "panel_tabs": "Tabs shown in the panel",
           "hide_header": "Hide the top bar"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable is shared by the whole school: 10 minutes minimum.",
           "homework_days": "Homework due within this many days is shown.",
-          "hide_header": "The illustrated header above the tabs; the tabs stay, and on a phone the menu button moves beside them."
+          "hide_header": "The illustrated header above the tabs; the tabs stay, and on a phone the menu button moves beside them.",
+          "notify_services": "Tell these actions (notify.mobile_app_…) about new homework, liaison-book messages and news. Leave empty for none."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Last update"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Homework"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Homework"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Account",
           "description": "The Educartable account to refresh. Leave empty when only one is configured."
+        }
+      }
+    },
+    "sign": {
+      "name": "Sign",
+      "description": "Sign a liaison-book message that asks for a signature.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign sensor."
+        },
+        "name": {
+          "name": "Signer's name",
+          "description": "The name recorded with the signature, 3 characters or more, as in the portal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Mark as read",
+      "description": "Mark a message that asks to be read as read.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Several Educartable accounts are configured: name the one to use."
+    },
+    "action_failed": {
+      "message": "Educartable refused the action: {error}"
+    },
+    "notify_new_homework": {
+      "message": "New homework for {child}"
+    },
+    "notify_new_message": {
+      "message": "Liaison book: new message for {child}"
+    },
+    "notify_new_news": {
+      "message": "School news"
     }
   },
   "selector": {

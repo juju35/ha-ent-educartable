@@ -34,6 +34,24 @@
           "password": "Déjalo vacío para leerlo de secrets.yaml.",
           "totp": "Solo si tu cuenta tiene activada la autenticación en dos pasos."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Cambia las credenciales de {username}, o alterna cada una entre un valor guardado y una entrada de secrets.yaml.",
+        "data": {
+          "username": "Usuario",
+          "username_secret": "Secreto del usuario",
+          "password": "Contraseña",
+          "password_secret": "Secreto de la contraseña",
+          "totp": "Código de un solo uso"
+        },
+        "data_description": {
+          "username": "Déjalo vacío para leerlo de secrets.yaml.",
+          "username_secret": "Nombre de la entrada de secrets.yaml que contiene el usuario, por ejemplo educartable_username.",
+          "password": "Déjalo vacío para leerla de secrets.yaml.",
+          "password_secret": "Nombre de la entrada de secrets.yaml que contiene la contraseña, por ejemplo educartable_password. Se vuelve a leer en cada actualización: tras un cambio de contraseña, basta con editar el secreto.",
+          "totp": "Solo si tu cuenta tiene activada la autenticación en dos pasos."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Esta cuenta ya está configurada.",
       "reauth_successful": "Credenciales actualizadas.",
-      "wrong_account": "Estas credenciales pertenecen a otra cuenta."
+      "wrong_account": "Estas credenciales pertenecen a otra cuenta.",
+      "reconfigure_successful": "Credenciales actualizadas."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Intervalo de actualización",
           "homework_days": "Ventana de deberes",
+          "notify_services": "Acciones de notificación",
           "show_panel": "Mostrar este panel en la barra lateral",
           "panel_tabs": "Pestañas mostradas en el panel",
           "hide_header": "Ocultar la barra superior"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable lo comparte toda la escuela: 10 minutos como mínimo.",
           "homework_days": "Se muestran los deberes para dentro de este número de días.",
-          "hide_header": "La cabecera ilustrada sobre las pestañas; las pestañas se mantienen y, en el móvil, el botón de menú pasa junto a ellas."
+          "hide_header": "La cabecera ilustrada sobre las pestañas; las pestañas se mantienen y, en el móvil, el botón de menú pasa junto a ellas.",
+          "notify_services": "Avisar a estas acciones (notify.mobile_app_…) de los nuevos deberes, mensajes del cuaderno de enlace y noticias. Déjalo vacío para ninguna."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Última actualización"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Deberes"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Deberes"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Cuenta",
           "description": "La cuenta de Educartable que actualizar. Déjalo vacío si solo hay una configurada."
+        }
+      }
+    },
+    "sign": {
+      "name": "Firmar",
+      "description": "Firmar un mensaje del cuaderno de enlace que pide una firma.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "message_id": {
+          "name": "Mensaje",
+          "description": "El id del mensaje, en el atributo messages del sensor Cuaderno de enlace por firmar."
+        },
+        "name": {
+          "name": "Nombre del firmante",
+          "description": "El nombre registrado con la firma, 3 caracteres o más, como en el portal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Marcar como leído",
+      "description": "Marcar como leído un mensaje que pide ser leído.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "message_id": {
+          "name": "Mensaje",
+          "description": "El id del mensaje, en el atributo messages del sensor Cuaderno de enlace por firmar o Noticias."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Hay varias cuentas de Educartable configuradas: indica cuál usar."
+    },
+    "action_failed": {
+      "message": "Educartable rechazó la acción: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nuevos deberes para {child}"
+    },
+    "notify_new_message": {
+      "message": "Cuaderno de enlace: nuevo mensaje para {child}"
+    },
+    "notify_new_news": {
+      "message": "Noticia del colegio"
     }
   },
   "selector": {

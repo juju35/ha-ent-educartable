@@ -34,6 +34,24 @@
           "password": "Lad stå tomt for at læse det fra secrets.yaml.",
           "totp": "Kun hvis din konto har totrinsbekræftelse slået til."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Skift loginoplysningerne for {username}, eller skift hver mellem en gemt værdi og en post i secrets.yaml.",
+        "data": {
+          "username": "Brugernavn",
+          "username_secret": "Brugernavn-secret",
+          "password": "Adgangskode",
+          "password_secret": "Adgangskode-secret",
+          "totp": "Engangskode"
+        },
+        "data_description": {
+          "username": "Lad stå tomt for at læse det fra secrets.yaml.",
+          "username_secret": "Navnet på posten i secrets.yaml med brugernavnet, for eksempel educartable_username.",
+          "password": "Lad stå tomt for at læse den fra secrets.yaml.",
+          "password_secret": "Navnet på posten i secrets.yaml med adgangskoden, for eksempel educartable_password. Den læses igen ved hver opdatering: efter en ændring af adgangskoden er det nok at rette secret'en.",
+          "totp": "Kun hvis din konto har totrinsbekræftelse slået til."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Denne konto er allerede konfigureret.",
       "reauth_successful": "Loginoplysninger opdateret.",
-      "wrong_account": "Disse loginoplysninger hører til en anden konto."
+      "wrong_account": "Disse loginoplysninger hører til en anden konto.",
+      "reconfigure_successful": "Loginoplysninger opdateret."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Opdateringsinterval",
           "homework_days": "Lektieperiode",
+          "notify_services": "Notifikationshandlinger",
           "show_panel": "Vis dette panel i sidebjælken",
           "panel_tabs": "Faner vist i panelet",
           "hide_header": "Skjul den øverste bjælke"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable deles af hele skolen: mindst 10 minutter.",
           "homework_days": "Lektier med frist inden for så mange dage vises.",
-          "hide_header": "Den illustrerede overskrift over fanerne; fanerne bliver, og på en telefon flytter menuknappen ved siden af dem."
+          "hide_header": "Den illustrerede overskrift over fanerne; fanerne bliver, og på en telefon flytter menuknappen ved siden af dem.",
+          "notify_services": "Giv disse handlinger (notify.mobile_app_…) besked om nye lektier, beskeder i kontaktbogen og nyheder. Lad stå tomt for ingen."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Seneste opdatering"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Lektier"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Lektier"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Konto",
           "description": "Den Educartable-konto, der skal opdateres. Lad stå tomt, når der kun er én."
+        }
+      }
+    },
+    "sign": {
+      "name": "Underskriv",
+      "description": "Underskriv en besked i kontaktbogen, der beder om en underskrift.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift."
+        },
+        "name": {
+          "name": "Underskriverens navn",
+          "description": "Navnet, der gemmes med underskriften, mindst 3 tegn, som i portalen."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Markér som læst",
+      "description": "Markér en besked, der beder om at blive læst, som læst.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Flere Educartable-konti er sat op: angiv, hvilken der skal bruges."
+    },
+    "action_failed": {
+      "message": "Educartable afviste handlingen: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nye lektier til {child}"
+    },
+    "notify_new_message": {
+      "message": "Kontaktbog: ny besked til {child}"
+    },
+    "notify_new_news": {
+      "message": "Nyhed fra skolen"
     }
   },
   "selector": {

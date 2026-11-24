@@ -1,11 +1,14 @@
 """Client for the Educartable (EDUMOOV family portal) unofficial API.
 
 Unofficial API — it can change without notice. Authentication is OpenID Connect (Keycloak); the data routes
-are plain REST with the access token as a Bearer header. Only read operations are implemented.
+are plain REST with the access token as a Bearer header. Routes follow the portal's own web app
+(mobile.educartable.com): reads, the achievement of a message (sign, read…), the done box of a homework and the
+attachments (medias).
 """
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -23,6 +26,10 @@ from .const import (
 )
 
 _TIMEOUT = aiohttp.ClientTimeout(total=30)
+# Attachments are served through Home Assistant: never more than this in memory.
+MEDIA_MAX_BYTES = 25 * 1024 * 1024
+# A media id is a plain identifier: anything else would let a caller reach another route.
+MEDIA_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
 class EducartableError(Exception):
@@ -115,11 +122,21 @@ class EducartableApi:
     # ── HTTP ────────────────────────────────────────────────────────────────────────────────────────────────
 
     async def _get(self, url: str, params: dict[str, Any] | None = None) -> Any:
+        return await self._request("GET", url, params=params)
+
+    async def _post(self, url: str, payload: dict[str, Any]) -> Any:
+        return await self._request("POST", url, json=payload)
+
+    async def _request(
+        self, method: str, url: str, *, params: dict[str, Any] | None = None, json: dict[str, Any] | None = None
+    ) -> Any:
         await self._ensure_token()
         for attempt in (1, 2):
             headers = {"Authorization": f"Bearer {self._access_token}", "Accept": "application/json"}
             try:
-                async with self._session.get(url, params=params, headers=headers, timeout=_TIMEOUT) as resp:
+                async with self._session.request(
+                    method, url, params=params, json=json, headers=headers, timeout=_TIMEOUT
+                ) as resp:
                     if resp.status == 401 and attempt == 1:
                         self._access_token = None
                         await self.login()
@@ -128,8 +145,10 @@ class EducartableApi:
                         raise EducartableAuthError("session refused")
                     if resp.status >= 500:
                         raise EducartableUnavailableError(f"HTTP {resp.status}")
-                    if resp.status != 200:
+                    if resp.status not in (200, 201, 204):
                         raise EducartableError(f"HTTP {resp.status} on {url}")
+                    if resp.status == 204:
+                        return {}
                     return await resp.json(content_type=None)
             except aiohttp.ClientError as err:
                 raise EducartableUnavailableError(str(err)) from err
@@ -175,3 +194,46 @@ class EducartableApi:
 
     async def news(self, parent_id: str) -> list[dict[str, Any]]:
         return await self._messages(parent_id, NEWS_TYPES, sort="visibility", direction="desc")
+
+    # ── Writes (as the portal's web app) ────────────────────────────────────────────────────────────────────
+
+    async def achieve(
+        self, parent_id: str, message_id: str, action: str, subject_model: str, subject_key: list[str], body: str = ""
+    ) -> None:
+        """Record the action a message asks for: sign (body = the signer's name), read, check, comment…"""
+        await self._post(
+            f"{API_EDUCARTABLE}/parent/{parent_id}/messages/{message_id}/achieve",
+            {"subject_model": subject_model, "subject_key": subject_key, "action": action, "body": body},
+        )
+
+    async def check(self, parent_id: str, message_id: str, recipient_id: str, checked: bool) -> None:
+        """Tick (or untick) a homework for one pupil: `recipient_id` is the pupil's recipient entry."""
+        await self._post(
+            f"{API_EDUCARTABLE}/parent/{parent_id}/messages/{message_id}/check",
+            {"recipient_id": recipient_id, "checked": checked},
+        )
+
+    # ── Files ───────────────────────────────────────────────────────────────────────────────────────────────
+
+    async def media(self, media_id: str) -> tuple[bytes, str]:
+        """An attachment of a message: its bytes and the type the portal declares."""
+        if not MEDIA_ID.fullmatch(media_id):
+            raise EducartableError("invalid media id")
+        await self._ensure_token()
+        headers = {"Authorization": f"Bearer {self._access_token}"}
+        try:
+            async with self._session.get(
+                f"{API_EDUCORE}/medias/{media_id}/file", headers=headers, timeout=_TIMEOUT
+            ) as resp:
+                if resp.status >= 500:
+                    raise EducartableUnavailableError(f"HTTP {resp.status}")
+                if resp.status != 200:
+                    raise EducartableError(f"HTTP {resp.status} on media {media_id}")
+                if (resp.content_length or 0) > MEDIA_MAX_BYTES:
+                    raise EducartableError("file too large")
+                body = await resp.read()
+                if len(body) > MEDIA_MAX_BYTES:
+                    raise EducartableError("file too large")
+                return body, resp.headers.get("Content-Type", "")
+        except aiohttp.ClientError as err:
+            raise EducartableUnavailableError(str(err)) from err

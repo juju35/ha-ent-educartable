@@ -34,6 +34,24 @@
           "password": "Deixe vazio para o ler de secrets.yaml.",
           "totp": "Apenas se a sua conta tiver a autenticação de dois fatores ativada."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Altere as credenciais de {username}, ou alterne cada uma entre um valor guardado e uma entrada de secrets.yaml.",
+        "data": {
+          "username": "Utilizador",
+          "username_secret": "Segredo do utilizador",
+          "password": "Palavra-passe",
+          "password_secret": "Segredo da palavra-passe",
+          "totp": "Código de utilização única"
+        },
+        "data_description": {
+          "username": "Deixe vazio para o ler de secrets.yaml.",
+          "username_secret": "Nome da entrada de secrets.yaml com o nome de utilizador, por exemplo educartable_username.",
+          "password": "Deixe vazio para a ler de secrets.yaml.",
+          "password_secret": "Nome da entrada de secrets.yaml com a palavra-passe, por exemplo educartable_password. É lida de novo em cada atualização: após uma mudança de palavra-passe, basta editar o segredo.",
+          "totp": "Apenas se a sua conta tiver a autenticação de dois fatores ativada."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Esta conta já está configurada.",
       "reauth_successful": "Credenciais atualizadas.",
-      "wrong_account": "Estas credenciais pertencem a outra conta."
+      "wrong_account": "Estas credenciais pertencem a outra conta.",
+      "reconfigure_successful": "Credenciais atualizadas."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Intervalo de atualização",
           "homework_days": "Janela dos trabalhos",
+          "notify_services": "Ações de notificação",
           "show_panel": "Mostrar este painel na barra lateral",
           "panel_tabs": "Separadores mostrados no painel",
           "hide_header": "Ocultar a barra superior"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "O Educartable é partilhado por toda a escola: 10 minutos no mínimo.",
           "homework_days": "São mostrados os trabalhos de casa para dentro deste número de dias.",
-          "hide_header": "O cabeçalho ilustrado acima dos separadores; os separadores ficam e, no telemóvel, o botão de menu passa para junto deles."
+          "hide_header": "O cabeçalho ilustrado acima dos separadores; os separadores ficam e, no telemóvel, o botão de menu passa para junto deles.",
+          "notify_services": "Avisar estas ações (notify.mobile_app_…) de novos trabalhos de casa, mensagens da caderneta e notícias. Deixe vazio para nenhuma."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Última atualização"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Trabalhos de casa"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Trabalhos de casa"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Conta",
           "description": "A conta Educartable a atualizar. Deixe vazio quando só houver uma configurada."
+        }
+      }
+    },
+    "sign": {
+      "name": "Assinar",
+      "description": "Assinar uma mensagem da caderneta que pede uma assinatura.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "message_id": {
+          "name": "Mensagem",
+          "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar."
+        },
+        "name": {
+          "name": "Nome de quem assina",
+          "description": "O nome registado com a assinatura, 3 caracteres ou mais, como no portal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Marcar como lida",
+      "description": "Marcar como lida uma mensagem que pede para ser lida.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Conta",
+          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
+        },
+        "message_id": {
+          "name": "Mensagem",
+          "description": "O id da mensagem, no atributo messages do sensor Caderneta por assinar ou Notícias."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Há várias contas Educartable configuradas: indique qual usar."
+    },
+    "action_failed": {
+      "message": "O Educartable recusou a ação: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Novos trabalhos de casa para {child}"
+    },
+    "notify_new_message": {
+      "message": "Caderneta: nova mensagem para {child}"
+    },
+    "notify_new_news": {
+      "message": "Notícia da escola"
     }
   },
   "selector": {

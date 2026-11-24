@@ -205,6 +205,107 @@ export function educartableRefresh(hass, entryId) {
   return hass.callService('educartable', 'refresh', { config_entry_id: entryId });
 }
 
+// Signing, marking read, ticking homework and fetching attachments act on the portal with the parent's account:
+// administrators only (a child's Home Assistant account must not sign their own liaison book). True while unknown.
+export function educartableCanAct(hass) {
+  return hass?.user?.is_admin !== false;
+}
+
+export function educartableSign(hass, entryId, message, name) {
+  return hass.callService('educartable', 'sign', { config_entry_id: entryId, message_id: String(message.id), name: String(name || '') });
+}
+
+export function educartableMarkRead(hass, entryId, message) {
+  return hass.callService('educartable', 'mark_read', { config_entry_id: entryId, message_id: String(message.id) });
+}
+
+export function educartableSetDone(hass, entryId, item, done) {
+  return hass.callWS({ type: 'educartable/homework_done', config_entry_id: entryId, child_id: String(item.child_id), homework_id: String(item.id), done: !!done });
+}
+
+// Attachments are fetched through Home Assistant (the browser has no portal session) with a signed URL, signed for an
+// hour and reused for 50 minutes; images and PDFs shown in the page are drawn from a blob: URL, kept for the page's life.
+export var educartableSigned = {};
+export var EDUCARTABLE_SIGN_REUSE = 50 * 60 * 1000;
+export var educartableBlobs = {};
+
+export function educartableFileUrl(hass, entryId, media) {
+  var key = entryId + ' ' + media.id;
+  var hit = educartableSigned[key];
+  if (hit && Date.now() - hit.at < EDUCARTABLE_SIGN_REUSE) return hit.promise;
+  var path = `/api/educartable/file/${entryId}?media=${encodeURIComponent(media.id)}&name=${encodeURIComponent(media.name || '')}`;
+  var entry = { at: Date.now() };
+  entry.promise = hass.callWS({ type: 'auth/sign_path', path: path, expires: 3600 }).then((res) => res.path);
+  entry.promise.catch(() => {
+    if (educartableSigned[key] === entry) delete educartableSigned[key];
+  });
+  educartableSigned[key] = entry;
+  return entry.promise;
+}
+
+export function educartableFileBlob(hass, entryId, media) {
+  var key = entryId + ' ' + media.id;
+  if (educartableBlobs[key]) return educartableBlobs[key].promise;
+  var entry = { url: '' };
+  entry.promise = educartableFileUrl(hass, entryId, media)
+    .then((url) => fetch(url, { credentials: 'same-origin' }))
+    .then((res) => (res.ok ? res.blob() : Promise.reject(new Error(`HTTP ${res.status}`))))
+    .then((blob) => {
+      entry.url = URL.createObjectURL(blob);
+      return entry.url;
+    });
+  entry.promise.catch(() => {
+    if (educartableBlobs[key] === entry) delete educartableBlobs[key];
+  });
+  educartableBlobs[key] = entry;
+  return entry.promise;
+}
+
+// Opens an attachment in a new tab (PDF and images shown by the browser, other files downloaded).
+export function educartableOpenFile(hass, entryId, media) {
+  var tab = window.open('', '_blank');
+  return educartableFileUrl(hass, entryId, media)
+    .then((url) => {
+      if (tab) tab.location.href = url;
+      else window.location.href = url;
+    })
+    .catch((err) => {
+      if (tab) tab.close();
+      throw err;
+    });
+}
+
+export function educartableIsImage(media) {
+  return /^(png|jpe?g|gif|webp)$/.test(String(media.extension || '').toLowerCase());
+}
+
+// Attachments of an unfolded row: image thumbnails (shown once fetched, see educartableHydrate) and file buttons.
+// Fetched with the parent's account: administrators only, the others see the names.
+export function educartableFiles(medias, t, entryId, canAct) {
+  if (!medias?.length) return '';
+  var attrs = (m) => ' data-media="' + educartableEsc(m.id) + '" data-name="' + educartableEsc(m.name) + '"';
+  var images = canAct ? medias.filter(educartableIsImage) : [];
+  var others = medias.filter((m) => images.indexOf(m) === -1);
+  var blob = (m) => educartableBlobs[entryId + ' ' + m.id]?.url || '';
+  return '<div class="atts" role="group" aria-label="' + educartableEsc(t.attachments) + '">' +
+    (images.length ? '<div class="att-images">' + images.map((m) =>
+      '<button class="att-img" data-action="file"' + attrs(m) + ' title="' + educartableEsc(m.name) + '"><img alt="' + educartableEsc(m.name) + '" data-src="1"' + attrs(m) + (blob(m) ? ' src="' + educartableEsc(blob(m)) + '"' : '') + '></button>').join('') + '</div>' : '') +
+    (others.length ? '<div class="files">' + others.map((m) =>
+      '<button class="file" data-action="file"' + attrs(m) + (canAct ? '' : ' disabled') + ' title="' + educartableEsc(m.name) + '"><ha-icon icon="' + (m.extension === 'pdf' ? 'mdi:file-pdf-box' : 'mdi:paperclip') + '"></ha-icon><span>' + educartableEsc(m.name) + '</span></button>').join('') + '</div>' : '') +
+    '</div>';
+}
+
+// Gives the drawn thumbnails their sources.
+export function educartableHydrate(root, hass, entryId) {
+  root.querySelectorAll('img[data-src]:not([src])').forEach((img) => {
+    educartableFileBlob(hass, entryId, { id: img.getAttribute('data-media'), name: img.getAttribute('data-name') })
+      .then((url) => {
+        if (!img.getAttribute('src')) img.setAttribute('src', url);
+      })
+      .catch(() => img.closest('.att-img')?.classList.add('broken'));
+  });
+}
+
 // A click inside a Home Assistant dialog (more-info, editor) is not a click outside the card.
 export function educartableInDialog(ev) {
   return ev.composedPath().some((el) => el?.tagName && /^(HA-DIALOG|HA-MORE-INFO-DIALOG|HUI-DIALOG-EDIT-CARD)$/.test(el.tagName));
@@ -218,24 +319,56 @@ export function educartableSortedHomework(items, showDone) {
     .sort((x, y) => (x.done === y.done ? String(x.date).localeCompare(String(y.date)) : x.done ? 1 : -1));
 }
 
-// Shared row renderers: the card and the panel draw the same rows. This release only reads the portal: the rows show
-// the state of each item (to sign, signed, done) without buttons that would act on it.
-export function educartableWordRow(w, t, locale) {
-  var meta = [w.child, educartableDay(w.date, t, locale)].filter(Boolean).join(' · ');
-  return '<div class="item word' + (w.signed ? ' done' : '') + '">' +
-    '<ha-icon class="item-icon" icon="' + (w.signed ? 'mdi:check-circle-outline' : 'mdi:notebook-edit-outline') + '"></ha-icon>' +
-    '<div class="item-main"><div class="item-title">' + educartableEsc(w.title || '—') + '</div>' +
-    '<div class="item-meta">' + educartableEsc(meta) + '</div></div>' +
-    '<span class="chip' + (w.signed ? ' ok' : '') + '">' + educartableEsc(w.signed ? t.signed : t.tile_words) + '</span></div>';
+// Shared row renderers: the card and the panel draw the same rows. A row with more to read (text, attachments) gets a
+// chevron and data-toggle; opts.isOpen(key) unfolds it, opts.full (the panel's tabs) always shows it.
+export function educartableToggle(key, open, hasMore) {
+  if (!hasMore) return { attrs: '', chevron: '' };
+  return {
+    attrs: ' data-toggle="' + educartableEsc(key) + '" role="button" tabindex="0" aria-expanded="' + !!open + '"',
+    chevron: '<ha-icon class="chevron' + (open ? '' : ' closed') + '" icon="mdi:chevron-down"></ha-icon>',
+  };
 }
 
-// opts.child: the child's first name in the meta line (left out where a single child is shown).
+function educartableMore(item, key, opts) {
+  var open = !!(opts?.full || opts?.isOpen?.(key));
+  var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0);
+  var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) : '';
+  return { tg: tg, body: body };
+}
+
+// The action a liaison-book message waits for: Sign (opens the confirmation) or Mark as read, for administrators;
+// its state for the others and once done.
+export function educartableWordAction(w, t, canAct) {
+  if (w.achieved || !w.achievement) return w.achievement ? '<span class="chip ok">' + educartableEsc(w.achievement === 'sign' ? t.signed : t.read_done) + '</span>' : '';
+  if (canAct && w.achievement === 'sign') return '<button class="act" data-action="sign" data-id="' + educartableEsc(w.id) + '">' + educartableEsc(t.sign) + '</button>';
+  if (canAct && w.achievement === 'read') return '<button class="act" data-action="read" data-id="' + educartableEsc(w.id) + '">' + educartableEsc(t.mark_read) + '</button>';
+  return '<span class="chip">' + educartableEsc(t['ach_' + w.achievement] || t.tile_words) + '</span>';
+}
+
+export function educartableWordRow(w, t, locale, opts) {
+  var meta = [w.child, w.author, educartableDay(w.date, t, locale)].filter(Boolean).join(' · ');
+  var m = educartableMore(w, 'word:' + w.id, Object.assign({ t: t }, opts));
+  var pending = w.achievement && !w.achieved;
+  return '<div class="item word' + (pending ? '' : ' done') + '">' +
+    '<ha-icon class="item-icon" icon="' + (pending ? (w.achievement === 'sign' ? 'mdi:notebook-edit-outline' : 'mdi:email-alert-outline') : 'mdi:check-circle-outline') + '"></ha-icon>' +
+    '<div class="item-main"' + m.tg.attrs + '><div class="item-title">' + educartableEsc(w.title || '—') + '</div>' +
+    '<div class="item-meta">' + educartableEsc(meta) + '</div>' + m.body + '</div>' + m.tg.chevron +
+    educartableWordAction(w, t, opts?.canAct) + '</div>';
+}
+
+// opts.child: the child's first name in the meta line (left out where a single child is shown). The box ticks a
+// homework that asks to be done (administrators); one that asks something else shows its state only.
 export function educartableHomeworkRow(h, t, locale, opts) {
   var meta = [opts?.child === false ? '' : h.child, h.subject, educartableDue(h.date, t, locale)].filter(Boolean).join(' · ');
-  return '<div class="item hw' + (h.done ? ' done' : '') + '">' +
-    '<ha-icon class="item-icon state" icon="' + (h.done ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline') + '" aria-label="' + educartableEsc(h.done ? t.done : t.to_do) + '"></ha-icon>' +
-    '<div class="item-main"><div class="item-title">' + educartableEsc(h.title || h.subject || '—') + '</div>' +
-    '<div class="item-meta">' + educartableEsc(meta) + '</div></div></div>';
+  var label = h.done ? t.mark_todo : t.mark_done;
+  var icon = '<ha-icon icon="' + (h.done ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline') + '"></ha-icon>';
+  var box = h.recipient_id
+    ? '<button class="check" role="checkbox" aria-checked="' + !!h.done + '" aria-label="' + educartableEsc(label) + '" title="' + educartableEsc(label) + '" data-action="homework" data-id="' + educartableEsc(h.id) + '" data-child="' + educartableEsc(h.child_id) + '"' + (opts?.canAct === false ? ' disabled' : '') + '>' + icon + '</button>'
+    : '<span class="check static" aria-label="' + educartableEsc(h.done ? t.done : t.to_do) + '">' + icon + '</span>';
+  var m = educartableMore(h, 'homework:' + h.child_id + ':' + h.id, Object.assign({ t: t }, opts));
+  return '<div class="item hw' + (h.done ? ' done' : '') + '">' + box +
+    '<div class="item-main"' + m.tg.attrs + '><div class="item-title">' + educartableEsc(h.title || h.subject || '—') + '</div>' +
+    '<div class="item-meta">' + educartableEsc(meta) + '</div>' + m.body + '</div>' + m.tg.chevron + '</div>';
 }
 
 // News, events and parent meetings: the icon and the label say which.
@@ -245,12 +378,13 @@ export var EDUCARTABLE_NEWS_KINDS = {
   advert: ['mdi:newspaper-variant-outline', 'kind_advert'],
 };
 
-export function educartableNewsRow(n, t, locale) {
+export function educartableNewsRow(n, t, locale, opts) {
   var kind = EDUCARTABLE_NEWS_KINDS[n.type] || EDUCARTABLE_NEWS_KINDS.advert;
+  var m = educartableMore(n, 'news:' + n.id, Object.assign({ t: t }, opts));
   return '<div class="item news">' +
     '<ha-icon class="item-icon" icon="' + kind[0] + '"></ha-icon>' +
-    '<div class="item-main"><div class="item-title">' + educartableEsc(n.title || '—') + '</div>' +
-    '<div class="item-meta">' + educartableEsc([t[kind[1]], educartableDay(n.date, t, locale)].filter(Boolean).join(' · ')) + '</div></div></div>';
+    '<div class="item-main"' + m.tg.attrs + '><div class="item-title">' + educartableEsc(n.title || '—') + '</div>' +
+    '<div class="item-meta">' + educartableEsc([t[kind[1]], n.author, educartableDay(n.date, t, locale)].filter(Boolean).join(' · ')) + '</div>' + m.body + '</div>' + m.tg.chevron + '</div>';
 }
 
 // Styles of the rows and chips, shared by the card and the panel.
@@ -272,6 +406,42 @@ export function educartableItemStyles(accent) {
       ' color: color-mix(in srgb, ' + accent + ' 55%, var(--primary-text-color)); background: color-mix(in srgb, ' + accent + ' 15%, transparent); }',
     '.chip.ok { color: color-mix(in srgb, var(--success-color, #43a047) 55%, var(--primary-text-color)); background: color-mix(in srgb, var(--success-color, #43a047) 15%, transparent); }',
     '.empty { padding: 4px 0; font-size: 13px; color: var(--secondary-text-color); }',
+    '.item-text { font-size: 13px; color: var(--primary-text-color); white-space: pre-line; margin-top: 4px; overflow-wrap: anywhere; }',
+    '.item-text.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }',
+    '[data-toggle] { cursor: pointer; }',
+    '[data-toggle]:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; border-radius: 4px; }',
+    // Collapsed: chevron to the right; open: down (like the other cards).
+    '.chevron { flex: none; align-self: flex-start; margin-top: 10px; color: var(--secondary-text-color); --mdc-icon-size: 20px; transition: transform .2s ease; }',
+    '.chevron.closed { transform: rotate(-90deg); }',
+    // 40 px touch target around the 20 px box, without moving the row's text.
+    '.check { all: unset; cursor: pointer; flex: none; display: grid; place-items: center; width: 40px; height: 40px; margin: -8px -8px -8px -10px; border-radius: 10px; color: var(--secondary-text-color); --mdc-icon-size: 20px; }',
+    '.check:hover { background: color-mix(in srgb, var(--primary-text-color) 6%, transparent); }',
+    '.check:disabled, .check.static { cursor: default; background: none; }',
+    '.check:disabled { opacity: .6; }',
+    '.hw.done .check { color: var(--success-color, #43a047); }',
+    '.check:focus-visible, .act:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }',
+    // Outlined, never filled (card convention): accent text on an accent hairline.
+    '.act { flex: none; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; padding: 3px 10px; border-radius: 10px; background: transparent;' +
+      ' color: color-mix(in srgb, ' + accent + ' 60%, var(--primary-text-color)); border: 1px solid color-mix(in srgb, ' + accent + ' 50%, transparent); }',
+    '.act:hover { background: color-mix(in srgb, ' + accent + ' 10%, transparent); }',
+    '.act:disabled { opacity: .6; cursor: default; }',
+    '.act.ghost { color: var(--secondary-text-color); border-color: var(--divider-color, rgba(0,0,0,.2)); }',
+    '.atts { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }',
+    '.att-images { display: flex; flex-wrap: wrap; gap: 6px; }',
+    // White under the image: a transparent PNG drawn in black (a poster, a scan) disappears on a dark theme.
+    '.att-img { all: unset; cursor: zoom-in; display: block; border-radius: 8px; overflow: hidden; border: 1px solid var(--divider-color, rgba(0,0,0,.12)); background: #fff; }',
+    '.att-img img { display: block; height: 72px; width: auto; max-width: 160px; object-fit: cover; }',
+    '.att-img.broken { display: none; }',
+    '.att-img:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }',
+    '.files { display: flex; flex-wrap: wrap; gap: 6px; }',
+    '.file { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; font-size: 12px; padding: 3px 10px 3px 6px; border-radius: 12px;' +
+      ' border: 1px solid var(--divider-color, rgba(0,0,0,.2)); color: var(--primary-text-color); --mdc-icon-size: 16px; }',
+    '.file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+    '.file ha-icon { color: ' + accent + '; flex: none; }',
+    '.file:hover { background: color-mix(in srgb, ' + accent + ' 10%, transparent); }',
+    '.file:disabled { cursor: default; background: none; }',
+    '.file:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
+    '@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }',
     '.error-text { color: color-mix(in srgb, var(--error-color, #db4437) 55%, var(--primary-text-color)); font-size: 13px; }',
   ].join('\n');
 }
@@ -295,6 +465,12 @@ window.Educartable = {
   time: educartableTime,
   setTimeFormat: educartableSetTimeFormat,
   refresh: educartableRefresh,
+  canAct: educartableCanAct,
+  sign: educartableSign,
+  markRead: educartableMarkRead,
+  setDone: educartableSetDone,
+  openFile: educartableOpenFile,
+  hydrate: educartableHydrate,
   sortedHomework: educartableSortedHomework,
   rows: { word: educartableWordRow, homework: educartableHomeworkRow, news: educartableNewsRow },
   itemStyles: educartableItemStyles,

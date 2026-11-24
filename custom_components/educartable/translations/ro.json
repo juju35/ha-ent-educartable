@@ -34,6 +34,24 @@
           "password": "Lasă gol pentru a-l citi din secrets.yaml.",
           "totp": "Doar dacă pe contul tău este activată autentificarea în doi pași."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Schimbă datele de autentificare ale {username} sau comută fiecare între o valoare salvată și o intrare din secrets.yaml.",
+        "data": {
+          "username": "Nume de utilizator",
+          "username_secret": "Secretul numelui de utilizator",
+          "password": "Parolă",
+          "password_secret": "Secretul parolei",
+          "totp": "Cod unic"
+        },
+        "data_description": {
+          "username": "Lasă gol pentru a-l citi din secrets.yaml.",
+          "username_secret": "Numele intrării din secrets.yaml care conține numele de utilizator, de exemplu educartable_username.",
+          "password": "Lasă gol pentru a o citi din secrets.yaml.",
+          "password_secret": "Numele intrării din secrets.yaml care conține parola, de exemplu educartable_password. Este citită din nou la fiecare actualizare: după o schimbare de parolă, e suficient să editezi secretul.",
+          "totp": "Doar dacă pe contul tău este activată autentificarea în doi pași."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Acest cont este deja configurat.",
       "reauth_successful": "Date de autentificare actualizate.",
-      "wrong_account": "Aceste date de autentificare aparțin altui cont."
+      "wrong_account": "Aceste date de autentificare aparțin altui cont.",
+      "reconfigure_successful": "Date de autentificare actualizate."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Interval de actualizare",
           "homework_days": "Perioada temelor",
+          "notify_services": "Acțiuni de notificare",
           "show_panel": "Afișează acest panou în bara laterală",
           "panel_tabs": "File afișate în panou",
           "hide_header": "Ascunde bara de sus"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable este folosit de toată școala: minimum 10 minute.",
           "homework_days": "Sunt afișate temele cu termen în acest număr de zile.",
-          "hide_header": "Antetul ilustrat de deasupra filelor; filele rămân, iar pe telefon butonul de meniu trece lângă ele."
+          "hide_header": "Antetul ilustrat de deasupra filelor; filele rămân, iar pe telefon butonul de meniu trece lângă ele.",
+          "notify_services": "Anunță aceste acțiuni (notify.mobile_app_…) despre teme noi, mesaje din carnetul de corespondență și noutăți. Lasă gol pentru niciuna."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Ultima actualizare"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Teme"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Teme"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Cont",
           "description": "Contul Educartable de reîmprospătat. Lasă gol când este configurat unul singur."
+        }
+      }
+    },
+    "sign": {
+      "name": "Semnează",
+      "description": "Semnează un mesaj din carnetul de corespondență care cere o semnătură.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat."
+        },
+        "name": {
+          "name": "Numele semnatarului",
+          "description": "Numele înregistrat cu semnătura, cel puțin 3 caractere, ca în portal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Marchează ca citit",
+      "description": "Marchează ca citit un mesaj care cere să fie citit.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Sunt configurate mai multe conturi Educartable: indică pe care să-l folosești."
+    },
+    "action_failed": {
+      "message": "Educartable a refuzat acțiunea: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Teme noi pentru {child}"
+    },
+    "notify_new_message": {
+      "message": "Carnet de corespondență: mesaj nou pentru {child}"
+    },
+    "notify_new_news": {
+      "message": "Noutate de la școală"
     }
   },
   "selector": {

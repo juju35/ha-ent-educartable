@@ -52,12 +52,17 @@ carries the new version, updated together in one commit:
 - Educartable is **EDUMOOV**'s family portal for primary school — an unofficial, reverse-engineered
   API (`app.educartable.com`, OpenID Connect on `accounts.edumoov.com`, client `educlasse`). It may
   change without notice.
-- This release is **read-only**, two sides: **Élèves** (homework per child) and **Parents**
-  (liaison book to sign, news), with a card, a mini card and a sidebar panel (layout of ha-ent-one: card A,
-  mini card with the counts, panel with Home / Homework / Liaison book / News / Settings tabs).
-- Not yet implemented, pending a network capture on a real parent account: the writes (sign the
-  liaison book, mark homework done, reply, answer a survey), attachment URLs, and the pupil
-  **livret / compétences** endpoint. Rows show the state only, never a button acting on the portal.
+- Two sides: **Élèves** (homework per child) and **Parents** (liaison book, news), with a card, a mini card and a
+  sidebar panel (layout of ha-ent-one: card A, mini card with the counts, panel with Home / Homework / Liaison book /
+  News / Settings tabs), a homework calendar and a to-do list per child.
+- Routes follow the portal's own web app (`mobile.educartable.com`, its `app.*.js` bundle): a message's `achievement`
+  is what it asks (read, sign, check, comment, book, survey) and it is done once `achievements` is not empty;
+  `POST …/messages/{id}/achieve` (`subject_model`, `subject_key`, `action`, `body` = signer's name for sign),
+  `POST …/messages/{id}/check` (`recipient_id`, `checked`, per pupil recipient), attachments at
+  `educore/medias/{id}/file`. Writes are **administrators only** (services, websocket, file view).
+- Not yet implemented: replying (comments), surveys (`parent.messages.answerSurvey` RPC), appointments, the pupil
+  **livret / compétences** (`livret/…/notebooks`, `attestations_validations`). The writes still need confirming on a
+  real parent account (beta).
 - New card or visual rework: **propose design options to choose from** before implementing.
 
 ## README layout

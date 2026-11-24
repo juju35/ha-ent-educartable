@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "custom_components/educartable/frontend"
@@ -186,35 +187,102 @@ CARNET = [
     {
         "id": "101",
         "title": "Museum trip on Friday",
+        "text": "The class visits the natural history museum on Friday.\nPlease bring a packed lunch and sign the permission slip.",
         "type": "info",
+        "author": "Ms Brown",
+        "achievement": "sign",
+        "achieved": False,
+        "medias": [
+            {"id": "m1", "name": "Map.png", "extension": "png"},
+            {"id": "m2", "name": "Permission slip.pdf", "extension": "pdf"},
+        ],
         "date": "2026-11-16T07:30:00+01:00",
+        "children": ["p1"],
+        "child": "Alex",
         "to_sign": True,
+        "to_do": True,
     },
     {
         "id": "102",
         "title": "Swimming lessons start",
+        "text": "Lessons start on Monday 30 November. A swim cap is required.",
         "type": "alert",
+        "author": "Mr Green",
+        "achievement": "read",
+        "achieved": False,
+        "medias": [],
         "date": "2026-11-12T16:00:00+01:00",
+        "children": ["p2"],
+        "child": "Sam",
         "to_sign": False,
+        "to_do": True,
     },
 ]
 
+
+def _hw(id_, title, subject, due, done, *, text="", achievement="check"):
+    return {
+        "id": id_,
+        "title": title,
+        "text": text,
+        "subject": subject,
+        "due": due,
+        "done": done,
+        "achievement": achievement,
+        "achieved": done,
+        "recipient_id": f"r-{id_}" if achievement == "check" else "",
+        "medias": [],
+        "type": "lesson",
+        "author": "",
+    }
+
+
 HOMEWORK = {
     "p1": [
-        {"id": "h1", "title": "Learn the poem, page 12", "subject": "French", "due": "2026-11-19", "done": False},
-        {"id": "h2", "title": "Times table of 7", "subject": "Maths", "due": "2026-11-19", "done": False},
-        {"id": "h3", "title": "Read chapter 3", "subject": "French", "due": "2026-11-16", "done": True},
+        _hw(
+            "h1", "Learn the poem, page 12", "French", "2026-11-19", False, text="Learn the first two verses by heart."
+        ),
+        _hw("h2", "Times table of 7", "Maths", "2026-11-19", False),
+        _hw("h3", "Read chapter 3", "French", "2026-11-16", True, achievement="read"),
     ],
     "p2": [
-        {"id": "h4", "title": "Bring a cardboard box", "subject": "Art", "due": "2026-11-20", "done": False},
+        _hw("h4", "Bring a cardboard box", "Art", "2026-11-20", False),
     ],
 }
 
+
+def _news(id_, title, type_, date, author, text=""):
+    return {
+        "id": id_,
+        "title": title,
+        "text": text,
+        "type": type_,
+        "author": author,
+        "achievement": "",
+        "achieved": False,
+        "medias": [],
+        "date": date,
+        "children": [],
+        "child": "",
+        "to_sign": False,
+        "to_do": False,
+    }
+
+
 NEWS = [
-    {"id": "n1", "title": "Christmas fair", "type": "event", "date": "2026-11-15T10:00:00+01:00"},
-    {"id": "n2", "title": "Parents' evening", "type": "meeting", "date": "2026-11-13T18:00:00+01:00"},
-    {"id": "n3", "title": "Canteen menus for December", "type": "advert", "date": "2026-11-10T09:00:00+01:00"},
+    _news("n1", "Christmas fair", "event", "2026-11-15T10:00:00+01:00", "Head teacher", "Saturday 12 December, 10:00."),
+    _news("n2", "Parents' evening", "meeting", "2026-11-13T18:00:00+01:00", "Ms Brown"),
+    _news("n3", "Canteen menus for December", "advert", "2026-11-10T09:00:00+01:00", "Town hall"),
 ]
+
+
+# The map attached to the trip message: a neutral drawing, served as the signed URL of the file view.
+MOCK_IMAGE = "data:image/svg+xml," + quote(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="140"><rect width="240" height="140" fill="#e8efe3"/>'
+    '<path d="M0 100 Q60 80 120 105 T240 95 V140 H0Z" fill="#b9d4ea"/><path d="M40 0 L60 140 M150 0 L140 140" '
+    'stroke="#fff" stroke-width="6"/><rect x="160" y="40" width="40" height="22" rx="3" fill="#d8c29a"/>'
+    '<circle cx="180" cy="51" r="4" fill="#f28c1e"/></svg>'
+)
 
 
 def _sensor(entity_id, state, **attributes):
@@ -253,7 +321,10 @@ STATES = {
 STATES_SIGNED = {
     **STATES,
     "sensor.educartable_liaison_book_to_sign": _sensor(
-        "sensor.educartable_liaison_book_to_sign", 0, stale=[], messages=[{**m, "to_sign": False} for m in CARNET]
+        "sensor.educartable_liaison_book_to_sign",
+        0,
+        stale=[],
+        messages=[{**m, "achieved": True, "to_sign": False, "to_do": False} for m in CARNET],
     ),
 }
 
@@ -269,6 +340,12 @@ STATES_BARE = {
 SHOTS = [
     {"file": "card", "theme": "light", "config": {}},
     {"file": "card-dark", "theme": "dark", "config": {}},
+    # The confirmation at the top of the card before signing a liaison-book message, the signer's name prefilled.
+    {"file": "card-sign", "theme": "light", "config": {}, "click": '[data-action="sign"]'},
+    {"file": "card-sign-dark", "theme": "dark", "config": {}, "click": '[data-action="sign"]'},
+    # A message unfolded to its text and attachments, by a click on its row.
+    {"file": "card-unfolded", "theme": "light", "config": {}, "click": '[data-toggle="word:101"]'},
+    {"file": "card-unfolded-dark", "theme": "dark", "config": {}, "click": '[data-toggle="word:101"]'},
     {"file": "mini-card", "theme": "light", "element": "educartable-mini-card", "width": 300, "config": {}},
     {"file": "mini-card-dark", "theme": "dark", "element": "educartable-mini-card", "width": 300, "config": {}},
     # The mini card expanded by its detail button: the full card, at the full card's width.
@@ -363,9 +440,10 @@ def mount(context, shot):
     if shot.get("panel"):
         page.add_script_tag(content=PANEL_JS)
     page.evaluate(
-        """({config, states, element, tab, dark}) => {
+        """({config, states, element, tab, dark, mockImage}) => {
           const hass = {states, themes: {darkMode: dark}, language: "en", locale: {language: "en", time_format: "24"}, user: {is_admin: true},
-                        callService: () => Promise.resolve(), callWS: () => Promise.resolve({})};
+                        callService: () => Promise.resolve(),
+                        callWS: (msg) => Promise.resolve(msg.type === "auth/sign_path" ? {path: mockImage} : {})};
           const el = document.createElement(element);
           if (tab) {
             el._tab = tab;
@@ -382,6 +460,7 @@ def mount(context, shot):
             "states": shot.get("states", STATES),
             "element": "educartable-panel" if shot.get("panel") else shot.get("element", "educartable-card"),
             "tab": shot.get("panel"),
+            "mockImage": MOCK_IMAGE,
             # The illustrated header follows the dark theme alone, so dark twins show the night.
             "dark": shot["theme"] == "dark",
         },
