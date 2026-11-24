@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} ακύρωσε το ραντεβού της {day} στις {time}",
   presence: "Αναμένεται και το παιδί",
   delete: "Διαγραφή",
+  attach: "Επισύναψη",
+  remove_file: "Αφαίρεση",
+  file_too_big: "{name}: πάνω από 40 MB",
+  translate: "Μετάφραση",
+  translating: "Μετάφραση…",
+  show_original: "Εμφάνιση πρωτοτύπου",
 };

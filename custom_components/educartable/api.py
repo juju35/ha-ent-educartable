@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 import time
 from typing import Any
+from urllib.parse import urlparse
 
 import aiohttp
 
@@ -32,6 +33,9 @@ from .const import (
 )
 
 _TIMEOUT = aiohttp.ClientTimeout(total=30)
+_UPLOAD_TIMEOUT = aiohttp.ClientTimeout(total=300)
+# The portal's hosts an attachment may be sent to (the upload address is given by the portal).
+UPLOAD_HOSTS = (".edumoov.com", ".educartable.com")
 # Attachments are served through Home Assistant: never more than this in memory.
 MEDIA_MAX_BYTES = 25 * 1024 * 1024
 # A media id is a plain identifier: anything else would let a caller reach another route.
@@ -297,6 +301,44 @@ class EducartableApi:
     async def delete_comment(self, parent_id: str, comment_id: str) -> None:
         """Delete one of the family's own comments (the portal keeps a "deleted" trace)."""
         await self._request("DELETE", f"{API_EDUCORE}/parent/{parent_id}/comments/{comment_id}/trash")
+
+    async def upload_target(self, parent_id: str) -> dict[str, Any]:
+        """Where to send an attachment: a signed upload address of the portal's file service, for one upload."""
+        data = await self._get(f"{API_CORE}/parent/{parent_id}/medias/url")
+        target = data.get("data") if isinstance(data, dict) else None
+        url = str(target.get("url") or "") if isinstance(target, dict) else ""
+        host = urlparse(url).hostname or ""
+        # The address comes from the portal: only its own https hosts receive the family's files.
+        if urlparse(url).scheme != "https" or not host.endswith(UPLOAD_HOSTS):
+            raise EducartableError("no upload address from the portal")
+        return target
+
+    async def upload(self, target: dict[str, Any], comment_id: str, name: str, body: bytes, content_type: str) -> None:
+        """Attach a file to a comment, as the portal's uploader sends it (multipart, signed fields)."""
+        form = aiohttp.FormData()
+        for field, value in (
+            ("model", "Interaction"),
+            ("key", comment_id),
+            ("sig", str(target.get("sig") or "")),
+            ("payload", str(target.get("payload") or "")),
+        ):
+            form.add_field(field, value)
+        form.add_field("file", body, filename=name, content_type=content_type)
+        try:
+            async with self._session.post(str(target["url"]), data=form, timeout=_UPLOAD_TIMEOUT) as resp:
+                if resp.status >= 500:
+                    raise EducartableUnavailableError(f"HTTP {resp.status}")
+                if resp.status not in (200, 201, 204):
+                    raise EducartableError(f"HTTP {resp.status} on the upload of {name}")
+        except aiohttp.ClientError as err:
+            raise EducartableUnavailableError(str(err)) from err
+
+    async def translate(self, texts: list[str], source: str, target: str) -> list[str]:
+        """Texts translated by the portal's own service (the one its app offers on a message)."""
+        data = await self.rpc("translate.translate", {}, {"text": texts, "source": source, "target": target})
+        if isinstance(data, str):
+            return [data]
+        return [str(t or "") for t in data] if isinstance(data, list) else []
 
     async def rpc(self, method: str, params: dict[str, Any], payload: dict[str, Any] | None = None) -> Any:
         """Call a method of the portal's RPC API; its refusal ("code - text") is raised with its text."""

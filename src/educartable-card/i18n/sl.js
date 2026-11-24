@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} je preklical(a) termin {day} ob {time}",
   presence: "Pričakuje se tudi otrok",
   delete: "Izbriši",
+  attach: "Priloži",
+  remove_file: "Odstrani",
+  file_too_big: "{name}: večje od 40 MB",
+  translate: "Prevedi",
+  translating: "Prevajanje…",
+  show_original: "Pokaži izvirnik",
 };

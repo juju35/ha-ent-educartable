@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} ha annullato l’appuntamento del {day} alle {time}",
   presence: "È richiesta anche la presenza del figlio",
   delete: "Elimina",
+  attach: "Allega",
+  remove_file: "Rimuovi",
+  file_too_big: "{name}: più di 40 MB",
+  translate: "Traduci",
+  translating: "Traduzione…",
+  show_original: "Mostra l’originale",
 };

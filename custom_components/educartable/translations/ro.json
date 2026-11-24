@@ -190,6 +190,10 @@
         "text": {
           "name": "Text",
           "description": "Ce îi scrii profesorului."
+        },
+        "attachments": {
+          "name": "Atașamente",
+          "description": "Fișiere de atașat: jetoane de încărcare din panou sau căi pe care Home Assistant le poate citi (allowlist_external_dirs); 40 MB fiecare, cel mult 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Text",
           "description": "Mesajul."
+        },
+        "attachments": {
+          "name": "Atașamente",
+          "description": "Fișiere de atașat: jetoane de încărcare din panou sau căi pe care Home Assistant le poate citi (allowlist_external_dirs); 40 MB fiecare, cel mult 10."
         }
       }
     },

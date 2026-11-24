@@ -71,8 +71,12 @@ carries the new version, updated together in one commit:
   unread family ones; read `PUT …/{id}` {read}, all `PUT …/close_all`), booked appointments
   (`cartable.events.nextRegisteredEvents` {start, stop}), message links, `pupil_present`, `archived`, comment deletion
   (`DELETE educore/…/comments/{id}/trash`). Events are dated by their `date`, other messages by `visibility`.
-- Not yet implemented: attachments in replies and new messages (upload through `core/…/medias/url`), translation, the
-  pupil's skills.
+- Also implemented (1.1.0): attachments (`GET core/…/medias/url` → {url, sig, payload}, then a multipart POST to that url,
+  https on an edumoov/educartable host only, fields model `Interaction`, key = the comment id, sig, payload, file; a comment
+  of files only says `Pièce(s) jointe(s) :`; a new message's files go in its first comment) through Home Assistant
+  (`/api/educartable/upload/{entry}` gives tokens, or paths under `allowlist_external_dirs`), and translation
+  (`translate.translate` RPC {text: [title, body], source fr, target}).
+- Not in the portal's family app, so not planned: the pupil's skills (only the livret), online exercises.
 - New card or visual rework: **propose design options to choose from** before implementing.
 
 ## README layout

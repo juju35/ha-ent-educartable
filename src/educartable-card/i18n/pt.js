@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} anulou a marcação de {day} às {time}",
   presence: "A presença do filho também é pedida",
   delete: "Eliminar",
+  attach: "Anexar",
+  remove_file: "Remover",
+  file_too_big: "{name}: mais de 40 MB",
+  translate: "Traduzir",
+  translating: "A traduzir…",
+  show_original: "Ver o original",
 };

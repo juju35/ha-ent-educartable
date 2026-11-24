@@ -50,11 +50,17 @@ reply:
       selector:
         text:
     text:
-      required: true
+      required: false
       example: "Bonjour, c'est noté, merci."
       selector:
         text:
           multiline: true
+    attachments:
+      required: false
+      example: '["/config/www/snapshot.jpg"]'
+      selector:
+        text:
+          multiple: true
 
 write_message:
   fields:
@@ -80,6 +86,12 @@ write_message:
       selector:
         text:
           multiline: true
+    attachments:
+      required: false
+      example: '["/config/www/snapshot.jpg"]'
+      selector:
+        text:
+          multiple: true
 
 answer_survey:
   fields:

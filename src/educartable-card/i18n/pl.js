@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} odwołał spotkanie {day} o {time}",
   presence: "Obecność dziecka jest wymagana",
   delete: "Usuń",
+  attach: "Załącz",
+  remove_file: "Usuń",
+  file_too_big: "{name}: ponad 40 MB",
+  translate: "Przetłumacz",
+  translating: "Tłumaczenie…",
+  show_original: "Pokaż oryginał",
 };

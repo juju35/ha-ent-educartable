@@ -190,6 +190,10 @@
         "text": {
           "name": "Text",
           "description": "Čo napísať učiteľovi."
+        },
+        "attachments": {
+          "name": "Prílohy",
+          "description": "Súbory na priloženie: tokeny nahrávania z panela alebo cesty, ktoré môže Home Assistant čítať (allowlist_external_dirs); po 40 MB, najviac 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Text",
           "description": "Správa."
+        },
+        "attachments": {
+          "name": "Prílohy",
+          "description": "Súbory na priloženie: tokeny nahrávania z panela alebo cesty, ktoré môže Home Assistant čítať (allowlist_external_dirs); po 40 MB, najviac 10."
         }
       }
     },

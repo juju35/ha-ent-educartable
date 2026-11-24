@@ -190,6 +190,10 @@
         "text": {
           "name": "Szöveg",
           "description": "Amit a tanárnak írsz."
+        },
+        "attachments": {
+          "name": "Mellékletek",
+          "description": "Csatolandó fájlok: feltöltési tokenek a panelről, vagy elérési utak, amelyeket a Home Assistant olvashat (allowlist_external_dirs); egyenként 40 MB, legfeljebb 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Szöveg",
           "description": "Az üzenet."
+        },
+        "attachments": {
+          "name": "Mellékletek",
+          "description": "Csatolandó fájlok: feltöltési tokenek a panelről, vagy elérési utak, amelyeket a Home Assistant olvashat (allowlist_external_dirs); egyenként 40 MB, legfeljebb 10."
         }
       }
     },

@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} heeft de afspraak van {day} om {time} geannuleerd",
   presence: "Het kind wordt ook verwacht",
   delete: "Verwijderen",
+  attach: "Bijvoegen",
+  remove_file: "Verwijderen",
+  file_too_big: "{name}: groter dan 40 MB",
+  translate: "Vertalen",
+  translating: "Vertalen…",
+  show_original: "Origineel tonen",
 };

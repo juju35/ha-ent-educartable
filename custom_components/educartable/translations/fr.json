@@ -190,6 +190,10 @@
         "text": {
           "name": "Texte",
           "description": "Ce qu’il faut écrire à l’enseignant."
+        },
+        "attachments": {
+          "name": "Pièces jointes",
+          "description": "Fichiers à joindre : jetons d’envoi du panneau, ou chemins que Home Assistant peut lire (allowlist_external_dirs) ; 40 Mo chacun, 10 au plus."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Texte",
           "description": "Le message."
+        },
+        "attachments": {
+          "name": "Pièces jointes",
+          "description": "Fichiers à joindre : jetons d’envoi du panneau, ou chemins que Home Assistant peut lire (allowlist_external_dirs) ; 40 Mo chacun, 10 au plus."
         }
       }
     },

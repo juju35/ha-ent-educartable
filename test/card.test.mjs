@@ -18,9 +18,10 @@ const context = {
   console,
   Date,
   Intl,
+  FormData,
 };
 vm.createContext(context);
-vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableDocumentRow, educartableFileUrl, educartableAnswerSurvey, educartableBook, educartableReply, educartableWrite, educartableSignDocument, educartableActivityRow, educartableLinks, educartableLike, educartableReadNotifications, educartableDeleteComment, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
+vm.runInContext(`${source}\nthis.e = { educartableEsc, educartableLang, educartableLocale, educartableT, educartableData, educartableChanged, educartableDay, educartableDue, educartableSortedHomework, educartableWordRow, educartableHomeworkRow, educartableNewsRow, educartableFiles, educartableCanAct, educartableSign, educartableSetDone, educartableDocumentRow, educartableFileUrl, educartableAnswerSurvey, educartableBook, educartableReply, educartableWrite, educartableSignDocument, educartableActivityRow, educartableLinks, educartableLike, educartableReadNotifications, educartableDeleteComment, educartableUpload, educartableTranslate, educartableTime, educartableSetTimeFormat, educartableHeaderState, EducartableI18n, EducartableCard };`, context);
 const E = context.e;
 
 const sensor = (id, state, attrs) => ({ entity_id: id, state: String(state), attributes: { config_entry_id: 'abc', ...attrs } });
@@ -492,4 +493,26 @@ test('like, notifications and deleting a comment call their actions', async () =
     ['educartable', 'mark_notifications_read', { config_entry_id: 'abc', notification_id: '4' }],
     ['educartable', 'delete_comment', { config_entry_id: 'abc', message_id: 'c6', comment_id: '90' }],
   ]);
+});
+
+test('files go to Home Assistant first, the reply names their tokens', async () => {
+  const sent = [];
+  const hass = {
+    fetchWithAuth: (url, opts) => { sent.push([url, opts.method]); return Promise.resolve({ ok: true, json: () => Promise.resolve({ files: [{ id: 'upload:a' }, { id: 'upload:b' }] }) }); },
+    callService: (d, s, data) => { sent.push([d, s, data]); return Promise.resolve(); },
+  };
+  assert.deepEqual(plain(await E.educartableUpload(hass, 'abc', [])), []);
+  const tokens = await E.educartableUpload(hass, 'abc', [new Blob(['x']), new Blob(['y'])]);
+  await E.educartableReply(hass, 'abc', 5, '', tokens);
+  assert.deepEqual(plain(sent), [
+    ['/api/educartable/upload/abc', 'POST'],
+    ['educartable', 'reply', { config_entry_id: 'abc', message_id: '5', text: '', attachments: ['upload:a', 'upload:b'] }],
+  ]);
+});
+
+test('a translation is asked in the user language', async () => {
+  const calls = [];
+  const hass = { callWS: (msg) => { calls.push(msg); return Promise.resolve({ title: 'T', text: 'X' }); } };
+  assert.deepEqual(plain(await E.educartableTranslate(hass, 'abc', 7, 'de')), { title: 'T', text: 'X' });
+  assert.deepEqual(plain(calls), [{ type: 'educartable/translate', config_entry_id: 'abc', message_id: '7', language: 'de' }]);
 });

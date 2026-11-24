@@ -190,6 +190,10 @@
         "text": {
           "name": "Testo",
           "description": "Cosa scrivere all’insegnante."
+        },
+        "attachments": {
+          "name": "Allegati",
+          "description": "File da allegare: token di caricamento del pannello o percorsi che Home Assistant può leggere (allowlist_external_dirs); 40 MB ciascuno, al massimo 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Testo",
           "description": "Il messaggio."
+        },
+        "attachments": {
+          "name": "Allegati",
+          "description": "File da allegare: token di caricamento del pannello o percorsi che Home Assistant può leggere (allowlist_external_dirs); 40 MB ciascuno, al massimo 10."
         }
       }
     },

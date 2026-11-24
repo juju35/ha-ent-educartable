@@ -76,6 +76,9 @@ ATTR_ACTIVITY_ID: Final = "activity_id"
 ATTR_LIKED: Final = "liked"
 ATTR_NOTIFICATION_ID: Final = "notification_id"
 ATTR_COMMENT_ID: Final = "comment_id"
+ATTR_ATTACHMENTS: Final = "attachments"
+# The panel's uploads waiting to be sent (hass.data key).
+UPLOADS: Final = f"{DOMAIN}_uploads"
 
 # Fired on the bus for what appeared since the last update (never on the first one).
 EVENT_NEW_HOMEWORK: Final = f"{DOMAIN}_new_homework"

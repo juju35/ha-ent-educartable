@@ -190,6 +190,10 @@
         "text": {
           "name": "Текст",
           "description": "Шта написати учитељу."
+        },
+        "attachments": {
+          "name": "Прилози",
+          "description": "Датотеке за прилог: токени отпремања из панела или путање које Home Assistant сме да чита (allowlist_external_dirs); по 40 MB, највише 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Текст",
           "description": "Порука."
+        },
+        "attachments": {
+          "name": "Прилози",
+          "description": "Датотеке за прилог: токени отпремања из панела или путање које Home Assistant сме да чита (allowlist_external_dirs); по 40 MB, највише 10."
         }
       }
     },

@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} har ställt in mötet {day} kl. {time}",
   presence: "Barnet förväntas också delta",
   delete: "Radera",
+  attach: "Bifoga",
+  remove_file: "Ta bort",
+  file_too_big: "{name}: större än 40 MB",
+  translate: "Översätt",
+  translating: "Översätter…",
+  show_original: "Visa originalet",
 };

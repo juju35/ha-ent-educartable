@@ -153,4 +153,10 @@ export default {
   notif_canceled: '{author} a annulé le RDV du {day} à {time}',
   presence: 'La présence de l’enfant est demandée',
   delete: 'Supprimer',
+  attach: 'Joindre',
+  remove_file: 'Retirer',
+  file_too_big: '{name} : plus de 40 Mo',
+  translate: 'Traduire',
+  translating: 'Traduction…',
+  show_original: 'Voir l’original',
 };

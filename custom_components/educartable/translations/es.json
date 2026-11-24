@@ -190,6 +190,10 @@
         "text": {
           "name": "Texto",
           "description": "Lo que se escribe al docente."
+        },
+        "attachments": {
+          "name": "Adjuntos",
+          "description": "Archivos que adjuntar: tokens de subida del panel o rutas que Home Assistant puede leer (allowlist_external_dirs); 40 MB cada uno, 10 como máximo."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Texto",
           "description": "El mensaje."
+        },
+        "attachments": {
+          "name": "Adjuntos",
+          "description": "Archivos que adjuntar: tokens de subida del panel o rutas que Home Assistant puede leer (allowlist_external_dirs); 40 MB cada uno, 10 como máximo."
         }
       }
     },

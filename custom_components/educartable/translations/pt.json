@@ -190,6 +190,10 @@
         "text": {
           "name": "Texto",
           "description": "O que escrever ao professor."
+        },
+        "attachments": {
+          "name": "Anexos",
+          "description": "Ficheiros a anexar: tokens de envio do painel ou caminhos que o Home Assistant pode ler (allowlist_external_dirs); 40 MB cada, 10 no máximo."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Texto",
           "description": "A mensagem."
+        },
+        "attachments": {
+          "name": "Anexos",
+          "description": "Ficheiros a anexar: tokens de envio do painel ou caminhos que o Home Assistant pode ler (allowlist_external_dirs); 40 MB cada, 10 no máximo."
         }
       }
     },

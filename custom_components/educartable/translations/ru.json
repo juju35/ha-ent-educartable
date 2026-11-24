@@ -190,6 +190,10 @@
         "text": {
           "name": "Текст",
           "description": "Что написать учителю."
+        },
+        "attachments": {
+          "name": "Вложения",
+          "description": "Файлы для вложения: токены загрузки из панели или пути, которые Home Assistant может читать (allowlist_external_dirs); до 40 МБ каждый, не более 10."
         }
       }
     },
@@ -212,6 +216,10 @@
         "text": {
           "name": "Текст",
           "description": "Сообщение."
+        },
+        "attachments": {
+          "name": "Вложения",
+          "description": "Файлы для вложения: токены загрузки из панели или пути, которые Home Assistant может читать (allowlist_external_dirs); до 40 МБ каждый, не более 10."
         }
       }
     },

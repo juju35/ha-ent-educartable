@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} hat den Termin am {day} um {time} abgesagt",
   presence: "Das Kind wird ebenfalls erwartet",
   delete: "Löschen",
+  attach: "Anhängen",
+  remove_file: "Entfernen",
+  file_too_big: "{name}: größer als 40 MB",
+  translate: "Übersetzen",
+  translating: "Wird übersetzt…",
+  show_original: "Original anzeigen",
 };

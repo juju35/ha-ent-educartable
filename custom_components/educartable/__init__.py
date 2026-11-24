@@ -30,6 +30,7 @@ from .config_flow import clean_options, new_session, notify_choices
 from .const import (
     ATTR_ACTIVITY_ID,
     ATTR_ANSWERS,
+    ATTR_ATTACHMENTS,
     ATTR_CHILD_ID,
     ATTR_CHILDREN,
     ATTR_COMMENT_ID,
@@ -70,9 +71,11 @@ from .const import (
     SERVICE_SIGN,
     SERVICE_SIGN_DOCUMENT,
     SERVICE_WRITE,
+    UPLOADS,
 )
 from .coordinator import EducartableConfigEntry, EducartableCoordinator
 from .secret import SecretNotFoundError, async_credentials
+from .uploads import MAX_FILE_BYTES, MAX_FILES, UploadStore, resolve
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,11 +97,15 @@ MARK_READ_SCHEMA = vol.Schema(
     {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID}
 )
 TEXT = vol.All(cv.string, vol.Strip, vol.Length(min=1, max=5000))
+# Upload tokens from the panel, or paths Home Assistant may read.
+ATTACHMENTS = vol.All(cv.ensure_list, [cv.string], vol.Length(max=MAX_FILES))
 REPLY_SCHEMA = vol.Schema(
     {
         vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
         vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID,
-        vol.Required(ATTR_TEXT): TEXT,
+        # Empty with attachments: a reply made of files only.
+        vol.Optional(ATTR_TEXT, default=""): vol.All(cv.string, vol.Strip, vol.Length(max=5000)),
+        vol.Optional(ATTR_ATTACHMENTS, default=list): ATTACHMENTS,
     }
 )
 WRITE_SCHEMA = vol.Schema(
@@ -107,6 +114,7 @@ WRITE_SCHEMA = vol.Schema(
         vol.Required(ATTR_CHILDREN): vol.All(cv.ensure_list, [cv.string], vol.Length(min=1)),
         vol.Required(ATTR_TITLE): vol.All(cv.string, vol.Strip, vol.Length(min=1, max=255)),
         vol.Required(ATTR_TEXT): TEXT,
+        vol.Optional(ATTR_ATTACHMENTS, default=list): ATTACHMENTS,
     }
 )
 ANSWER_SURVEY_SCHEMA = vol.Schema(
@@ -165,6 +173,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, ws_update_settings)
     websocket_api.async_register_command(hass, ws_homework_done)
     websocket_api.async_register_command(hass, ws_comments)
+    websocket_api.async_register_command(hass, ws_translate)
+    store = hass.data[UPLOADS] = UploadStore()
+    hass.http.register_view(EducartableUploadView(store))
     hass.http.register_view(EducartableFileView())
 
     async def refresh(call: ServiceCall) -> None:
@@ -176,6 +187,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 translation_key="refresh_failed",
                 translation_placeholders={"error": str(coordinator.last_exception or "unknown error")},
             )
+
+    async def _files(data: Any) -> list[Any]:
+        return await resolve(hass, store, data.get(ATTR_ATTACHMENTS, []))
+
+    async def _reply(c: EducartableCoordinator, d: Any) -> None:
+        await c.async_reply(d[ATTR_MESSAGE_ID], d[ATTR_TEXT], await _files(d))
+
+    async def _write(c: EducartableCoordinator, d: Any) -> None:
+        await c.async_write(d[ATTR_CHILDREN], d[ATTR_TITLE], d[ATTR_TEXT], await _files(d))
 
     def portal_action(run: Any) -> Any:
         """A service acting on the portal: the account's coordinator runs it, a refusal is told in the UI."""
@@ -196,8 +216,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     actions = {
         SERVICE_SIGN: (SIGN_SCHEMA, lambda c, d: c.async_achieve(d[ATTR_MESSAGE_ID], d[ATTR_NAME])),
         SERVICE_MARK_READ: (MARK_READ_SCHEMA, lambda c, d: c.async_achieve(d[ATTR_MESSAGE_ID])),
-        SERVICE_REPLY: (REPLY_SCHEMA, lambda c, d: c.async_reply(d[ATTR_MESSAGE_ID], d[ATTR_TEXT])),
-        SERVICE_WRITE: (WRITE_SCHEMA, lambda c, d: c.async_write(d[ATTR_CHILDREN], d[ATTR_TITLE], d[ATTR_TEXT])),
+        SERVICE_REPLY: (REPLY_SCHEMA, _reply),
+        SERVICE_WRITE: (WRITE_SCHEMA, _write),
         SERVICE_ANSWER_SURVEY: (
             ANSWER_SURVEY_SCHEMA,
             lambda c, d: c.async_answer_survey(d[ATTR_MESSAGE_ID], d[ATTR_ANSWERS], d.get(ATTR_CHILDREN)),
@@ -459,6 +479,72 @@ async def ws_comments(hass: HomeAssistant, connection: websocket_api.ActiveConne
     connection.send_result(msg["id"], {"comments": comments})
 
 
+# A message translated by the portal (what its app offers); read only, like the message itself.
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "educartable/translate",
+        vol.Required("config_entry_id"): str,
+        vol.Required("message_id"): str,
+        vol.Required("language"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_translate(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
+    try:
+        coordinator = _get_coordinator(hass, msg["config_entry_id"])
+        translation = await coordinator.async_translate(msg["message_id"], msg["language"])
+    except (ServiceValidationError, EducartableError) as err:
+        connection.send_error(msg["id"], "failed", str(err))
+        return
+    connection.send_result(msg["id"], translation)
+
+
+def _admin_coordinator(request: web.Request, entry_id: str) -> EducartableCoordinator | web.Response:
+    """The account's coordinator for an administrator's request, or the refusal to answer."""
+    user = request.get(KEY_HASS_USER)
+    if user is None or not user.is_admin:
+        return web.Response(status=HTTPStatus.FORBIDDEN, text="Administrators only")
+    try:
+        return _get_coordinator(request.app[KEY_HASS], entry_id)
+    except ServiceValidationError as err:
+        return web.Response(status=HTTPStatus.BAD_REQUEST, text=str(err))
+
+
+class EducartableUploadView(HomeAssistantView):
+    """Files to attach to a reply or a new message, sent by the panel: each one gets a token for the action.
+
+    Administrators only, like the actions that send them; kept in memory a few minutes.
+    """
+
+    url = "/api/educartable/upload/{entry_id}"
+    name = "api:educartable:upload"
+    requires_auth = True
+
+    def __init__(self, store: UploadStore) -> None:
+        self._store = store
+
+    async def post(self, request: web.Request, entry_id: str) -> web.Response:
+        refused = _admin_coordinator(request, entry_id)
+        if isinstance(refused, web.Response):
+            return refused
+        user = request[KEY_HASS_USER]
+        files = []
+        try:
+            reader = await request.multipart()
+            while (part := await reader.next()) is not None:
+                if getattr(part, "name", None) != "file" or len(files) >= MAX_FILES:
+                    continue
+                body = await part.read(decode=False)
+                if len(body) > MAX_FILE_BYTES:
+                    raise EducartableError(f"{part.filename} is larger than 40 MB")
+                files.append({"id": self._store.add(user.id, part.filename or "file", bytes(body)), "size": len(body)})
+        except EducartableError as err:
+            return web.Response(status=HTTPStatus.BAD_REQUEST, text=str(err))
+        except (ValueError, AssertionError):
+            return web.Response(status=HTTPStatus.BAD_REQUEST, text="multipart form expected")
+        return self.json({"files": files})
+
+
 # Types a browser shows without running anything: shown in the card and the panel, every other file is downloaded.
 INLINE_TYPES = frozenset({"application/pdf", "image/png", "image/jpeg", "image/gif", "image/webp", "text/plain"})
 SANDBOX_POLICY = "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
@@ -505,14 +591,9 @@ class EducartableFileView(HomeAssistantView):
     requires_auth = True
 
     async def get(self, request: web.Request, entry_id: str) -> web.Response:
-        hass: HomeAssistant = request.app[KEY_HASS]
-        user = request.get(KEY_HASS_USER)
-        if user is None or not user.is_admin:
-            return web.Response(status=HTTPStatus.FORBIDDEN, text="Administrators only")
-        try:
-            coordinator = _get_coordinator(hass, entry_id)
-        except ServiceValidationError as err:
-            return web.Response(status=HTTPStatus.BAD_REQUEST, text=str(err))
+        coordinator = _admin_coordinator(request, entry_id)
+        if isinstance(coordinator, web.Response):
+            return coordinator
         media_id = request.query.get("media", "")
         document_id = request.query.get("document", "")
         try:

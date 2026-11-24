@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Any
 from unittest.mock import patch
 
+import aiohttp
 import pytest
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
@@ -221,6 +222,16 @@ class FakeApi:
 
     async def delete_comment(self, *args: Any) -> None:
         self.calls.append(("delete_comment", *args))
+
+    async def upload_target(self, parent_id: str) -> dict[str, Any]:
+        return {"url": "https://upload.edumoov.com/x", "sig": "s", "payload": "p"}
+
+    async def upload(self, target: dict[str, Any], comment_id: str, name: str, body: bytes, ctype: str) -> None:
+        self.calls.append(("upload", comment_id, name, body, ctype))
+
+    async def translate(self, texts: list[str], source: str, target: str) -> list[str]:
+        self.calls.append(("translate", tuple(texts), source, target))
+        return [f"[{target}] {t}" for t in texts]
 
 
 @pytest.fixture
@@ -736,3 +747,63 @@ async def test_delete_only_your_own_comment(hass: HomeAssistant, api) -> None:
         await hass.services.async_call(
             DOMAIN, "delete_comment", {"message_id": "a1", "comment_id": "91"}, blocking=True
         )
+
+
+async def test_reply_with_files_from_the_panel_and_a_path(hass: HomeAssistant, api, hass_client, tmp_path) -> None:
+    entry = await _setup(hass)
+    client = await hass_client()
+    form = aiohttp.FormData()
+    form.add_field("file", b"\x89PNG fake", filename="drawing.png", content_type="image/png")
+    resp = await client.post(f"/api/educartable/upload/{entry.entry_id}", data=form)
+    assert resp.status == 200
+    token = (await resp.json())["files"][0]["id"]
+    bad = aiohttp.FormData()
+    bad.add_field("file", b"MZ", filename="virus.exe")
+    assert (await client.post(f"/api/educartable/upload/{entry.entry_id}", data=bad)).status == 400
+    note = tmp_path / "note.pdf"
+    note.write_bytes(b"%PDF-1.4 note")
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    await hass.services.async_call(
+        DOMAIN, "reply", {"message_id": "a1", "attachments": [token, str(note)]}, blocking=True
+    )
+    calls = api["api"].calls
+    assert ("comment", "p1", "a1", "Pièce(s) jointe(s) :", None) in calls
+    assert ("upload", "600", "drawing.png", b"\x89PNG fake", "image/png") in calls
+    assert ("upload", "600", "note.pdf", b"%PDF-1.4 note", "application/pdf") in calls
+    with pytest.raises(HomeAssistantError):  # a token is used once
+        await hass.services.async_call(DOMAIN, "reply", {"message_id": "a1", "attachments": [token]}, blocking=True)
+    with pytest.raises(HomeAssistantError):  # outside the allowed directories
+        await hass.services.async_call(
+            DOMAIN, "reply", {"message_id": "a1", "attachments": ["/etc/hostname.txt"]}, blocking=True
+        )
+
+
+async def test_new_message_files_go_in_a_first_comment(hass: HomeAssistant, api, tmp_path) -> None:
+    await _setup(hass)
+    note = tmp_path / "absence.pdf"
+    note.write_bytes(b"%PDF")
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    await hass.services.async_call(
+        DOMAIN,
+        "write_message",
+        {"children": ["e1"], "title": "Absence", "text": "Malade", "attachments": [str(note)]},
+        blocking=True,
+    )
+    calls = api["api"].calls
+    assert ("comment", "p1", "700", "Pièce(s) jointe(s) :", None) in calls
+    assert ("upload", "600", "absence.pdf", b"%PDF", "application/pdf") in calls
+
+
+async def test_translate_a_message(hass: HomeAssistant, api, hass_ws_client) -> None:
+    entry = await _setup(hass)
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(
+        {"type": "educartable/translate", "config_entry_id": entry.entry_id, "message_id": "a1", "language": "en-GB"}
+    )
+    msg = await client.receive_json()
+    assert msg["result"] == {"title": "[en] Pumpkin soup", "text": "[en] We cooked"}
+    await client.send_json_auto_id(
+        {"type": "educartable/translate", "config_entry_id": entry.entry_id, "message_id": "a1", "language": "en"}
+    )
+    await client.receive_json()
+    assert len([c for c in api["api"].calls if c[0] == "translate"]) == 1  # kept

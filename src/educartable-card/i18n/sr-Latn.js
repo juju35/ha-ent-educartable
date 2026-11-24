@@ -152,4 +152,10 @@ export default {
   notif_canceled: "{author} je otkazao termin {day} u {time}",
   presence: "Očekuje se i dete",
   delete: "Obriši",
+  attach: "Priloži",
+  remove_file: "Ukloni",
+  file_too_big: "{name}: veće od 40 MB",
+  translate: "Prevedi",
+  translating: "Prevođenje…",
+  show_original: "Prikaži original",
 };
