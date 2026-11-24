@@ -60,8 +60,8 @@
     <!-- text -->
     <text x="372" y="40" class="t3">WORK IN PROGRESS · BETA</text>
     <text x="372" y="64" class="t1">Educartable is being built</text>
-    <text x="372" y="86" class="t2">Read-only for now: signing the liaison book and</text>
-    <text x="372" y="103" class="t2">ticking homework wait for a real parent account.</text>
+    <text x="372" y="86" class="t2">Signing, ticking homework and attachments are</text>
+    <text x="372" y="103" class="t2">in beta: your feedback on real accounts is welcome.</text>
     <!-- battery: the build charging -->
     <rect x="566" y="28" width="122" height="16" rx="4" fill="none" stroke="#633806" stroke-width="2"/>
     <rect x="689" y="32" width="4" height="8" rx="1.5" fill="#633806"/>

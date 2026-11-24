@@ -7,9 +7,11 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
@@ -27,6 +29,8 @@ class FakeApi:
         self.pupils_fail = False
         self.carnet_fail = False
         self.force_auth_fail = False
+        self.calls: list[tuple] = []
+        self.extra_carnet: list[dict[str, Any]] = []
 
     def update_credentials(self, username: str, password: str, totp: str | None = None) -> None:
         self.username, self.password = username, password
@@ -46,20 +50,47 @@ class FakeApi:
 
     async def lessons(self, parent_id: str, start: str, *, pupil_id: str | None = None) -> list[dict[str, Any]]:
         return [
-            {"id": "h1", "title": "Poésie", "date": "2026-11-25", "achievements": []},
-            {"id": "h2", "title": "Lecture", "date": "2026-11-26", "achievements": [{"action": "read"}]},
+            {
+                "id": "h1",
+                "title": "Poésie",
+                "subject": "Français",
+                "date": "2026-11-25",
+                "achievement": "check",
+                "achievements": [],
+                "recipients": [{"model": "Pupil", "key": "e1", "id": "r9", "checked": False}],
+            },
+            {"id": "h2", "title": "Lecture", "date": "2026-11-26", "achievement": "read", "achievements": [4]},
         ]
 
     async def carnet(self, parent_id: str) -> list[dict[str, Any]]:
         if self.carnet_fail:
             raise EducartableError("HTTP 500")
         return [
-            {"id": "c1", "title": "Sortie", "type": "info", "recipients": [{"id": "r1", "checked": False}]},
-            {"id": "c2", "title": "Info", "type": "info", "recipients": [{"id": "r2", "checked": True}]},
+            {
+                "id": "c1",
+                "title": "Sortie",
+                "type": "info",
+                "achievement": "sign",
+                "achievements": [],
+                "targetChildren": {"e1": True},
+                "medias": [{"id": 77, "name": "Autorisation", "extension": "pdf"}],
+            },
+            {"id": "c2", "title": "Info", "type": "info", "achievement": "read", "achievements": [8]},
+            *self.extra_carnet,
         ]
 
     async def news(self, parent_id: str) -> list[dict[str, Any]]:
         return [{"id": "n1", "title": "Kermesse", "type": "event", "date": "2026-11-28"}]
+
+    async def achieve(self, *args: Any) -> None:
+        self.calls.append(("achieve", *args))
+
+    async def check(self, *args: Any) -> None:
+        self.calls.append(("check", *args))
+
+    async def media(self, media_id: str) -> tuple[bytes, str]:
+        self.calls.append(("media", media_id))
+        return b"%PDF-1.4 fake", "application/octet-stream"
 
 
 @pytest.fixture
@@ -99,7 +130,7 @@ async def test_setup_creates_sensors(hass: HomeAssistant, api) -> None:
     # Two not-done/sign counts and a per-child homework count.
     homework = hass.states.get("sensor.alice_test_homework_to_do")
     assert homework is not None
-    assert homework.state == "1"  # h2 is done
+    assert homework.state == "1"  # h2 is done (read), h1 still to tick
     assert hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").state == "1"  # c1 unsigned
     assert hass.states.get("sensor.educartable_parent_test_news").state == "1"
 
@@ -200,7 +231,112 @@ async def test_options_flow_has_the_panel_options(hass: HomeAssistant, api) -> N
     assert result["data"] == {
         "scan_interval": 60,
         "homework_days": 7,
+        "notify_services": [],
         "show_panel": True,
         "panel_tabs": ["words"],
         "hide_header": "non_admin",
     }
+
+
+async def test_sign_and_mark_read_services(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    await hass.services.async_call(DOMAIN, "sign", {"message_id": "c1", "name": "Parent Test"}, blocking=True)
+    assert api["api"].calls == [("achieve", "p1", "c1", "sign", "Pupil", ["e1"], "Parent Test")]
+    # Shown at once, before the next update
+    assert hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").state == "0"
+    # Nothing to read on a message that asks for a signature already given, a name too short is refused
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(DOMAIN, "mark_read", {"message_id": "c1"}, blocking=True)
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(DOMAIN, "sign", {"message_id": "c1", "name": "ab"}, blocking=True)
+
+
+async def test_tick_homework_from_the_todo_list_and_the_websocket(hass: HomeAssistant, api, hass_ws_client) -> None:
+    entry = await _setup(hass)
+    todo = hass.states.get("todo.alice_test_homework")
+    assert todo is not None and todo.state == "1"
+    await hass.services.async_call(
+        "todo",
+        "update_item",
+        {"item": "h1", "status": "completed"},
+        target={"entity_id": todo.entity_id},
+        blocking=True,
+    )
+    assert api["api"].calls == [("check", "p1", "h1", "r9", True)]
+    assert hass.states.get("sensor.alice_test_homework_to_do").state == "0"
+    client = await hass_ws_client(hass)
+    await client.send_json(
+        {
+            "id": 1,
+            "type": "educartable/homework_done",
+            "config_entry_id": entry.entry_id,
+            "child_id": "e1",
+            "homework_id": "h1",
+            "done": False,
+        }
+    )
+    assert (await client.receive_json())["success"]
+    assert api["api"].calls[-1] == ("check", "p1", "h1", "r9", False)
+    # A homework that asks only to be read has no box to tick
+    await client.send_json(
+        {
+            "id": 2,
+            "type": "educartable/homework_done",
+            "config_entry_id": entry.entry_id,
+            "child_id": "e1",
+            "homework_id": "h2",
+            "done": True,
+        }
+    )
+    assert not (await client.receive_json())["success"]
+
+
+async def test_calendar_shows_the_homework(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    state = hass.states.get("calendar.educartable_parent_test_homework")
+    assert state is not None
+    assert "Poésie" in state.attributes["message"]
+
+
+async def test_new_liaison_message_fires_an_event(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    events = []
+    hass.bus.async_listen("educartable_new_message", events.append)
+    api["api"].extra_carnet.append({"id": "c3", "title": "Photos", "achievement": "sign", "achievements": []})
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    await hass.async_block_till_done()
+    assert [e.data["id"] for e in events] == ["c3"]
+    assert events[0].data["achievement"] == "sign"
+
+
+async def test_file_view_serves_a_media_to_admins(hass: HomeAssistant, api, hass_client) -> None:
+    entry = await _setup(hass)
+    client = await hass_client()
+    resp = await client.get(f"/api/educartable/file/{entry.entry_id}?media=77&name=Autorisation.pdf")
+    assert resp.status == 200
+    assert resp.headers["Content-Type"] == "application/pdf"
+    assert "inline" in resp.headers["Content-Disposition"]
+    assert api["api"].calls == [("media", "77")]
+
+
+async def test_diagnostics_hold_counts_only(hass: HomeAssistant, api) -> None:
+    entry = await _setup(hass)
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+    text = str(diag)
+    assert "Alice" not in text and "Sortie" not in text and "Poésie" not in text
+    assert diag["data"]["carnet"] == 2
+    assert diag["data"]["achievements"] == ["check", "read", "sign"]
+
+
+async def test_reconfigure_changes_the_credentials(hass: HomeAssistant, api) -> None:
+    entry = await _setup(hass)
+    result = await entry.start_reconfigure_flow(hass)
+    assert result["step_id"] == "reconfigure"
+    with patch(
+        "custom_components.educartable.config_flow.validate", return_value=({"id": "p1", "name": "Parent Test"}, None)
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_USERNAME: "parent2", CONF_PASSWORD: "secret2"}
+        )
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_USERNAME] == "parent2"

@@ -34,6 +34,24 @@
           "password": "Leer lassen, um ihn stattdessen aus secrets.yaml zu lesen.",
           "totp": "Nur wenn für dein Konto die Zwei-Faktor-Authentifizierung aktiviert ist."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Ändere die Zugangsdaten von {username} oder stelle jeden Wert zwischen gespeichertem Wert und secrets.yaml-Eintrag um.",
+        "data": {
+          "username": "Benutzername",
+          "username_secret": "Benutzernamen-Secret",
+          "password": "Passwort",
+          "password_secret": "Passwort-Secret",
+          "totp": "Einmalcode"
+        },
+        "data_description": {
+          "username": "Leer lassen, um ihn stattdessen aus secrets.yaml zu lesen.",
+          "username_secret": "Name des Eintrags in secrets.yaml mit dem Benutzernamen, zum Beispiel educartable_username.",
+          "password": "Leer lassen, um es stattdessen aus secrets.yaml zu lesen.",
+          "password_secret": "Name des Eintrags in secrets.yaml mit dem Passwort, zum Beispiel educartable_password. Er wird bei jeder Aktualisierung neu gelesen: Nach einer Passwortänderung genügt es, das Secret anzupassen.",
+          "totp": "Nur wenn für dein Konto die Zwei-Faktor-Authentifizierung aktiviert ist."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Dieses Konto ist bereits eingerichtet.",
       "reauth_successful": "Zugangsdaten aktualisiert.",
-      "wrong_account": "Diese Zugangsdaten gehören zu einem anderen Konto."
+      "wrong_account": "Diese Zugangsdaten gehören zu einem anderen Konto.",
+      "reconfigure_successful": "Zugangsdaten aktualisiert."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Aktualisierungsintervall",
           "homework_days": "Zeitraum für Hausaufgaben",
+          "notify_services": "Benachrichtigungsaktionen",
           "show_panel": "Dieses Panel in der Seitenleiste anzeigen",
           "panel_tabs": "Im Panel angezeigte Reiter",
           "hide_header": "Obere Leiste ausblenden"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable wird von der ganzen Schule genutzt: mindestens 10 Minuten.",
           "homework_days": "Hausaufgaben, die innerhalb so vieler Tage fällig sind, werden angezeigt.",
-          "hide_header": "Der illustrierte Kopfbereich über den Tabs; die Tabs bleiben, auf dem Telefon rückt die Menütaste neben sie."
+          "hide_header": "Der illustrierte Kopfbereich über den Tabs; die Tabs bleiben, auf dem Telefon rückt die Menütaste neben sie.",
+          "notify_services": "Diese Aktionen (notify.mobile_app_…) über neue Hausaufgaben, Mitteilungen im Mitteilungsheft und Neuigkeiten informieren. Leer lassen für keine."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Letzte Aktualisierung"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Hausaufgaben"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Hausaufgaben"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Konto",
           "description": "Das zu aktualisierende Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        }
+      }
+    },
+    "sign": {
+      "name": "Unterschreiben",
+      "description": "Eine Mitteilung im Mitteilungsheft unterschreiben, die eine Unterschrift verlangt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft."
+        },
+        "name": {
+          "name": "Name des Unterzeichners",
+          "description": "Der mit der Unterschrift gespeicherte Name, mindestens 3 Zeichen, wie im Portal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Als gelesen markieren",
+      "description": "Eine Mitteilung, die gelesen werden soll, als gelesen markieren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Mehrere Educartable-Konten sind eingerichtet: Gib das zu verwendende an."
+    },
+    "action_failed": {
+      "message": "Educartable hat die Aktion abgelehnt: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Neue Hausaufgaben für {child}"
+    },
+    "notify_new_message": {
+      "message": "Mitteilungsheft: neue Mitteilung für {child}"
+    },
+    "notify_new_news": {
+      "message": "Neuigkeit der Schule"
     }
   },
   "selector": {

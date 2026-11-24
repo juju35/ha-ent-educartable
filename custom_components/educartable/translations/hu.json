@@ -34,6 +34,24 @@
           "password": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
           "totp": "Csak ha a fiókodban be van kapcsolva a kétlépcsős azonosítás."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Módosítsd {username} belépési adatait, vagy állítsd át mindegyiket mentett érték és secrets.yaml bejegyzés között.",
+        "data": {
+          "username": "Felhasználónév",
+          "username_secret": "Felhasználónév titok",
+          "password": "Jelszó",
+          "password_secret": "Jelszó titok",
+          "totp": "Egyszer használatos kód"
+        },
+        "data_description": {
+          "username": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "username_secret": "A felhasználónevet tartalmazó secrets.yaml bejegyzés neve, például educartable_username.",
+          "password": "Hagyd üresen, hogy a secrets.yaml fájlból olvassa.",
+          "password_secret": "A jelszót tartalmazó secrets.yaml bejegyzés neve, például educartable_password. Minden frissítéskor újra beolvassa: jelszócsere után elég a titkot módosítani.",
+          "totp": "Csak ha a fiókodban be van kapcsolva a kétlépcsős azonosítás."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Ez a fiók már be van állítva.",
       "reauth_successful": "A belépési adatok frissítve.",
-      "wrong_account": "Ezek a belépési adatok egy másik fiókhoz tartoznak."
+      "wrong_account": "Ezek a belépési adatok egy másik fiókhoz tartoznak.",
+      "reconfigure_successful": "A belépési adatok frissítve."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Frissítési időköz",
           "homework_days": "Házi feladatok időszaka",
+          "notify_services": "Értesítési műveletek",
           "show_panel": "A panel megjelenítése az oldalsávon",
           "panel_tabs": "A panelen látható lapok",
           "hide_header": "Felső sáv elrejtése"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Az Educartable-t az egész iskola használja: legalább 10 perc.",
           "homework_days": "Az ennyi napon belül esedékes házi feladatok jelennek meg.",
-          "hide_header": "A fülek feletti illusztrált fejléc; a fülek megmaradnak, telefonon a menügomb melléjük kerül."
+          "hide_header": "A fülek feletti illusztrált fejléc; a fülek megmaradnak, telefonon a menügomb melléjük kerül.",
+          "notify_services": "Értesítse ezeket a műveleteket (notify.mobile_app_…) az új házi feladatokról, üzenőfüzet-üzenetekről és hírekről. Hagyd üresen, ha egyiket sem."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Utolsó frissítés"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Házi feladatok"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Házi feladatok"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Fiók",
           "description": "A frissítendő Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        }
+      }
+    },
+    "sign": {
+      "name": "Aláírás",
+      "description": "Aláírást kérő üzenőfüzet-üzenet aláírása.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet érzékelő messages attribútumából."
+        },
+        "name": {
+          "name": "Aláíró neve",
+          "description": "Az aláírással rögzített név, legalább 3 karakter, mint a portálon."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Megjelölés olvasottként",
+      "description": "Olvasásra váró üzenet megjelölése olvasottként.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Több Educartable-fiók van beállítva: add meg, melyiket használja."
+    },
+    "action_failed": {
+      "message": "Az Educartable elutasította a műveletet: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Új házi feladat: {child}"
+    },
+    "notify_new_message": {
+      "message": "Üzenőfüzet: új üzenet – {child}"
+    },
+    "notify_new_news": {
+      "message": "Iskolai hír"
     }
   },
   "selector": {

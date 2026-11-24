@@ -22,3 +22,8 @@ _._attr_state_class  # unused attribute (custom_components/educartable/sensor.py
 async_setup_entry  # unused function (custom_components/educartable/sensor.py)
 _.native_value  # unused property (custom_components/educartable/sensor.py)
 _.extra_state_attributes  # unused property (custom_components/educartable/sensor.py)
+requires_auth  # HomeAssistantView attribute
+async_get_events  # CalendarEntity API
+async_step_reconfigure  # ConfigFlow step
+todo_items  # TodoListEntity API
+async_update_todo_item  # TodoListEntity API

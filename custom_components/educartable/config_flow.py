@@ -28,6 +28,7 @@ from .api import EducartableApi, EducartableAuthError, EducartableError, Educart
 from .const import (
     CONF_HIDE_HEADER,
     CONF_HOMEWORK_DAYS,
+    CONF_NOTIFY,
     CONF_PANEL_TABS,
     CONF_PASSWORD_SECRET,
     CONF_SCAN_INTERVAL,
@@ -177,6 +178,27 @@ class EducartableConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"username": _account(entry.data)},
         )
 
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Change the credentials, or switch each one between a stored value and a secrets.yaml entry."""
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            part, resolved, error = await credentials(self.hass, user_input)
+            if resolved is not None:
+                error = await self._check(entry, *resolved, user_input.get(CONF_TOTP))
+            if resolved is not None and error is None:
+                data = self._new_data(
+                    entry, part, (CONF_USERNAME, CONF_USERNAME_SECRET, CONF_PASSWORD, CONF_PASSWORD_SECRET)
+                )
+                return self._update_and_abort(entry, data, "reconfigure_successful")
+            errors["base"] = error or "cannot_connect"
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(credential_fields(user_input or entry.data)),
+            errors=errors,
+            description_placeholders={"username": _account(entry.data)},
+        )
+
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
@@ -184,18 +206,21 @@ class EducartableConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class EducartableOptionsFlow(OptionsFlow):
-    """Polling interval, homework window and sidebar panel."""
+    """Polling interval, homework window, notifications and sidebar panel."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(data=clean_options(user_input))
-        return self.async_show_form(step_id="init", data_schema=options_schema(self.config_entry.options))
+        return self.async_show_form(step_id="init", data_schema=options_schema(self.hass, self.config_entry.options))
 
 
 def clean_options(options: Mapping[str, Any]) -> dict[str, Any]:
     return {
         CONF_SCAN_INTERVAL: max(MIN_SCAN_INTERVAL, int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))),
         CONF_HOMEWORK_DAYS: min(60, max(1, int(options.get(CONF_HOMEWORK_DAYS, DEFAULT_HOMEWORK_DAYS)))),
+        CONF_NOTIFY: sorted(
+            {f"notify.{n.strip().removeprefix('notify.')}" for n in options.get(CONF_NOTIFY, []) if n.strip()}
+        ),
         CONF_SHOW_PANEL: bool(options.get(CONF_SHOW_PANEL, DEFAULT_SHOW_PANEL)),
         CONF_PANEL_TABS: panel_tabs(options),
         CONF_HIDE_HEADER: hide_header(options),
@@ -214,7 +239,16 @@ def panel_tabs(options: Mapping[str, Any]) -> list[str]:
     return list(PANEL_TABS) if chosen is None else [t for t in PANEL_TABS if t in chosen]
 
 
-def options_schema(options: Mapping[str, Any]) -> vol.Schema:
+def notify_choices(hass: HomeAssistant, current: list[str]) -> list[str]:
+    return sorted(
+        {f"notify.{name}" for name in hass.services.async_services_for_domain("notify")}
+        - {"notify.send_message", "notify.persistent_notification"}
+        | set(current)
+    )
+
+
+def options_schema(hass: HomeAssistant, options: Mapping[str, Any]) -> vol.Schema:
+    notify: list[str] = list(options.get(CONF_NOTIFY, []))
     return vol.Schema(
         {
             vol.Required(
@@ -228,6 +262,14 @@ def options_schema(options: Mapping[str, Any]) -> vol.Schema:
                 CONF_HOMEWORK_DAYS, default=options.get(CONF_HOMEWORK_DAYS, DEFAULT_HOMEWORK_DAYS)
             ): NumberSelector(
                 NumberSelectorConfig(min=1, max=60, step=1, unit_of_measurement="d", mode=NumberSelectorMode.BOX)
+            ),
+            vol.Optional(CONF_NOTIFY, default=notify): SelectSelector(
+                SelectSelectorConfig(
+                    options=notify_choices(hass, notify),
+                    multiple=True,
+                    custom_value=True,
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
             ),
             vol.Required(CONF_SHOW_PANEL, default=options.get(CONF_SHOW_PANEL, DEFAULT_SHOW_PANEL)): BooleanSelector(),
             vol.Optional(CONF_PANEL_TABS, default=panel_tabs(options)): SelectSelector(

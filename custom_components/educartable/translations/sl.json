@@ -34,6 +34,24 @@
           "password": "Pustite prazno, da se prebere iz secrets.yaml.",
           "totp": "Samo če ima vaš račun vklopljeno dvostopenjsko preverjanje."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Spremenite poverilnice za {username} ali preklopite vsako med shranjeno vrednostjo in vnosom v secrets.yaml.",
+        "data": {
+          "username": "Uporabniško ime",
+          "username_secret": "Skrivnost uporabniškega imena",
+          "password": "Geslo",
+          "password_secret": "Skrivnost gesla",
+          "totp": "Enkratna koda"
+        },
+        "data_description": {
+          "username": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "username_secret": "Ime vnosa v secrets.yaml z uporabniškim imenom, na primer educartable_username.",
+          "password": "Pustite prazno, da se prebere iz secrets.yaml.",
+          "password_secret": "Ime vnosa v secrets.yaml z geslom, na primer educartable_password. Prebere se ob vsaki posodobitvi: po spremembi gesla je dovolj urediti skrivnost.",
+          "totp": "Samo če ima vaš račun vklopljeno dvostopenjsko preverjanje."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Ta račun je že nastavljen.",
       "reauth_successful": "Poverilnice so posodobljene.",
-      "wrong_account": "Te poverilnice pripadajo drugemu računu."
+      "wrong_account": "Te poverilnice pripadajo drugemu računu.",
+      "reconfigure_successful": "Poverilnice so posodobljene."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Interval posodabljanja",
           "homework_days": "Obdobje nalog",
+          "notify_services": "Dejanja obvestil",
           "show_panel": "Prikaži ta panel v stranski vrstici",
           "panel_tabs": "Zavihki na plošči",
           "hide_header": "Skrij zgornjo vrstico"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable uporablja vsa šola: najmanj 10 minut.",
           "homework_days": "Prikazane so naloge z rokom v tem številu dni.",
-          "hide_header": "Ilustrirana glava nad zavihki; zavihki ostanejo, na telefonu pa se gumb menija premakne poleg njih."
+          "hide_header": "Ilustrirana glava nad zavihki; zavihki ostanejo, na telefonu pa se gumb menija premakne poleg njih.",
+          "notify_services": "Obvesti ta dejanja (notify.mobile_app_…) o novih domačih nalogah, sporočilih v beležki in novicah. Pustite prazno za nobeno."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Zadnja posodobitev"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Domače naloge"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Domače naloge"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Račun",
           "description": "Račun Educartable za osvežitev. Pustite prazno, če je nastavljen samo eden."
+        }
+      }
+    },
+    "sign": {
+      "name": "Podpiši",
+      "description": "Podpiši sporočilo v beležki, ki zahteva podpis.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis."
+        },
+        "name": {
+          "name": "Ime podpisnika",
+          "description": "Ime, shranjeno s podpisom, vsaj 3 znaki, kot na portalu."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Označi kot prebrano",
+      "description": "Označi kot prebrano sporočilo, ki ga je treba prebrati.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Nastavljenih je več računov Educartable: navedite, katerega uporabiti."
+    },
+    "action_failed": {
+      "message": "Educartable je zavrnil dejanje: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nove domače naloge za {child}"
+    },
+    "notify_new_message": {
+      "message": "Beležka: novo sporočilo za {child}"
+    },
+    "notify_new_news": {
+      "message": "Novica iz šole"
     }
   },
   "selector": {

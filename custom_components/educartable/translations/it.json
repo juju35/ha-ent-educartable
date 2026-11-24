@@ -34,6 +34,24 @@
           "password": "Lascia vuoto per leggerlo da secrets.yaml.",
           "totp": "Solo se il tuo account ha l'autenticazione a due fattori attiva."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Modifica le credenziali di {username}, o passa ciascuna tra un valore salvato e una voce di secrets.yaml.",
+        "data": {
+          "username": "Nome utente",
+          "username_secret": "Segreto del nome utente",
+          "password": "Password",
+          "password_secret": "Segreto della password",
+          "totp": "Codice monouso"
+        },
+        "data_description": {
+          "username": "Lascia vuoto per leggerlo da secrets.yaml.",
+          "username_secret": "Nome della voce di secrets.yaml che contiene il nome utente, per esempio educartable_username.",
+          "password": "Lascia vuoto per leggerla da secrets.yaml.",
+          "password_secret": "Nome della voce di secrets.yaml che contiene la password, per esempio educartable_password. Viene riletta a ogni aggiornamento: dopo un cambio di password basta modificare il secret.",
+          "totp": "Solo se il tuo account ha l'autenticazione a due fattori attiva."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Questo account è già configurato.",
       "reauth_successful": "Credenziali aggiornate.",
-      "wrong_account": "Queste credenziali appartengono a un altro account."
+      "wrong_account": "Queste credenziali appartengono a un altro account.",
+      "reconfigure_successful": "Credenziali aggiornate."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Intervallo di aggiornamento",
           "homework_days": "Finestra dei compiti",
+          "notify_services": "Azioni di notifica",
           "show_panel": "Mostra questo pannello nella barra laterale",
           "panel_tabs": "Schede mostrate nel pannello",
           "hide_header": "Nascondi la barra superiore"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable è condiviso da tutta la scuola: almeno 10 minuti.",
           "homework_days": "Vengono mostrati i compiti in scadenza entro questo numero di giorni.",
-          "hide_header": "L’intestazione illustrata sopra le schede; le schede restano e, sul telefono, il pulsante del menu passa accanto a esse."
+          "hide_header": "L’intestazione illustrata sopra le schede; le schede restano e, sul telefono, il pulsante del menu passa accanto a esse.",
+          "notify_services": "Avvisa queste azioni (notify.mobile_app_…) dei nuovi compiti, messaggi del diario e notizie. Lascia vuoto per nessuna."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Ultimo aggiornamento"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Compiti"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Compiti"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Account",
           "description": "L'account Educartable da aggiornare. Lascia vuoto se ne è configurato uno solo."
+        }
+      }
+    },
+    "sign": {
+      "name": "Firma",
+      "description": "Firma un messaggio del diario che richiede una firma.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "message_id": {
+          "name": "Messaggio",
+          "description": "L'id del messaggio, dall'attributo messages del sensore Diario da firmare."
+        },
+        "name": {
+          "name": "Nome del firmatario",
+          "description": "Il nome registrato con la firma, almeno 3 caratteri, come nel portale."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Segna come letto",
+      "description": "Segna come letto un messaggio che chiede di essere letto.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "L'account Educartable. Lascia vuoto se ne è configurato uno solo."
+        },
+        "message_id": {
+          "name": "Messaggio",
+          "description": "L'id del messaggio, dall'attributo messages del sensore Diario da firmare o Notizie."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Sono configurati più account Educartable: indica quale usare."
+    },
+    "action_failed": {
+      "message": "Educartable ha rifiutato l'azione: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nuovi compiti per {child}"
+    },
+    "notify_new_message": {
+      "message": "Diario: nuovo messaggio per {child}"
+    },
+    "notify_new_news": {
+      "message": "Notizia della scuola"
     }
   },
   "selector": {

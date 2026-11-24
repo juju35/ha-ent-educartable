@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 - 2026-11-24
+
+### Features
+- Sign a liaison-book message from the card or the panel (a confirmation at the top with the signer's name, prefilled), or mark it as read; `educartable.sign` and `educartable.mark_read` actions. Administrators only.
+- Tick a homework that asks to be done, child by child, from the card, the panel or the new to-do lists.
+- Rows unfold to the message's or homework's text, its author and its attachments: images shown, PDFs and other files opened through Home Assistant (signed link, administrators only).
+- A **Homework** calendar (every child's homework on its due date) and one **Homework** to-do list per child.
+- `educartable_new_homework`, `educartable_new_message` and `educartable_new_news` events, and optional notifications to the notify actions of your choice (options and panel Settings).
+- **Reconfigure**: change the credentials, or switch each one between a stored value and a `secrets.yaml` entry.
+
+### Fixes
+- A liaison-book message is to sign when it asks for a signature that nobody gave yet, as the portal's own app decides it (it was read from its recipients' boxes).
+- Diagnostics no longer contain any title, name or class: only counts.
+
 ## 0.2.0 - 2026-11-24
 
 ### Features

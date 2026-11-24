@@ -5,3 +5,34 @@ refresh:
       selector:
         config_entry:
           integration: educartable
+
+sign:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+    name:
+      required: true
+      example: "Camille Martin"
+      selector:
+        text:
+
+mark_read:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:

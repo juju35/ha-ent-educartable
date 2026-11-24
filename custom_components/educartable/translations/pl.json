@@ -34,6 +34,24 @@
           "password": "Pozostaw puste, aby odczytać ją z secrets.yaml.",
           "totp": "Tylko jeśli Twoje konto ma włączone uwierzytelnianie dwuskładnikowe."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Zmień dane logowania {username} lub przełącz każde między zapisaną wartością a wpisem w secrets.yaml.",
+        "data": {
+          "username": "Nazwa użytkownika",
+          "username_secret": "Sekret nazwy użytkownika",
+          "password": "Hasło",
+          "password_secret": "Sekret hasła",
+          "totp": "Kod jednorazowy"
+        },
+        "data_description": {
+          "username": "Pozostaw puste, aby odczytać ją z secrets.yaml.",
+          "username_secret": "Nazwa wpisu w secrets.yaml z nazwą użytkownika, na przykład educartable_username.",
+          "password": "Pozostaw puste, aby odczytać je z secrets.yaml.",
+          "password_secret": "Nazwa wpisu w secrets.yaml z hasłem, na przykład educartable_password. Jest odczytywany przy każdej aktualizacji: po zmianie hasła wystarczy zmienić sekret.",
+          "totp": "Tylko jeśli Twoje konto ma włączone uwierzytelnianie dwuskładnikowe."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "To konto jest już skonfigurowane.",
       "reauth_successful": "Dane logowania zaktualizowane.",
-      "wrong_account": "Te dane logowania należą do innego konta."
+      "wrong_account": "Te dane logowania należą do innego konta.",
+      "reconfigure_successful": "Dane logowania zaktualizowane."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Interwał aktualizacji",
           "homework_days": "Okres prac domowych",
+          "notify_services": "Akcje powiadomień",
           "show_panel": "Pokaż ten panel na pasku bocznym",
           "panel_tabs": "Karty widoczne w panelu",
           "hide_header": "Ukryj górny pasek"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Z Educartable korzysta cała szkoła: co najmniej 10 minut.",
           "homework_days": "Pokazywane są prace domowe z terminem w ciągu tylu dni.",
-          "hide_header": "Ilustrowany nagłówek nad kartami; karty zostają, a na telefonie przycisk menu przechodzi obok nich."
+          "hide_header": "Ilustrowany nagłówek nad kartami; karty zostają, a na telefonie przycisk menu przechodzi obok nich.",
+          "notify_services": "Powiadamiaj te akcje (notify.mobile_app_…) o nowych zadaniach domowych, wiadomościach w dzienniczku i aktualnościach. Zostaw puste, by nie powiadamiać."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Ostatnia aktualizacja"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Zadania domowe"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Zadania domowe"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Konto",
           "description": "Konto Educartable do odświeżenia. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        }
+      }
+    },
+    "sign": {
+      "name": "Podpisz",
+      "description": "Podpisz wiadomość z dzienniczka, która wymaga podpisu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania."
+        },
+        "name": {
+          "name": "Imię i nazwisko podpisującego",
+          "description": "Nazwa zapisana z podpisem, co najmniej 3 znaki, jak w portalu."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Oznacz jako przeczytane",
+      "description": "Oznacz jako przeczytaną wiadomość, która ma zostać przeczytana.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Skonfigurowano kilka kont Educartable: wskaż, którego użyć."
+    },
+    "action_failed": {
+      "message": "Educartable odrzucił operację: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nowe zadanie domowe dla {child}"
+    },
+    "notify_new_message": {
+      "message": "Dzienniczek: nowa wiadomość dla {child}"
+    },
+    "notify_new_news": {
+      "message": "Aktualność ze szkoły"
     }
   },
   "selector": {

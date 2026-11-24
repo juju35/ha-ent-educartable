@@ -5,6 +5,8 @@ from unittest.mock import patch
 import pytest
 from homeassistant.components import http
 
+import custom_components.educartable  # noqa: F401 - the module must exist for the patch below
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):

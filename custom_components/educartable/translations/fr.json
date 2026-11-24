@@ -34,6 +34,24 @@
           "password": "Laissez vide pour le lire depuis secrets.yaml.",
           "totp": "Uniquement si votre compte a la double authentification activée."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Modifier les identifiants de {username}, ou passer chacun d’une valeur enregistrée à une entrée de secrets.yaml.",
+        "data": {
+          "username": "Identifiant",
+          "username_secret": "Secret de l'identifiant",
+          "password": "Mot de passe",
+          "password_secret": "Secret du mot de passe",
+          "totp": "Code à usage unique"
+        },
+        "data_description": {
+          "username": "Laissez vide pour le lire depuis secrets.yaml.",
+          "username_secret": "Nom de l'entrée secrets.yaml contenant l'identifiant, par exemple educartable_username.",
+          "password": "Laissez vide pour le lire depuis secrets.yaml.",
+          "password_secret": "Nom de l'entrée secrets.yaml contenant le mot de passe, par exemple educartable_password. Il est relu à chaque mise à jour : après un changement de mot de passe, il suffit de modifier le secret.",
+          "totp": "Uniquement si votre compte a la double authentification activée."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Ce compte est déjà configuré.",
       "reauth_successful": "Identifiants mis à jour.",
-      "wrong_account": "Ces identifiants appartiennent à un autre compte."
+      "wrong_account": "Ces identifiants appartiennent à un autre compte.",
+      "reconfigure_successful": "Identifiants mis à jour."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Intervalle de mise à jour",
           "homework_days": "Fenêtre des devoirs",
+          "notify_services": "Actions de notification",
           "show_panel": "Afficher le panneau Educartable dans la barre latérale",
           "panel_tabs": "Onglets affichés dans le panneau",
           "hide_header": "Masquer la barre du haut"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable est partagé par toute l'école : 10 minutes minimum.",
           "homework_days": "Les devoirs à rendre dans ce nombre de jours sont affichés.",
-          "hide_header": "L’en-tête illustré au-dessus des onglets ; les onglets restent, et sur un téléphone le bouton de menu passe à côté d’eux."
+          "hide_header": "L’en-tête illustré au-dessus des onglets ; les onglets restent, et sur un téléphone le bouton de menu passe à côté d’eux.",
+          "notify_services": "Prévenir ces actions (notify.mobile_app_…) des nouveaux devoirs, messages du cahier de liaison et actualités. Laisser vide pour aucune."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Dernière mise à jour"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Devoirs"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Devoirs"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Compte",
           "description": "Le compte Educartable à actualiser. Laissez vide si un seul est configuré."
+        }
+      }
+    },
+    "sign": {
+      "name": "Signer",
+      "description": "Signer un message du cahier de liaison qui demande une signature.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer."
+        },
+        "name": {
+          "name": "Nom du signataire",
+          "description": "Le nom enregistré avec la signature, 3 caractères ou plus, comme dans le portail."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Marquer comme lu",
+      "description": "Marquer comme lu un message qui demande à être lu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Plusieurs comptes Educartable sont configurés : précisez celui à utiliser."
+    },
+    "action_failed": {
+      "message": "Educartable a refusé l'action : {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nouveaux devoirs pour {child}"
+    },
+    "notify_new_message": {
+      "message": "Cahier de liaison : nouveau message pour {child}"
+    },
+    "notify_new_news": {
+      "message": "Actualité de l’école"
     }
   },
   "selector": {

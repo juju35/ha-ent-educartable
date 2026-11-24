@@ -13,11 +13,27 @@
       "last_update": {
         "default": "mdi:clock-check-outline"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "default": "mdi:calendar-check"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "default": "mdi:format-list-checks"
+      }
     }
   },
   "services": {
     "refresh": {
       "service": "mdi:refresh"
+    },
+    "sign": {
+      "service": "mdi:draw"
+    },
+    "mark_read": {
+      "service": "mdi:email-open-outline"
     }
   }
 }

@@ -1,7 +1,7 @@
 // ── educartable-card ──────────────────────────────────────────────────────────────
 import { EDUCARTABLE_ACCENT, EDUCARTABLE_ICON } from "./header-icon.js";
 import { EDUCARTABLE_DEFAULTS } from "./i18n-helpers.js";
-import { educartableAccounts, educartableChanged, educartableData, educartableErrorText, educartableEsc, educartableFormat, educartableHomeworkRow, educartableItemStyles, educartableLocale, educartableNewsRow, educartableRefresh, educartableSetTimeFormat, educartableSortedHomework, educartableT, educartableTime, educartableWordRow } from "./helpers.js";
+import { educartableAccounts, educartableCanAct, educartableChanged, educartableData, educartableErrorText, educartableEsc, educartableFormat, educartableHomeworkRow, educartableHydrate, educartableInDialog, educartableItemStyles, educartableLocale, educartableMarkRead, educartableNewsRow, educartableOpenFile, educartableRefresh, educartableSetDone, educartableSetTimeFormat, educartableSign, educartableSortedHomework, educartableT, educartableTime, educartableWordRow } from "./helpers.js";
 import { EDUCARTABLE_BANNER_STYLES, EDUCARTABLE_SCHOOL_PATH, educartableHeaderState, educartableIsNight, educartableSceneSvg, educartableTextWidth } from "./illustrated-header.js";
 
 export var educartableUid = 0;
@@ -81,6 +81,7 @@ export class EducartableCard extends HTMLElement {
   setConfig(config) {
     this._config = Object.assign({}, EDUCARTABLE_DEFAULTS, config || {});
     this.toggleAttribute?.('hide-title', config?.show_title === false);
+    this._open = this._open || {};
     if (this._hass) this._render(true);
   }
 
@@ -100,6 +101,15 @@ export class EducartableCard extends HTMLElement {
   }
 
   connectedCallback() {
+    this._onOutside = this._onOutside || ((ev) => {
+      var anyOpen = Object.keys(this._open || {}).length > 0;
+      if ((!this._confirm && !anyOpen) || ev.composedPath().indexOf(this) !== -1 || educartableInDialog(ev)) return;
+      // Like the other cards: a click elsewhere closes the popup and folds the open rows.
+      this._confirm = null;
+      this._open = {};
+      this._render(true);
+    });
+    document.addEventListener('click', this._onOutside, true);
     // A new width (or the web font loaded): the status pill is fitted again, in the next frame.
     if (typeof ResizeObserver === 'function') {
       this._pillResize = this._pillResize || new ResizeObserver((entries) => {
@@ -115,8 +125,15 @@ export class EducartableCard extends HTMLElement {
   }
 
   disconnectedCallback() {
+    document.removeEventListener('click', this._onOutside, true);
     this._pillResize?.disconnect();
     this._pillWidth = null;
+    // Leaving the page (view change, conditional card hidden) closes the popup without doing anything.
+    if (this._confirm || Object.keys(this._open || {}).length) {
+      this._confirm = null;
+      this._open = {};
+      this._render(true);
+    }
   }
 
   getCardSize() {
@@ -146,8 +163,21 @@ export class EducartableCard extends HTMLElement {
   _ensureShell() {
     if (this._root) return;
     this._root = this.attachShadow({ mode: 'open' });
-    this._root.innerHTML = '<style>' + EducartableCard._styles() + '</style><ha-card><div class="header" data-head></div><div class="body"></div></ha-card>';
-    this._root.querySelector('ha-card').addEventListener('click', this._onClick.bind(this));
+    this._root.innerHTML = '<style>' + EducartableCard._styles() + '</style><ha-card><div class="header" data-head></div><div class="popup" hidden></div><div class="body"></div></ha-card>';
+    var card = this._root.querySelector('ha-card');
+    card.addEventListener('click', this._onClick.bind(this));
+    card.addEventListener('keydown', (ev) => {
+      if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.hasAttribute?.('data-toggle')) {
+        ev.preventDefault();
+        this._toggleRow(ev.target.getAttribute('data-toggle'));
+      } else if (ev.key === 'Enter' && ev.target.classList?.contains('signer')) {
+        ev.preventDefault();
+        this._doSign();
+      }
+    });
+    card.addEventListener('input', (ev) => {
+      if (this._confirm && ev.target.classList?.contains('signer')) this._confirm.name = ev.target.value;
+    });
   }
 
   _render() {
@@ -160,6 +190,7 @@ export class EducartableCard extends HTMLElement {
     this._root.querySelector('ha-card').classList.toggle('mini', this._compact());
     this._renderHeader(t, data);
     this._fitPill();
+    this._renderPopup(t, data);
     var body = this._root.querySelector('.body');
     if (!data) {
       educartableMorph(body, '<div class="pad empty">' + educartableEsc(t.no_entity) + '</div>');
@@ -169,8 +200,11 @@ export class EducartableCard extends HTMLElement {
       educartableMorph(body, '<div class="pad empty">' + educartableEsc(t.unavailable) + '</div>');
       return;
     }
-    // The rows are patched in place (educartableMorph): nothing on the page is re-created by an update.
+    // The rows are patched in place (educartableMorph): the focused toggle keeps the focus, or gets it back if replaced.
+    var focused = this._root.activeElement?.getAttribute?.('data-toggle');
     educartableMorph(body, this._renderTiles(t, data) + (this._compact() ? '' : this._renderSections(t, data)));
+    if (focused && this._root.activeElement?.getAttribute?.('data-toggle') !== focused) body.querySelector(`[data-toggle="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
+    educartableHydrate(body, this._hass, data.entryId);
   }
 
   _time(iso) {
@@ -266,6 +300,28 @@ export class EducartableCard extends HTMLElement {
       (tools ? '<div class="hbtns">' + tools + '</div>' : ''));
   }
 
+  // Confirmation popup at the top of the card (card convention), never centered on the screen: the signer's name, as
+  // the portal asks for it, prefilled with the account's name.
+  _renderPopup(t, data) {
+    var popup = this._root.querySelector('.popup');
+    var w = this._confirm && data ? data.words.find((x) => String(x.id) === this._confirm.id) : null;
+    if (!w) {
+      this._confirm = null;
+      popup.hidden = true;
+      educartableMorph(popup, '');
+      return;
+    }
+    var first = popup.hidden;
+    popup.hidden = false;
+    educartableMorph(popup,
+      '<div class="popup-title">' + educartableEsc(t.sign_title) + '</div>' +
+      '<div class="popup-text">' + educartableEsc(educartableFormat(t.sign_text, { title: w.title || '—' })) + '</div>' +
+      '<label class="signer-label">' + educartableEsc(t.signer) + '<input class="signer" type="text" autocomplete="name" value="' + educartableEsc(this._confirm.name) + '"></label>' +
+      '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + educartableEsc(t.cancel) + '</button>' +
+      '<button class="act" data-action="confirm"' + (this._confirm.busy ? ' disabled' : '') + '>' + educartableEsc(this._confirm.busy ? t.signing : t.sign) + '</button></div>');
+    if (first) popup.querySelector('.signer')?.focus({ preventScroll: true });
+  }
+
   _renderTiles(t, data) {
     var toSign = data.words.filter((w) => !w.signed).length;
     var todo = data.homework.filter((h) => !h.done).length;
@@ -298,20 +354,22 @@ export class EducartableCard extends HTMLElement {
     var locale = this._locale();
     var limit = (list) => ({ shown: list.slice(0, max), rest: Math.max(0, list.length - max) });
     var more = (n) => (n ? educartableFormat(t.more, { n: n }) : '');
-    // A single child: their name is in the header, not repeated on every homework.
+    // A single child: their name is in the header, not repeated on every row.
     var child = data.children.length > 1;
+    var opts = { isOpen: (key) => !!this._open[key], entryId: data.entryId, canAct: educartableCanAct(this._hass), child: child };
     var html = '';
     if (c.show_words) {
-      var words = limit(data.words.filter((w) => !w.signed));
-      html += this._section('words', t.section_words, words.shown.map((w) => educartableWordRow(w, t, locale)), t.no_words, more(words.rest));
+      // The messages still waiting for something (a signature, a read).
+      var words = limit(data.words.filter((w) => w.achievement && !w.achieved));
+      html += this._section('words', t.section_words, words.shown.map((w) => educartableWordRow(w, t, locale, opts)), t.no_words, more(words.rest));
     }
     if (c.show_homework) {
       var hw = limit(educartableSortedHomework(data.homework, c.show_done));
-      html += this._section('homework', t.section_homework, hw.shown.map((h) => educartableHomeworkRow(h, t, locale, { child: child })), t.no_homework, more(hw.rest));
+      html += this._section('homework', t.section_homework, hw.shown.map((h) => educartableHomeworkRow(h, t, locale, opts)), t.no_homework, more(hw.rest));
     }
     if (c.show_news) {
       var news = limit(data.news);
-      html += this._section('news', t.section_news, news.shown.map((n) => educartableNewsRow(n, t, locale)), t.no_news, more(news.rest));
+      html += this._section('news', t.section_news, news.shown.map((n) => educartableNewsRow(n, t, locale, opts)), t.no_news, more(news.rest));
     }
     return html;
   }
@@ -329,12 +387,26 @@ export class EducartableCard extends HTMLElement {
     this._root.querySelector(`[data-section="${tab}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  _toggleRow(key) {
+    if (this._open[key]) delete this._open[key];
+    else this._open[key] = true;
+    this._render(true);
+  }
+
   _onClick(ev) {
+    var toggle = ev.target.closest ? ev.target.closest('[data-toggle]') : null;
     var el = ev.target.closest ? ev.target.closest('[data-action]') : null;
+    if (toggle && !el) {
+      ev.stopPropagation();
+      this._toggleRow(toggle.getAttribute('data-toggle'));
+      return;
+    }
     if (!el || !this._data) return;
+    var data = this._data;
     var action = el.getAttribute('data-action');
+    var word = () => data.words.find((x) => String(x.id) === el.getAttribute('data-id'));
     if (action === 'refresh') this._refresh();
-    else if (action === 'open') window.open(this._data.url, '_blank', 'noopener');
+    else if (action === 'open') window.open(data.url, '_blank', 'noopener');
     else if (action === 'detail') this._toggleDetail(ev);
     else if (action === 'goto') {
       ev.stopPropagation();
@@ -342,7 +414,46 @@ export class EducartableCard extends HTMLElement {
     } else if (action === 'dismiss') {
       this._error = '';
       this._render(true);
+    } else if (action === 'sign' && educartableCanAct(this._hass)) {
+      ev.stopPropagation();
+      this._confirm = { id: el.getAttribute('data-id'), name: data.account.name || '' };
+      this._render(true);
+    } else if (action === 'cancel') {
+      this._confirm = null;
+      this._render(true);
+    } else if (action === 'confirm') this._doSign();
+    else if (action === 'read' && word()) {
+      ev.stopPropagation();
+      educartableMarkRead(this._hass, data.entryId, word()).catch((err) => this._fail(err, this._t().action_failed));
+    } else if (action === 'homework') {
+      var item = data.homework.find((h) => String(h.id) === el.getAttribute('data-id') && String(h.child_id) === el.getAttribute('data-child'));
+      if (item && educartableCanAct(this._hass)) educartableSetDone(this._hass, data.entryId, item, !item.done).catch((err) => this._fail(err, this._t().action_failed));
+    } else if (action === 'file') {
+      ev.stopPropagation();
+      educartableOpenFile(this._hass, data.entryId, { id: el.getAttribute('data-media'), name: el.getAttribute('data-name') }).catch((err) => this._fail(err, this._t().action_failed));
     }
+  }
+
+  _doSign() {
+    var w = this._confirm && this._data?.words.find((x) => String(x.id) === this._confirm.id);
+    if (!w || this._confirm.busy) return;
+    if (String(this._confirm.name || '').trim().length < 3) {
+      this._error = this._t().signer_short;
+      this._render(true);
+      return;
+    }
+    this._confirm.busy = true;
+    this._error = '';
+    this._render(true);
+    educartableSign(this._hass, this._data.entryId, w, this._confirm.name.trim())
+      .then(() => {
+        this._confirm = null;
+        this._render(true);
+      })
+      .catch((err) => {
+        this._confirm = null;
+        this._fail(err, this._t().action_failed);
+      });
   }
 
   _fail(err, prefix) {
@@ -427,6 +538,14 @@ export class EducartableCard extends HTMLElement {
       '.tile .l { display: block; font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
       '.section { padding: 10px 12px 0; }',
       '.section-title { font-size: 12px; font-weight: 500; color: var(--secondary-text-color); margin-bottom: 2px; }',
+      '.popup { margin: 0 12px 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, ' + A + ' 40%, transparent); background: color-mix(in srgb, ' + A + ' 6%, var(--card-background-color, #fff)); }',
+      '.popup[hidden] { display: none; }',
+      '.popup-title { font-weight: 500; color: var(--primary-text-color); }',
+      '.popup-text { font-size: 13px; color: var(--secondary-text-color); margin-top: 2px; }',
+      '.signer-label { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 12px; color: var(--secondary-text-color); }',
+      '.signer { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--divider-color, rgba(0,0,0,.2)); background: var(--card-background-color, #fff); color: var(--primary-text-color); }',
+      '.signer:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
+      '.popup-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }',
       '.more { font-size: 12px; color: var(--secondary-text-color); padding-top: 2px; }',
       educartableItemStyles(A),
       ':host([mini])::before { grid-template-columns: minmax(0, 260px); }',

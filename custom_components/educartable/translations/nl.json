@@ -34,6 +34,24 @@
           "password": "Laat leeg om hem uit secrets.yaml te lezen.",
           "totp": "Alleen als tweestapsverificatie voor je account is ingeschakeld."
         }
+      },
+      "reconfigure": {
+        "title": "Educartable",
+        "description": "Wijzig de inloggegevens van {username}, of wissel elk tussen een opgeslagen waarde en een vermelding in secrets.yaml.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "username_secret": "Gebruikersnaamgeheim",
+          "password": "Wachtwoord",
+          "password_secret": "Wachtwoordgeheim",
+          "totp": "Eenmalige code"
+        },
+        "data_description": {
+          "username": "Laat leeg om hem uit secrets.yaml te lezen.",
+          "username_secret": "Naam van de vermelding in secrets.yaml met de gebruikersnaam, bijvoorbeeld educartable_username.",
+          "password": "Laat leeg om het uit secrets.yaml te lezen.",
+          "password_secret": "Naam van de vermelding in secrets.yaml met het wachtwoord, bijvoorbeeld educartable_password. Het wordt bij elke update opnieuw gelezen: na een wachtwoordwijziging volstaat het om het secret aan te passen.",
+          "totp": "Alleen als tweestapsverificatie voor je account is ingeschakeld."
+        }
       }
     },
     "error": {
@@ -48,7 +66,8 @@
     "abort": {
       "already_configured": "Dit account is al ingesteld.",
       "reauth_successful": "Inloggegevens bijgewerkt.",
-      "wrong_account": "Deze inloggegevens horen bij een ander account."
+      "wrong_account": "Deze inloggegevens horen bij een ander account.",
+      "reconfigure_successful": "Inloggegevens bijgewerkt."
     }
   },
   "options": {
@@ -58,6 +77,7 @@
         "data": {
           "scan_interval": "Update-interval",
           "homework_days": "Huiswerkperiode",
+          "notify_services": "Meldingsacties",
           "show_panel": "Dit paneel in de zijbalk tonen",
           "panel_tabs": "Tabbladen in het paneel",
           "hide_header": "Bovenste balk verbergen"
@@ -65,7 +85,8 @@
         "data_description": {
           "scan_interval": "Educartable wordt door de hele school gedeeld: minimaal 10 minuten.",
           "homework_days": "Huiswerk dat binnen zoveel dagen af moet, wordt getoond.",
-          "hide_header": "De geïllustreerde kop boven de tabbladen; de tabbladen blijven en op een telefoon komt de menuknop ernaast."
+          "hide_header": "De geïllustreerde kop boven de tabbladen; de tabbladen blijven en op een telefoon komt de menuknop ernaast.",
+          "notify_services": "Deze acties (notify.mobile_app_…) melden bij nieuw huiswerk, berichten in het heen-en-weerschrift en nieuws. Leeg laten voor geen."
         }
       }
     }
@@ -84,6 +105,16 @@
       "last_update": {
         "name": "Laatste update"
       }
+    },
+    "calendar": {
+      "homework_calendar": {
+        "name": "Huiswerk"
+      }
+    },
+    "todo": {
+      "homework_list": {
+        "name": "Huiswerk"
+      }
     }
   },
   "services": {
@@ -94,6 +125,38 @@
         "config_entry_id": {
           "name": "Account",
           "description": "Het Educartable-account om te vernieuwen. Laat leeg als er maar één is ingesteld."
+        }
+      }
+    },
+    "sign": {
+      "name": "Ondertekenen",
+      "description": "Een bericht in het heen-en-weerschrift ondertekenen dat om een handtekening vraagt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen."
+        },
+        "name": {
+          "name": "Naam van de ondertekenaar",
+          "description": "De naam die met de handtekening wordt vastgelegd, minstens 3 tekens, zoals in het portaal."
+        }
+      }
+    },
+    "mark_read": {
+      "name": "Als gelezen markeren",
+      "description": "Een bericht dat gelezen moet worden als gelezen markeren.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
         }
       }
     }
@@ -107,6 +170,18 @@
     },
     "several_accounts": {
       "message": "Er zijn meerdere Educartable-accounts ingesteld: geef aan welk je wilt gebruiken."
+    },
+    "action_failed": {
+      "message": "Educartable weigerde de actie: {error}"
+    },
+    "notify_new_homework": {
+      "message": "Nieuw huiswerk voor {child}"
+    },
+    "notify_new_message": {
+      "message": "Heen-en-weerschrift: nieuw bericht voor {child}"
+    },
+    "notify_new_news": {
+      "message": "Nieuws van de school"
     }
   },
   "selector": {
