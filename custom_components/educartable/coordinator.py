@@ -39,7 +39,7 @@ from .const import (
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_MESSAGE,
     EVENT_NEW_NEWS,
-    LESSONS_PER_PUPIL,
+    LESSONS_KEPT,
     MESSAGES_KEPT,
     MIN_SCAN_INTERVAL,
     NEWS_KEPT,
@@ -183,6 +183,19 @@ def _stale(data: EducartableData, previous: EducartableData, section: str, err: 
     # A warning when it starts, then debug while it lasts: an outage does not fill the log.
     level = logging.DEBUG if section in previous.stale else logging.WARNING
     _LOGGER.log(level, "Educartable %s not updated, keeping the last read: %s", section, err)
+
+
+def _lesson_pupils(raw: dict[str, Any], pupils: list[dict[str, Any]]) -> set[str]:
+    """Ids of the family's pupils a lesson is for, as the portal's app filters its homework by child.
+
+    Its pupil recipients; without any, the pupils of its classroom; for a lesson naming neither, every child (the
+    app shows it when no child is picked).
+    """
+    ids = {p["id"] for p in pupils}
+    named = {_str(r.get("key")) for r in _pupil_recipients(raw)}
+    if not named and raw.get("scope_model") == "Classroom":
+        named = {p["id"] for p in pupils if p["classroom_id"] and p["classroom_id"] == _str(raw.get("scope_key"))}
+    return (named & ids) or ids
 
 
 def _children(raw: dict[str, Any]) -> list[str]:
@@ -497,21 +510,18 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         lessons: list[dict[str, Any]] | None = None
         if data.pupils:
             try:
-                lessons = await self.api.lessons(parent_id, start, limit=LESSONS_PER_PUPIL * len(data.pupils))
+                lessons = await self.api.lessons(parent_id, start, limit=LESSONS_KEPT)
             except EducartableUnavailableError as err:
                 _stale(data, previous, "homework", err)
-        ids = {p["id"] for p in data.pupils}
         for pupil in data.pupils:
             if lessons is None:
                 data.homework[pupil["id"]] = previous.homework.get(pupil["id"], [])
                 continue
-            # Keep homework due within the window (and anything undated); a lesson naming none of the family's
-            # pupils is for all of them.
+            # Keep homework due within the window (and anything undated).
             data.homework[pupil["id"]] = [
                 _homework(h, pupil["id"])
                 for h in lessons
-                if (pupil["id"] in (children := _children(h)) or not ids.intersection(children))
-                and ((d := _due(h.get("date"))) is None or d <= cutoff)
+                if pupil["id"] in _lesson_pupils(h, data.pupils) and ((d := _due(h.get("date"))) is None or d <= cutoff)
             ]
 
         try:

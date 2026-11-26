@@ -671,14 +671,18 @@ async def test_homework_read_once_and_shared_out_per_child(
             "recipients": [{"model": "Pupil", "key": "e2", "id": "r10", "checked": 0}],
         }
     )
+    api["api"].extra_lessons.append(
+        # No recipient: for the pupils of its classroom (Bob's), as the portal's app does.
+        {"id": "h4", "title": "Dictée", "date": "2026-11-26", "scope_model": "Classroom", "scope_key": 4}
+    )
     await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
-    # One read for the family (no per-pupil filter, which the portal answers with HTTP 500), sized for two.
-    assert api["api"].lesson_limits[-1] == 60
+    # One read for the family (no per-pupil filter, which the portal answers with HTTP 500), as the app reads it.
+    assert api["api"].lesson_limits[-1] == 100
     alice = hass.states.get("sensor.alice_test_homework_to_do")
     bob = hass.states.get("sensor.bob_test_homework_to_do")
-    # h1 names Alice, h3 names Bob, h2 names nobody so it is for both.
+    # h1 names Alice, h3 names Bob, h4 is Bob's classroom, h2 names nobody so it is for both.
     assert [h["id"] for h in alice.attributes["homework"]] == ["h1", "h2"]
-    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3"]
+    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3", "h4"]
     assert hass.states.get("sensor.educartable_parent_test_last_update").attributes["stale"] == []
 
     # The portal failing: the homework read before stays, the section is stale and the log says so once.
@@ -686,7 +690,7 @@ async def test_homework_read_once_and_shared_out_per_child(
     caplog.clear()
     await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
     bob = hass.states.get("sensor.bob_test_homework_to_do")
-    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3"]
+    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3", "h4"]
     assert hass.states.get("sensor.educartable_parent_test_last_update").attributes["stale"] == ["homework"]
     warnings = [r for r in caplog.records if r.levelname == "WARNING" and "homework not updated" in r.message]
     assert len(warnings) == 1
