@@ -21,13 +21,13 @@ Home Assistant integration for **Educartable**, the family portal of EDUMOOV use
 
 ## Features
 
-- One device per child with a **Homework to do** sensor: the count, with the homework (title, subject, due date, text, attachments, done) as attributes
+- One device per child with a **Homework to do** sensor: the count, with the homework (title, subject, due date, text, attachments, online exercises and revisions, done) as attributes
 - **Liaison book to sign** sensor (messages still to sign, with the ones to read) and **News** sensor (news, events and parent meetings)
 - **Class life** sensor (the cahier de vie: the class's posts with their photos, links and likes), **Unread notifications** sensor (the portal's notifications, cancelled appointments included) and **Next appointment** sensor (every appointment booked ahead as attributes)
 - **School reports to sign** sensor: the livret (school reports and attestations) still to sign as consulted, with every document as attributes
 - **Last update** sensor with the children and the panel options, read by the card and the panel
 - **School events** calendar (the events of the news on their day, and the appointments booked for the children), **Homework** calendar (every child's homework on its due date) and one **Homework** to-do list per child: ticking an item marks it done in the portal
-- Actions on the portal (administrators only): sign or mark as read a message, reply to the teacher, write a new message, answer a survey, book or cancel an appointment, sign a school report, like a class-life post, mark notifications as read, delete one of your comments; `educartable.refresh` to read the portal now
+- Actions on the portal (administrators only): sign or mark as read a message, reply to the teacher, write a new message, answer a survey, book or cancel an appointment, sign a school report, like a class-life post, mark notifications as read or delete them, delete one of your comments or messages, stop following a child; `educartable.refresh` to read the portal now
 - `educartable_new_homework`, `educartable_new_message`, `educartable_new_news`, `educartable_new_activity` and `educartable_new_document` events for automations, and optional **notifications** to the notify actions of your choice
 - `custom:educartable-card` card, **shipped with the integration** and loaded automatically: counts, liaison book to sign (with confirmation) or to read, homework to tick and news, each unfolding to its text and attachments
 - `custom:educartable-mini-card` compact card: the counts, with a button to open the full card
@@ -149,13 +149,13 @@ The **Educartable** entry of the sidebar opens a panel under the card's illustra
 
 | Tab | Content |
 |---|---|
-| Home | A child filter (with two children or more), the school week (homework left per day; a click keeps only that day), tiles for the liaison book, homework, news and school reports (count as badge, coloured state line), then *To do* (messages waiting, homework, school reports to sign), the news, the *Next appointments* and the portal's *Notifications* (each marked as read, or all of them) |
-| Homework | The child filter, then one box per due day with its progress (done / total), each homework with its text and its box to tick; done ones can be hidden |
-| Liaison book | *New message* (to the teacher of the children chosen; one message per classroom), then the messages still waiting first, with their text, attachments, *Sign* / *Mark as read* buttons, their survey (choose the answers, send them for the children concerned, change them until the deadline), their appointment slots and their conversation with the teacher (opened on demand, with a reply box) |
+| Home | A child filter (with two children or more), the school week (homework left per day; a click keeps only that day), tiles for the liaison book, homework, news and school reports (count as badge, coloured state line), then *To do* (messages waiting, homework, school reports to sign), the news, the *Next appointments* and the portal's *Notifications* (each marked as read or deleted, or all of them marked as read) |
+| Homework | The child filter, then one box per due day with its progress (done / total), each homework with its text, its online exercises and revisions (dictation words, tables, a lesson, a poem; done in the portal's app) and its box to tick; done ones can be hidden |
+| Liaison book | *New message* (to the teacher of the children chosen; one message per classroom), then the messages still waiting first, with their text, attachments, *Sign* / *Mark as read* buttons, their survey (choose the answers, send them for the children concerned, change them until the deadline), their appointment slots, their conversation with the teacher (opened on demand, with a reply box) and *Delete the message* on the ones you wrote |
 | News | News, events and parent meetings, with their text, attachments and slots: the slot booked for each child (with *Cancel booking*) and the free ones, day by day, to book |
 | Class life | The cahier de vie: the class's posts with their photos and links, a heart to like them (with the count) and their conversation with the teacher when it is open |
 | School reports | The livret of each child: school reports and attestations, their PDF, and *Sign* (as consulted, with the signer's name) for those still to sign |
-| Settings | The account options; only administrators can change them |
+| Settings | The account options and *Follow a child* (the tracking code the school gives; the child's device appears at once); only administrators can change them |
 
 With several accounts, a menu at the right of the tabs switches between them. The child filter and *Hide done* are remembered in the browser, and the tabs can be browsed with the arrow keys. On scroll, the top bar folds into a compact sticky bar with round icon tabs.
 
@@ -182,6 +182,9 @@ data:
 | `educartable.like_activity` | `activity_id` (from the `activities` attribute of **Class life**), `liked` (`false` takes the like back) |
 | `educartable.mark_notifications_read` | `notification_id` (from the `notifications` attribute of **Unread notifications**); all of them without it |
 | `educartable.delete_comment` | `message_id`, `comment_id` of one of your own comments |
+| `educartable.delete_notification` | `notification_id` (from the `notifications` attribute of **Unread notifications**) |
+| `educartable.delete_message` | `message_id` of a message you wrote (`mine` in the message's attributes): the teacher no longer sees it |
+| `educartable.unfollow_child` | `child_id` (from the `child_id` attribute of the child's **Homework to do** sensor): the child's device and entities go with it |
 
 ```yaml
 action: educartable.answer_survey
@@ -299,7 +302,7 @@ Home (child filter, week, tiles, To do, news, next appointments and notification
 
 The integration signs in with the family account like the portal's web app (OpenID Connect on `accounts.edumoov.com`, client `educlasse`; the access token is renewed with its refresh token, a refused login starts a reauthentication) and reads, at each update, from `app.educartable.com/api/1.0`: the account and the children (`educore/users/me`, `educore/…/pupils`), each child's homework (`educartable/…/messages?type=lesson`), the liaison book and the news (`info`, `alert`, `event`, `advert`, `meeting` messages, with their surveys and appointment slots), the class life (`activity` messages), the livret (`livret/…/notebooks`, `attestations_validations`), the portal's notifications and the appointments booked ahead. A part a school does not use stays empty; a part the portal fails to give keeps its last content and is listed in the sensors' `stale` attribute, and the card then shows *Partly updated*.
 
-What you do goes through the same routes as the portal's app: achievements (sign, read, comment…), the done box of a homework, comments, new messages, likes, and the RPC API of `api.edumoov.com` for surveys, appointments and translation. Attachments and livret PDFs are fetched only when you open them, through `/api/educartable/file/<entry_id>` (administrators only, 25 MB at most); files you attach are sent to `/api/educartable/upload/<entry_id>` (administrators only, 40 MB each), then uploaded to the portal with the reply. The pupil's skills (*compétences*) are not part of the portal's family app: schools publish them in the livret, shown in the School reports tab.
+What you do goes through the same routes as the portal's app: achievements (sign, read, comment…), the done box of a homework, comments, new messages, likes, and the RPC API of `api.edumoov.com` for surveys, appointments and translation. Attachments and livret PDFs are fetched only when you open them, through `/api/educartable/file/<entry_id>` (administrators only, 25 MB at most); files you attach are sent to `/api/educartable/upload/<entry_id>` (administrators only, 40 MB each), then uploaded to the portal with the reply. The homework is read once for the family and shared out by child the way the portal's app does (its pupil recipients, else the pupils of its classroom); its online exercises are named from the portal's exercise catalogue (`forge.exercices.getAllDomainsProgressions`, read again every 10 minutes at most) and are done in the portal's app, like the revision games. Archived messages are left out when *hide the archives* is set in the portal's family app (read again every hour). A child no longer followed loses its device and entities; one left behind can also be deleted from its device page. The tracking code of *Follow a child* goes straight from the panel to the integration (an administrators-only websocket command), never through an action, whose data Home Assistant may keep in traces and logs. *Translate* is offered as the portal's app does: not on a message whose author did not allow it, nor on one written in your language. The pupil's skills (*compétences*) are not part of the portal's family app: schools publish them in the livret, shown in the School reports tab.
 
 ## Development
 

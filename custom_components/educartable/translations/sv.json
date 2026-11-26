@@ -344,6 +344,48 @@
           "description": "Id för en av dina kommentarer i samtalet."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Ta bort en avisering",
+      "description": "Ta bort en avisering från portalen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "notification_id": {
+          "name": "Avisering",
+          "description": "Aviseringens id från attributet notifications på sensorn Olästa aviseringar."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Ta bort ett meddelande",
+      "description": "Ta bort ett meddelande du skrivit till läraren: läraren ser det inte längre.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "message_id": {
+          "name": "Meddelande",
+          "description": "Meddelandets id, från attributet messages på sensorn Kontaktbok att skriva under eller Nyheter."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Sluta följa ett barn",
+      "description": "Sluta följa ett barns skolgång på det här kontot.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
+        },
+        "child_id": {
+          "name": "Barn",
+          "description": "Barnets id från attributet child_id på dess sensor Läxor."
+        }
+      }
     }
   },
   "exceptions": {

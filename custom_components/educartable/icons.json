@@ -76,6 +76,15 @@
     },
     "delete_comment": {
       "service": "mdi:comment-remove-outline"
+    },
+    "delete_notification": {
+      "service": "mdi:bell-remove-outline"
+    },
+    "delete_message": {
+      "service": "mdi:email-remove-outline"
+    },
+    "unfollow_child": {
+      "service": "mdi:account-minus-outline"
     }
   }
 }

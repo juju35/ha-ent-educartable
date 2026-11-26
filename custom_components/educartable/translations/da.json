@@ -344,6 +344,48 @@
           "description": "Id for en af dine kommentarer i samtalen."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Slet en notifikation",
+      "description": "Slet en notifikation fra portalen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "notification_id": {
+          "name": "Notifikation",
+          "description": "Notifikationens id fra attributten notifications på sensoren Ulæste notifikationer."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Slet en besked",
+      "description": "Slet en besked, du har skrevet til læreren: læreren ser den ikke længere.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "message_id": {
+          "name": "Besked",
+          "description": "Beskedens id, fra attributten messages på sensoren Kontaktbog til underskrift eller Nyheder."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Stop med at følge et barn",
+      "description": "Stop med at følge et barns skolegang på denne konto.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Educartable-kontoen. Lad stå tomt, når der kun er én."
+        },
+        "child_id": {
+          "name": "Barn",
+          "description": "Barnets id fra attributten child_id på dets sensor Lektier."
+        }
+      }
     }
   },
   "exceptions": {

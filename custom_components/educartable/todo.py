@@ -22,6 +22,7 @@ async def async_setup_entry(
 
     @callback
     def add_pupils() -> None:
+        known.intersection_update(p["id"] for p in coordinator.data.pupils)
         new = [HomeworkTodo(coordinator, p) for p in coordinator.data.pupils if p["id"] not in known]
         known.update(p["id"] for p in coordinator.data.pupils)
         if new:

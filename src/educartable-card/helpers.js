@@ -373,6 +373,18 @@ export function educartableLinks(links) {
     '<a class="file" href="' + educartableEsc(l.url) + '" target="_blank" rel="noopener noreferrer" title="' + educartableEsc(l.url) + '"><ha-icon icon="' + (l.type === 'video' ? 'mdi:play-circle-outline' : 'mdi:link-variant') + '"></ha-icon><span>' + educartableEsc(l.title || l.url) + '</span></a>').join('') + '</div>';
 }
 
+// A homework's online exercises and revisions (dictation words, tables, a lesson, a poem): done in the portal's app.
+export function educartableLearning(item, t) {
+  var games = item.exercises || [];
+  var revisions = item.revisions || [];
+  if (!games.length && !revisions.length) return '';
+  var rows = games.map((g) => '<span class="file"><ha-icon icon="mdi:gamepad-variant-outline"></ha-icon><span>' + educartableEsc(g.title || t.exercise) + '</span></span>')
+    .concat(revisions.map((r) => '<span class="file"><ha-icon icon="mdi:head-lightbulb-outline"></ha-icon><span>' +
+      educartableEsc([r.title, t['rev_' + r.category]].filter(Boolean).join(' · ') || t.revision) + '</span></span>'));
+  return '<div class="files learning">' + rows.join('') +
+    '<a class="file portal" href="https://mobile.educartable.com/" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:open-in-new"></ha-icon><span>' + educartableEsc(t.learn_on_portal) + '</span></a></div>';
+}
+
 // Gives the drawn thumbnails their sources.
 export function educartableHydrate(root, hass, entryId) {
   root.querySelectorAll('img[data-src]:not([src])').forEach((img) => {
@@ -409,8 +421,9 @@ export function educartableToggle(key, open, hasMore) {
 
 function educartableMore(item, key, opts) {
   var open = !!(opts?.full || opts?.isOpen?.(key));
-  var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0 || (item.links || []).length > 0);
-  var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) + educartableLinks(item.links) : '';
+  var learning = (item.exercises || []).length > 0 || (item.revisions || []).length > 0;
+  var tg = opts?.full ? { attrs: '', chevron: '' } : educartableToggle(key, open, !!item.text || (item.medias || []).length > 0 || (item.links || []).length > 0 || learning);
+  var body = open ? (item.text ? '<div class="item-text' + (opts?.full ? '' : ' clamp') + '">' + educartableEsc(item.text) + '</div>' : '') + educartableFiles(item.medias, opts.t, opts.entryId, opts.canAct) + educartableLinks(item.links) + (learning ? educartableLearning(item, opts.t) : '') : '';
   // The panel adds what can be done on the message (survey, appointment, conversation) under it.
   if (open && opts?.extra) body += opts.extra(item);
   return { tg: tg, body: body };
@@ -488,6 +501,14 @@ export function educartableReadNotifications(hass, entryId, id) {
   return hass.callService('educartable', 'mark_notifications_read', data);
 }
 
+export function educartableDeleteNotification(hass, entryId, id) {
+  return hass.callService('educartable', 'delete_notification', { config_entry_id: entryId, notification_id: String(id) });
+}
+
+export function educartableDeleteMessage(hass, entryId, id) {
+  return hass.callService('educartable', 'delete_message', { config_entry_id: entryId, message_id: String(id) });
+}
+
 export function educartableDeleteComment(hass, entryId, messageId, commentId) {
   return hass.callService('educartable', 'delete_comment', { config_entry_id: entryId, message_id: String(messageId), comment_id: String(commentId) });
 }
@@ -517,7 +538,7 @@ export function educartableItemStyles(accent) {
     '.item-icon { flex: none; color: var(--secondary-text-color); --mdc-icon-size: 20px; margin-top: 1px; }',
     '.word:not(.done) .item-icon, .doc:not(.done) .item-icon { color: ' + accent + '; }',
     '.doc-files { margin-top: 6px; }',
-    '.files.links { margin-top: 6px; }',
+    '.files.links, .files.learning { margin-top: 6px; }',
     'a.file { text-decoration: none; }',
     '.like { all: unset; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 12px; color: var(--secondary-text-color); --mdc-icon-size: 18px; }',
     '.like.on { color: #e5487a; }',
@@ -570,6 +591,7 @@ export function educartableItemStyles(accent) {
     '.file ha-icon { color: ' + accent + '; flex: none; }',
     '.file:hover { background: color-mix(in srgb, ' + accent + ' 10%, transparent); }',
     '.file:disabled { cursor: default; background: none; }',
+    'span.file, span.file:hover { cursor: default; background: none; }',
     '.file:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
     '@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }',
     '.error-text { color: color-mix(in srgb, var(--error-color, #db4437) 55%, var(--primary-text-color)); font-size: 13px; }',
@@ -614,6 +636,8 @@ window.Educartable = {
   accept: EDUCARTABLE_ACCEPT,
   readNotifications: educartableReadNotifications,
   deleteComment: educartableDeleteComment,
+  deleteNotification: educartableDeleteNotification,
+  deleteMessage: educartableDeleteMessage,
   openFile: educartableOpenFile,
   hydrate: educartableHydrate,
   sortedHomework: educartableSortedHomework,

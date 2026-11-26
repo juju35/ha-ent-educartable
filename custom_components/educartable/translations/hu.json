@@ -344,6 +344,48 @@
           "description": "Egy saját hozzászólásod azonosítója a beszélgetésben."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Értesítés törlése",
+      "description": "A portál egy értesítésének törlése.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "notification_id": {
+          "name": "Értesítés",
+          "description": "Az értesítés azonosítója a(z) Olvasatlan értesítések érzékelő notifications attribútumából."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Üzenet törlése",
+      "description": "Egy, a tanárnak írt üzenet törlése: a tanár többé nem látja.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "message_id": {
+          "name": "Üzenet",
+          "description": "Az üzenet azonosítója az Aláírandó üzenőfüzet vagy a Hírek érzékelő messages attribútumából."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Gyermek követésének leállítása",
+      "description": "Egy gyermek tanulmányainak követése leáll ezen a fiókon.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Fiók",
+          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
+        },
+        "child_id": {
+          "name": "Gyerek",
+          "description": "A gyermek azonosítója a(z) Házi feladatok érzékelő child_id attribútumából."
+        }
+      }
     }
   },
   "exceptions": {

@@ -76,7 +76,18 @@ carries the new version, updated together in one commit:
   of files only says `Pièce(s) jointe(s) :`; a new message's files go in its first comment) through Home Assistant
   (`/api/educartable/upload/{entry}` gives tokens, or paths under `allowlist_external_dirs`), and translation
   (`translate.translate` RPC {text: [title, body], source fr, target}).
-- Not in the portal's family app, so not planned: the pupil's skills (only the livret), online exercises.
+- Also implemented (1.2.0): homework read once for the family (the portal answers HTTP 500 to `pupil_id`; the app never sends it)
+  and shared out as the app does (pupil recipients, else `scope_model` Classroom + `scope_key`, else every child), `limit=100`;
+  a homework's `games` (online exercises, named from the `forge.exercices.getAllDomainsProgressions` catalogue keyed `id`+`linkId`,
+  unknown ones left out, cached 10 min) and `revisions` ({uid, title, type DICTEE|TABLES|LECONS|POESIES, templates[{code}]}),
+  done in the portal's app; `educore/…/settings?app=EducartableFamily` → `ui.hideArchives` hides archived messages; follow a child
+  with the school's tracking code (`POST educore/…/pupils/follow` {login, password}) from the panel's Settings tab through the
+  admin websocket `educartable/follow_child` — never an action, its data may land in traces and logs —, `DELETE …/pupils/unfollow/{id}`
+  (action `unfollow_child`); a child no longer in the pupils (read successfully) loses its device and entities; delete a
+  message the family wrote (`DELETE educartable/…/messages/{id}/trash`) or a notification (`DELETE educore/…/notifications/{id}`);
+  *Translate* only when the author (`user.lang`, `user.allow_translation`) allows it and writes in another language.
+- Not in the portal's family app, so not planned: the pupil's skills (only the livret). Left out on purpose: the app's own
+  profile (`user.users.update`), push devices, cache clearing and account preferences (mail/push).
 - New card or visual rework: **propose design options to choose from** before implementing.
 
 ## README layout

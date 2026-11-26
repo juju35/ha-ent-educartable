@@ -344,6 +344,48 @@
           "description": "ID jednoho z vašich komentářů v rozhovoru."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Smazat oznámení",
+      "description": "Smaže oznámení portálu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "notification_id": {
+          "name": "Oznámení",
+          "description": "ID oznámení z atributu notifications senzoru Nepřečtená oznámení."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Smazat zprávu",
+      "description": "Smaže zprávu, kterou jste napsali učiteli: učitel ji už neuvidí.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "message_id": {
+          "name": "Zpráva",
+          "description": "ID zprávy z atributu messages senzoru Žákovská knížka k podpisu nebo Novinky."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Přestat sledovat dítě",
+      "description": "Přestat sledovat školní docházku dítěte na tomto účtu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechte prázdné, pokud je nastaven jen jeden."
+        },
+        "child_id": {
+          "name": "Dítě",
+          "description": "ID dítěte z atributu child_id jeho senzoru Domácí úkoly."
+        }
+      }
     }
   },
   "exceptions": {

@@ -344,6 +344,48 @@
           "description": "Identyfikator jednego z twoich komentarzy w rozmowie."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Usuń powiadomienie",
+      "description": "Usuń powiadomienie portalu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "notification_id": {
+          "name": "Powiadomienie",
+          "description": "Identyfikator powiadomienia z atrybutu notifications czujnika Nieprzeczytane powiadomienia."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Usuń wiadomość",
+      "description": "Usuń wiadomość napisaną do nauczyciela: nie będzie jej już widział.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "message_id": {
+          "name": "Wiadomość",
+          "description": "Identyfikator wiadomości z atrybutu messages czujnika Dzienniczek do podpisania lub Aktualności."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Przestań obserwować dziecko",
+      "description": "Przestań obserwować naukę dziecka na tym koncie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
+        },
+        "child_id": {
+          "name": "Dziecko",
+          "description": "Identyfikator dziecka z atrybutu child_id jego czujnika Prace domowe."
+        }
+      }
     }
   },
   "exceptions": {

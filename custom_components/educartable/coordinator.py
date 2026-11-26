@@ -39,11 +39,13 @@ from .const import (
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_MESSAGE,
     EVENT_NEW_NEWS,
+    EXERCISES_TTL,
     LESSONS_KEPT,
     MESSAGES_KEPT,
     MIN_SCAN_INTERVAL,
     NEWS_KEPT,
     NOTIFICATIONS_KEPT,
+    SETTINGS_TTL,
 )
 from .secret import SecretNotFoundError, async_credentials
 
@@ -148,6 +150,70 @@ def _author(raw: dict[str, Any]) -> str:
     return " ".join(p for p in (_str(user.get("firstname")), _str(user.get("name"))) if p).strip()
 
 
+def _user_id(raw: dict[str, Any]) -> str:
+    user = raw.get("user")
+    return _str(raw.get("user_id") or (user.get("id") if isinstance(user, dict) else None))
+
+
+def _translation(raw: dict[str, Any]) -> dict[str, Any]:
+    """Whether the portal's app offers to translate a message: not a family's own, not empty, and an author who
+    gave a language must have allowed it (the panel also skips it when that language is the reader's)."""
+    user = raw.get("user") if isinstance(raw.get("user"), dict) else {}
+    lang = _str(user.get("lang")).lower()
+    allowed = raw.get("scope_model") != "Parent" and bool(_str(raw.get("body")).strip())
+    if lang and not user.get("allow_translation"):
+        allowed = False
+    return {"translatable": allowed, "author_lang": lang}
+
+
+# The revision kinds of the portal's app (its own catalogue).
+REVISION_CATEGORIES = ("DICTEE", "TABLES", "LECONS", "POESIES")
+
+
+def _revisions(raw: dict[str, Any]) -> list[dict[str, Any]]:
+    """What a homework gives to learn with the app's revision games: a dictation, tables, a lesson, a poem."""
+    out = []
+    for r in raw.get("revisions") or []:
+        if not isinstance(r, dict):
+            continue
+        category = _str(r.get("type")).upper()
+        templates = [t for t in r.get("templates") or [] if isinstance(t, dict) and t.get("code")]
+        out.append(
+            {
+                "title": _str(r.get("title")),
+                "category": category if category in REVISION_CATEGORIES else "",
+                "games": len(templates),
+            }
+        )
+    return out
+
+
+def _exercise_keys(raw: dict[str, Any]) -> list[str]:
+    """The online exercises a homework links to, by their key in the catalogue (id + linkId, as the app keys it)."""
+    return [
+        f"{_str(g.get('id'))}{_str(g.get('linkId'))}"
+        for g in raw.get("games") or []
+        if isinstance(g, dict) and g.get("id") is not None
+    ]
+
+
+def _exercise_catalogue(tree: list[Any]) -> dict[str, dict[str, str]]:
+    """The exercises of the catalogue tree (its leaves), by key."""
+    out: dict[str, dict[str, str]] = {}
+    stack = list(tree)
+    while stack:
+        node = stack.pop()
+        if not isinstance(node, dict):
+            continue
+        children = node.get("children")
+        if isinstance(children, list) and children:
+            stack.extend(children)
+        elif node.get("id") is not None:
+            key = f"{_str(node.get('id'))}{_str(node.get('linkId'))}"
+            out[key] = {"title": _str(node.get("title") or node.get("name")), "type": _str(node.get("type"))}
+    return out
+
+
 def _medias(raw: dict[str, Any]) -> list[dict[str, str]]:
     medias = raw.get("medias") or []
     out = []
@@ -222,6 +288,9 @@ def _common(raw: dict[str, Any]) -> dict[str, Any]:
         "achieved": bool(raw.get("achievements")),
         "medias": _medias(raw),
         "links": _links(raw),
+        **_translation(raw),
+        # Who wrote it: a message of the family's own can be deleted.
+        "user_id": _user_id(raw),
         # An archived message (a past school year) is read only.
         "archived": bool(raw.get("archived")),
     }
@@ -242,6 +311,9 @@ def _homework(raw: dict[str, Any], pupil_id: str = "") -> dict[str, Any]:
         "due": _iso(raw.get("date")),
         "done": done,
         "recipient_id": _str(recipient.get("id")) if recipient else "",
+        # Online exercises (named from the catalogue once read) and revisions to learn with the app's games.
+        "exercises": _exercise_keys(raw),
+        "revisions": _revisions(raw),
     }
 
 
@@ -467,6 +539,10 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         self._translations: dict[tuple[str, ...], dict[str, str]] = {}
         # Where each livret document's PDF is (ids and hashes the attributes do not carry).
         self._document_files: dict[str, tuple[str, ...]] = {}
+        # The catalogue of online exercises, kept a while as the portal's app does: (when, exercises by key).
+        self._exercises: tuple[float, dict[str, dict[str, str]]] | None = None
+        # The family app's "hide the archives" setting, read again after a while: (when, value).
+        self._hide: tuple[float, bool] | None = None
 
     async def _async_update_data(self) -> EducartableData:
         try:
@@ -498,6 +574,12 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         today = dt_util.now().date()
         start = today.isoformat()
         cutoff = today + timedelta(days=self.homework_days)
+        # The family app's own setting: archived messages (a past school year) hidden.
+        hide = await self._hide_archives(parent_id, previous)
+        data.account["hide_archives"] = hide
+
+        def shown(raw: dict[str, Any]) -> bool:
+            return not (hide and raw.get("archived"))
 
         try:
             data.pupils = [_pupil(p) for p in await self.api.pupils(parent_id)]
@@ -521,23 +603,31 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             data.homework[pupil["id"]] = [
                 _homework(h, pupil["id"])
                 for h in lessons
-                if pupil["id"] in _lesson_pupils(h, data.pupils) and ((d := _due(h.get("date"))) is None or d <= cutoff)
+                if shown(h)
+                and pupil["id"] in _lesson_pupils(h, data.pupils)
+                and ((d := _due(h.get("date"))) is None or d <= cutoff)
             ]
+        if lessons is not None:
+            await self._name_exercises(data)
 
         try:
-            data.carnet = [_message(m) for m in await self.api.carnet(parent_id)][:MESSAGES_KEPT]
+            data.carnet = [_message(m) for m in await self.api.carnet(parent_id) if shown(m)][:MESSAGES_KEPT]
         except EducartableUnavailableError as err:
             data.carnet = previous.carnet
             _stale(data, previous, "carnet", err)
         try:
-            data.news = [_message(m) for m in await self.api.news(parent_id)][:NEWS_KEPT]
+            data.news = [_message(m) for m in await self.api.news(parent_id) if shown(m)][:NEWS_KEPT]
         except EducartableUnavailableError as err:
             data.news = previous.news
             _stale(data, previous, "news", err)
         await self._read_documents(parent_id, data, previous)
-        data.activities = await self._optional(
-            "activities", lambda: self.api.activities(parent_id, ACTIVITIES_KEPT), _activity, data, previous
-        )
+        data.activities = [
+            a
+            for a in await self._optional(
+                "activities", lambda: self.api.activities(parent_id, ACTIVITIES_KEPT), _activity, data, previous
+            )
+            if not (hide and a["archived"])
+        ]
         data.notifications = await self._optional(
             "notifications",
             lambda: self._unread(parent_id),
@@ -552,7 +642,10 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         data.appointments.sort(key=lambda a: a["start"] or "")
         # The first names of the children a message concerns, for the card, the panel and the events.
         names = {p["id"]: p["firstname"] or p["name"] for p in data.pupils}
+        mine = set(data.account["user_ids"])
         for message in (*data.carnet, *data.news):
+            # A message the family wrote, and not archived: the family can delete it.
+            message["mine"] = bool(message["user_id"]) and message["user_id"] in mine and not message["archived"]
             message["child"] = " · ".join(names[c] for c in message["children"] if c in names)
             # A slot booked for a child of another family is not one to show.
             message["slots"] = [s for s in message["slots"] if not s["booked"] or s["child_id"] in names]
@@ -564,6 +657,42 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             appointment["child"] = names.get(appointment["child_id"], "")
         self._fire_new(data)
         return data
+
+    async def _hide_archives(self, parent_id: str, previous: EducartableData) -> bool:
+        """The family app's "hide the archives" setting, read again every few minutes; the one read before when the
+        portal does not answer."""
+        now = time.monotonic()
+        if self._hide is not None and now - self._hide[0] < SETTINGS_TTL:
+            return self._hide[1]
+        try:
+            settings = await self.api.settings(parent_id)
+        except EducartableUnavailableError:
+            return bool(previous.account.get("hide_archives"))
+        except EducartableError as err:
+            _LOGGER.debug("No family app settings on this account: %s", err)
+            settings = {}
+        ui = settings.get("ui")
+        hide = bool(ui.get("hideArchives")) if isinstance(ui, dict) else False
+        self._hide = (now, hide)
+        return hide
+
+    async def _name_exercises(self, data: EducartableData) -> None:
+        """Name the online exercises of the homework from the portal's catalogue; one it does not know is left out,
+        as its app does."""
+        items = [h for homework in data.homework.values() for h in homework]
+        if not any(h["exercises"] for h in items):
+            return
+        now = time.monotonic()
+        if self._exercises is None or now - self._exercises[0] > EXERCISES_TTL:
+            try:
+                self._exercises = (now, _exercise_catalogue(await self.api.exercises()))
+            except EducartableError as err:
+                # Said once: without the catalogue, the homework's exercises cannot be named and are left out.
+                level = logging.DEBUG if self._exercises else logging.WARNING
+                _LOGGER.log(level, "Educartable exercise catalogue not read, exercises left out: %s", err)
+        catalogue = self._exercises[1] if self._exercises else {}
+        for h in items:
+            h["exercises"] = [catalogue[k] for k in h["exercises"] if isinstance(k, str) and k in catalogue]
 
     async def _unread(self, parent_id: str) -> list[dict[str, Any]]:
         return [n for n in await self.api.notifications(parent_id) if isinstance(n, dict) and _for_family(n)][
@@ -1003,6 +1132,40 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             left = []
         self.data = replace(self.data, notifications=left)
         self.async_update_listeners()
+
+    async def async_delete_notification(self, notification_id: str) -> None:
+        """Delete a notification of the portal."""
+        if not any(n["id"] == notification_id for n in self.data.notifications):
+            raise EducartableError("unknown notification")
+        await self.api.delete_notification(self._parent_id(), notification_id)
+        self.data = replace(self.data, notifications=[n for n in self.data.notifications if n["id"] != notification_id])
+        self.async_update_listeners()
+
+    async def async_delete_message(self, message_id: str) -> None:
+        """Delete a message the family wrote to the teacher: the teacher no longer sees it."""
+        message = self._find_message(message_id)
+        if not message.get("mine"):
+            raise EducartableError("only your own messages can be deleted")
+        await self.api.delete_message(self._parent_id(), message_id)
+        self.data = replace(
+            self.data,
+            carnet=[m for m in self.data.carnet if m["id"] != message_id],
+            news=[m for m in self.data.news if m["id"] != message_id],
+        )
+        self.async_update_listeners()
+
+    async def async_follow_child(self, login: str, password: str) -> str:
+        """Follow a child with the tracking code the school gave; the child's first name is returned."""
+        pupil = await self.api.follow(self._parent_id(), login, password)
+        await self.async_refresh()
+        return _str(pupil.get("firstname") or pupil.get("name"))
+
+    async def async_unfollow_child(self, child_id: str) -> None:
+        """Stop following a child: its homework, messages and livret are no longer read."""
+        if not any(p["id"] == child_id for p in self.data.pupils):
+            raise EducartableError("unknown child")
+        await self.api.unfollow(self._parent_id(), child_id)
+        await self.async_refresh()
 
     async def async_delete_comment(self, message_id: str, comment_id: str) -> None:
         """Delete one of the family's own comments in a message's conversation."""

@@ -21,6 +21,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, Platform
 from homeassistant.core import Event, HassJob, HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.service import async_register_admin_service
 from homeassistant.helpers.typing import ConfigType
@@ -63,6 +64,8 @@ from .const import (
     SERVICE_BOOK,
     SERVICE_CANCEL_BOOKING,
     SERVICE_DELETE_COMMENT,
+    SERVICE_DELETE_MESSAGE,
+    SERVICE_DELETE_NOTIFICATION,
     SERVICE_LIKE,
     SERVICE_MARK_READ,
     SERVICE_READ_NOTIFICATIONS,
@@ -70,6 +73,7 @@ from .const import (
     SERVICE_REPLY,
     SERVICE_SIGN,
     SERVICE_SIGN_DOCUMENT,
+    SERVICE_UNFOLLOW_CHILD,
     SERVICE_WRITE,
     UPLOADS,
 )
@@ -146,6 +150,15 @@ LIKE_SCHEMA = vol.Schema(
 READ_NOTIFICATIONS_SCHEMA = vol.Schema(
     {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Optional(ATTR_NOTIFICATION_ID): MESSAGE_ID}
 )
+DELETE_NOTIFICATION_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_NOTIFICATION_ID): MESSAGE_ID}
+)
+DELETE_MESSAGE_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID}
+)
+UNFOLLOW_CHILD_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_CHILD_ID): MESSAGE_ID}
+)
 DELETE_COMMENT_SCHEMA = vol.Schema(
     {
         vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
@@ -174,6 +187,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     websocket_api.async_register_command(hass, ws_homework_done)
     websocket_api.async_register_command(hass, ws_comments)
     websocket_api.async_register_command(hass, ws_translate)
+    websocket_api.async_register_command(hass, ws_follow_child)
     store = hass.data[UPLOADS] = UploadStore()
     hass.http.register_view(EducartableUploadView(store))
     hass.http.register_view(EducartableFileView())
@@ -237,6 +251,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             DELETE_COMMENT_SCHEMA,
             lambda c, d: c.async_delete_comment(d[ATTR_MESSAGE_ID], d[ATTR_COMMENT_ID]),
         ),
+        SERVICE_DELETE_NOTIFICATION: (
+            DELETE_NOTIFICATION_SCHEMA,
+            lambda c, d: c.async_delete_notification(d[ATTR_NOTIFICATION_ID]),
+        ),
+        SERVICE_DELETE_MESSAGE: (DELETE_MESSAGE_SCHEMA, lambda c, d: c.async_delete_message(d[ATTR_MESSAGE_ID])),
+        SERVICE_UNFOLLOW_CHILD: (UNFOLLOW_CHILD_SCHEMA, lambda c, d: c.async_unfollow_child(d[ATTR_CHILD_ID])),
     }
     hass.services.async_register(DOMAIN, SERVICE_REFRESH, refresh, REFRESH_SCHEMA)
     # Every action on the portal is done with the parent's account: administrators only (a child's Home Assistant
@@ -270,9 +290,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: EducartableConfigEntry) 
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # A child no longer followed (stopped here or on the portal) loses its device and its entities.
+    prune = partial(_prune_children, hass, entry)
+    prune()
+    entry.async_on_unload(coordinator.async_add_listener(prune))
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     await _async_update_panel(hass, entry)
     return True
+
+
+def _pupil_ids(entry: EducartableConfigEntry, device: dr.DeviceEntry) -> set[str]:
+    """The ids of the children a device of this account stands for (none for the account's own device)."""
+    prefix = f"{entry.entry_id}_"
+    return {i[len(prefix) :] for d, i in device.identifiers if d == DOMAIN and i.startswith(prefix)}
+
+
+@callback
+def _prune_children(hass: HomeAssistant, entry: EducartableConfigEntry) -> None:
+    data = entry.runtime_data.data
+    # Only from a list the portal really gave: a failed read keeps every child.
+    if data is None or "pupils" in data.stale:
+        return
+    followed = {p["id"] for p in data.pupils}
+    registry = dr.async_get(hass)
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        ids = _pupil_ids(entry, device)
+        if ids and not ids & followed:
+            registry.async_update_device(device.id, remove_config_entry_id=entry.entry_id)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: EducartableConfigEntry, device: dr.DeviceEntry
+) -> bool:
+    """A child's device can be deleted by hand once the child is no longer followed; the account's never."""
+    ids = _pupil_ids(entry, device)
+    followed = {p["id"] for p in entry.runtime_data.data.pupils} if entry.runtime_data.data else set()
+    return bool(ids) and not ids & followed
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: EducartableConfigEntry) -> bool:
@@ -497,6 +550,28 @@ async def ws_translate(hass: HomeAssistant, connection: websocket_api.ActiveConn
         connection.send_error(msg["id"], "failed", str(err))
         return
     connection.send_result(msg["id"], translation)
+
+
+# Following a child: the school's tracking code goes straight to the portal, never through an action (whose data
+# Home Assistant may keep in traces and logs). Administrators only, like the actions.
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "educartable/follow_child",
+        vol.Required("config_entry_id"): str,
+        vol.Required("login"): vol.All(str, vol.Strip, vol.Length(min=1)),
+        vol.Required("password"): vol.All(str, vol.Length(min=1)),
+    }
+)
+@websocket_api.async_response
+async def ws_follow_child(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
+    try:
+        coordinator = _get_coordinator(hass, msg["config_entry_id"])
+        name = await coordinator.async_follow_child(msg["login"], msg["password"])
+    except (ServiceValidationError, EducartableError) as err:
+        connection.send_error(msg["id"], "failed", str(err))
+        return
+    connection.send_result(msg["id"], {"name": name})
 
 
 def _admin_coordinator(request: web.Request, entry_id: str) -> EducartableCoordinator | web.Response:

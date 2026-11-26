@@ -344,6 +344,48 @@
           "description": "El id de uno de tus comentarios en la conversación."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Eliminar una notificación",
+      "description": "Eliminar una notificación del portal.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "notification_id": {
+          "name": "Notificación",
+          "description": "El id de la notificación, del atributo notifications del sensor Notificaciones sin leer."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Eliminar un mensaje",
+      "description": "Eliminar un mensaje que escribió al docente: ya no lo verá.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "message_id": {
+          "name": "Mensaje",
+          "description": "El id del mensaje, en el atributo messages del sensor Cuaderno de enlace por firmar o Noticias."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Dejar de seguir a un niño",
+      "description": "Dejar de seguir la escolaridad de un niño en esta cuenta.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cuenta",
+          "description": "La cuenta de Educartable. Déjalo vacío si solo hay una configurada."
+        },
+        "child_id": {
+          "name": "Niño",
+          "description": "El id del niño, del atributo child_id de su sensor Deberes."
+        }
+      }
     }
   },
   "exceptions": {

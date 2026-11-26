@@ -35,6 +35,8 @@ async def async_setup_entry(
 
     @callback
     def add_pupils() -> None:
+        # A child no longer followed loses its device (and so this entity); followed again, it is added back.
+        known.intersection_update(p["id"] for p in coordinator.data.pupils)
         new: list[SensorEntity] = []
         for pupil in coordinator.data.pupils:
             if pupil["id"] not in known:

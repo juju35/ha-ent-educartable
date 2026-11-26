@@ -344,6 +344,48 @@
           "description": "Viena jūsu komentāra ID saziņā."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Dzēst paziņojumu",
+      "description": "Dzēš portāla paziņojumu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "notification_id": {
+          "name": "Paziņojums",
+          "description": "Paziņojuma ID no sensora Neizlasītie paziņojumi atribūta notifications."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Dzēst ziņu",
+      "description": "Dzēš ziņu, ko uzrakstījāt skolotājam: skolotājs to vairs neredz.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "message_id": {
+          "name": "Ziņa",
+          "description": "Ziņas ID no sensora Dienasgrāmata parakstīšanai vai Jaunumi atribūta messages."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Pārtraukt sekot bērnam",
+      "description": "Pārtrauc sekot bērna mācībām šajā kontā.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konts",
+          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
+        },
+        "child_id": {
+          "name": "Bērns",
+          "description": "Bērna ID no viņa sensora Mājasdarbi atribūta child_id."
+        }
+      }
     }
   },
   "exceptions": {

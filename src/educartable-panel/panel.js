@@ -449,7 +449,8 @@ export class EducartablePanel extends HTMLElement {
       : n.text || '—';
     return '<div class="item notif"><ha-icon class="item-icon" icon="' + (n.type === 'message-event_canceled' ? 'mdi:calendar-remove' : n.subject === 'activity' ? 'mdi:image-multiple-outline' : 'mdi:bell-outline') + '"></ha-icon>' +
       '<div class="item-main"><div class="item-title">' + E.esc(text) + '</div>' + (n.date ? '<div class="item-meta">' + E.esc(E.day(n.date, t, locale)) + '</div>' : '') + '</div>' +
-      (canAct ? '<button class="act ghost" data-action="notif-read" data-id="' + E.esc(n.id) + '">' + E.esc(t.mark_read) + '</button>' : '') + '</div>';
+      (canAct ? '<button class="act ghost" data-action="notif-read" data-id="' + E.esc(n.id) + '">' + E.esc(t.mark_read) + '</button>' +
+        '<button class="ndel" data-action="notif-delete" data-id="' + E.esc(n.id) + '" aria-label="' + E.esc(t.delete) + '" title="' + E.esc(t.delete) + '"><ha-icon icon="mdi:trash-can-outline"></ha-icon></button>' : '') + '</div>';
   }
 
   // The cahier de vie: the class's posts, their photos, likes and conversation.
@@ -532,6 +533,7 @@ export class EducartablePanel extends HTMLElement {
     // An archived message (a past school year) shows its survey, slots and conversation without acting on them.
     var can = window.Educartable.canAct(this._hass) && !item.archived;
     var html = this._translateBlock(item, t, data);
+    if (can && item.mine) html += '<div class="trlink"><button class="xh link-like" data-action="msg-delete" data-id="' + window.Educartable.esc(item.id) + '"><ha-icon icon="mdi:trash-can-outline"></ha-icon>' + window.Educartable.esc(t.delete_message) + '</button></div>';
     if (item.survey) html += this._surveyBlock(item, t, data, can);
     if (item.slots?.length) html += this._slotsBlock(item, t, data, can);
     if (can && (item.commentable || item.achievement === 'comment')) html += this._threadBlock(item, t, data);
@@ -545,7 +547,10 @@ export class EducartablePanel extends HTMLElement {
 
   _translateBlock(item, t) {
     var E = window.Educartable;
-    if (!item.text || this._language().split('-')[0] === 'fr') return '';
+    var lang = this._language().split('-')[0];
+    if (!item.text || lang === 'fr') return '';
+    // As the portal's app: not when the author did not allow it, nor when the author writes in the reader's language.
+    if (item.translatable === false || (item.author_lang && item.author_lang.split('-')[0] === lang)) return '';
     var tr = this._translated[item.id];
     var button = '<button class="xh link-like" data-action="translate" data-msg="' + E.esc(item.id) + '" aria-pressed="' + !!tr?.shown + '"><ha-icon icon="mdi:translate"></ha-icon>' +
       E.esc(tr?.loading ? t.translating : tr?.shown ? t.show_original : t.translate) + '</button>';
@@ -815,6 +820,7 @@ export class EducartablePanel extends HTMLElement {
     if (this._write && this._tab === 'words') return this._writePopup(t, data);
     var c = this._confirm;
     if (c?.kind === 'book') return this._bookPopup(t, data);
+    if (c?.kind === 'delmsg') return this._deleteMessagePopup(t, data);
     var w = !c ? null : c.kind === 'doc' ? data.documents.find((x) => x.id === c.id) : data.words.find((x) => String(x.id) === c.id);
     if (!w) return '';
     var doc = c.kind === 'doc';
@@ -823,6 +829,33 @@ export class EducartablePanel extends HTMLElement {
       '<label class="signer-label">' + E.esc(t.signer) + '<input class="signer" type="text" autocomplete="name" value="' + E.esc(this._confirm.name) + '"></label>' +
       '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
       '<button class="act" data-action="confirm"' + (this._confirm.busy ? ' disabled' : '') + '>' + E.esc(this._confirm.busy ? t.signing : t.sign) + '</button></div></div>';
+  }
+
+  // Deleting a message the family wrote: the teacher no longer sees it, as the portal warns.
+  _deleteMessagePopup(t, data) {
+    var E = window.Educartable;
+    var c = this._confirm;
+    var item = data.words.concat(data.news).find((x) => String(x.id) === c.id);
+    if (!item) return '';
+    return '<div class="popup"><div class="popup-title">' + E.esc(t.delete_message_title) + '</div>' +
+      '<div class="popup-text">' + E.esc(E.format(t.delete_message_text, { title: item.title || '—' })) + '</div>' +
+      '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
+      '<button class="act" data-action="confirm"' + (c.busy ? ' disabled' : '') + '>' + E.esc(c.busy ? t.deleting : t.delete) + '</button></div></div>';
+  }
+
+  _doDeleteMessage(data) {
+    var E = window.Educartable;
+    var c = this._confirm;
+    if (!c || c.busy) return;
+    c.busy = true;
+    this._error = '';
+    this._render();
+    E.deleteMessage(this._hass, data.entryId, c.id)
+      .catch((err) => this._fail(err))
+      .finally(() => {
+        this._confirm = null;
+        this._render();
+      });
   }
 
   // Booking a slot: when it is, and for which child (a choice when several still wait for theirs).
@@ -865,6 +898,10 @@ export class EducartablePanel extends HTMLElement {
     var t = E.t(this._hass);
     if (this._confirm?.kind === 'book') {
       this._doBook(data);
+      return;
+    }
+    if (this._confirm?.kind === 'delmsg') {
+      this._doDeleteMessage(data);
       return;
     }
     var input = this._root.querySelector('.signer');
@@ -929,7 +966,7 @@ export class EducartablePanel extends HTMLElement {
       s.accounts.map((acc) => this._box(acc.title,
         '<div class="form" data-entry="' + E.esc(acc.entry_id) + '"></div>' +
         (s.admin ? '<div class="popup-actions"><span class="msg"></span><button class="act" data-action="save" data-entry="' + E.esc(acc.entry_id) + '">' + E.esc(t.save) + '</button></div>' : ''),
-        true)).join('') + '</div>';
+        true) + (s.admin ? this._followBox(acc, t) : '')).join('') + '</div>';
     var labels = { scan_interval: t.settings_scan, homework_days: t.settings_days, notify_services: t.settings_notify, show_panel: t.settings_panel, panel_tabs: t.settings_tabs, hide_header: t.settings_hide_header };
     var helpers = { scan_interval: t.settings_scan_hint, notify_services: t.settings_notify_hint, hide_header: t.settings_hide_header_hint };
     s.accounts.forEach((acc) => {
@@ -966,6 +1003,44 @@ export class EducartablePanel extends HTMLElement {
       });
       content.querySelector(`.form[data-entry="${CSS.escape(acc.entry_id)}"]`).appendChild(form);
     });
+  }
+
+  // Following one more child: the tracking code the school gives, sent straight to the integration (never as an action,
+  // whose data Home Assistant may keep in traces and logs).
+  _followBox(acc, t) {
+    var E = window.Educartable;
+    return this._box(t.follow_title,
+      '<div class="follow" data-entry="' + E.esc(acc.entry_id) + '"><div class="popup-text">' + E.esc(t.follow_hint) + '</div>' +
+      '<label class="signer-label">' + E.esc(t.follow_login) + '<input class="signer follow-login" type="text" autocomplete="off" spellcheck="false"></label>' +
+      '<label class="signer-label">' + E.esc(t.follow_password) + '<input class="signer follow-password" type="password" autocomplete="new-password"></label>' +
+      '<div class="popup-actions"><span class="msg"></span><button class="act" data-action="follow" data-entry="' + E.esc(acc.entry_id) + '">' + E.esc(t.follow_button) + '</button></div></div>',
+      true);
+  }
+
+  _follow(button) {
+    var E = window.Educartable;
+    var t = E.t(this._hass);
+    var box = button.closest('.follow');
+    var login = box.querySelector('.follow-login');
+    var password = box.querySelector('.follow-password');
+    var msg = box.querySelector('.msg');
+    if (!login.value.trim() || !password.value) return;
+    button.disabled = true;
+    this._hass
+      .callWS({ type: 'educartable/follow_child', config_entry_id: button.getAttribute('data-entry'), login: login.value.trim(), password: password.value })
+      .then((res) => {
+        login.value = '';
+        password.value = '';
+        msg.className = 'msg ok';
+        msg.textContent = E.format(t.follow_done, { name: res.name || '—' });
+      })
+      .catch((err) => {
+        msg.className = 'msg error-text';
+        msg.textContent = String(err?.message || err);
+      })
+      .finally(() => {
+        button.disabled = false;
+      });
   }
 
   _save(button) {
@@ -1062,6 +1137,9 @@ export class EducartablePanel extends HTMLElement {
     if (action === 'save') {
       ev.preventDefault();
       this._save(el);
+    } else if (action === 'follow') {
+      ev.preventDefault();
+      this._follow(el);
     } else if (!data) {
       return;
     } else if (action === 'refresh') this._refresh(data);
@@ -1115,6 +1193,12 @@ export class EducartablePanel extends HTMLElement {
       if (post) E.like(this._hass, data.entryId, post.id, !post.like_id).catch((err) => this._fail(err));
     } else if (action === 'notif-read') E.readNotifications(this._hass, data.entryId, el.getAttribute('data-id')).catch((err) => this._fail(err));
     else if (action === 'notif-all') E.readNotifications(this._hass, data.entryId, '').catch((err) => this._fail(err));
+    else if (action === 'notif-delete') E.deleteNotification(this._hass, data.entryId, el.getAttribute('data-id')).catch((err) => this._fail(err));
+    else if (action === 'msg-delete' && E.canAct(this._hass)) {
+      this._confirm = { kind: 'delmsg', id: el.getAttribute('data-id') };
+      this._render();
+      this._root.querySelector('.popup')?.scrollIntoView?.({ block: 'nearest' });
+    }
     else if (action === 'comment-delete') {
       var msg = el.getAttribute('data-msg');
       E.deleteComment(this._hass, data.entryId, msg, el.getAttribute('data-id'))
@@ -1325,6 +1409,8 @@ export class EducartablePanel extends HTMLElement {
       '.bubble { position: relative; }',
       '.bdel { all: unset; cursor: pointer; position: absolute; top: 2px; right: 4px; opacity: .55; --mdc-icon-size: 15px; color: var(--secondary-text-color); }',
       '.bdel:hover, .bdel:focus-visible { opacity: 1; color: var(--error-color, #e5484d); }',
+      '.ndel { all: unset; cursor: pointer; flex: none; padding: 6px; opacity: .55; --mdc-icon-size: 18px; color: var(--secondary-text-color); }',
+      '.ndel:hover, .ndel:focus-visible { opacity: 1; color: var(--error-color, #e5484d); }',
       '.bubble.mine { padding-right: 24px; }',
       '.trlink .link-like { font-size: 12px; font-weight: 400; color: var(--secondary-text-color); --mdc-icon-size: 15px; }',
       '.trlink .link-like:hover { color: var(--primary-text-color); }',

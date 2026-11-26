@@ -344,6 +344,48 @@
           "description": "ID jednog vašeg komentara u razgovoru."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Obriši obaveštenje",
+      "description": "Briše obaveštenje portala.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "notification_id": {
+          "name": "Obaveštenje",
+          "description": "ID obaveštenja, iz atributa notifications senzora Nepročitana obaveštenja."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Obriši poruku",
+      "description": "Briše poruku koju ste napisali nastavniku: on je više ne vidi.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "message_id": {
+          "name": "Poruka",
+          "description": "ID poruke, iz atributa messages senzora Đačka knjižica za potpisivanje ili Vesti."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Prestani da pratiš dete",
+      "description": "Prestanak praćenja školovanja deteta na ovom nalogu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Nalog",
+          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
+        },
+        "child_id": {
+          "name": "Dete",
+          "description": "ID deteta, iz atributa child_id njegovog senzora Domaći zadaci."
+        }
+      }
     }
   },
   "exceptions": {

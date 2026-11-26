@@ -344,6 +344,48 @@
           "description": "The id of one of your comments in the conversation."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Delete a notification",
+      "description": "Delete a notification of the portal.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "notification_id": {
+          "name": "Notification",
+          "description": "The id of the notification, from the notifications attribute of the Unread notifications sensor."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Delete a message",
+      "description": "Delete a message you wrote to the teacher: the teacher no longer sees it.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "The id of the message, from the messages attribute of the Liaison book to sign or News sensor."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Stop following a child",
+      "description": "Stop following a child's schooling on this account.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The Educartable account. Leave empty when only one is configured."
+        },
+        "child_id": {
+          "name": "Child",
+          "description": "The id of the child, from the child_id attribute of their Homework to do sensor."
+        }
+      }
     }
   },
   "exceptions": {
