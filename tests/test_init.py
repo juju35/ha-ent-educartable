@@ -917,6 +917,8 @@ async def test_archives_hidden_by_the_family_app_setting(hass: HomeAssistant, ap
     ]
     assert "c9" in ids
     api["api"].hide_archives = True
+    # The setting is kept a while: read again once that is over.
+    hass.config_entries.async_entries(DOMAIN)[0].runtime_data._hide = None
     await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
     ids = [
         m["id"] for m in hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
@@ -949,17 +951,67 @@ async def test_delete_a_notification(hass: HomeAssistant, api) -> None:
         await hass.services.async_call(DOMAIN, "delete_notification", {"notification_id": "1"}, blocking=True)
 
 
-async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api) -> None:
-    await _setup(hass)
-    with pytest.raises(HomeAssistantError):
-        await hass.services.async_call(DOMAIN, "follow_child", {"login": "BAD", "password": "x"}, blocking=True)
-    await hass.services.async_call(DOMAIN, "follow_child", {"login": "CODE1", "password": "pw"}, blocking=True)
+async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api, hass_ws_client) -> None:
+    from homeassistant.helpers import device_registry as dr
+
+    entry = await _setup(hass)
+    client = await hass_ws_client(hass)
+    # The tracking code goes through the panel's websocket, never an action (whose data may be kept in traces).
+    assert not hass.services.has_service(DOMAIN, "follow_child")
+    await client.send_json_auto_id(
+        {"type": "educartable/follow_child", "config_entry_id": entry.entry_id, "login": "BAD", "password": "x"}
+    )
+    assert not (await client.receive_json())["success"]
+    await client.send_json_auto_id(
+        {"type": "educartable/follow_child", "config_entry_id": entry.entry_id, "login": "CODE1", "password": "pw"}
+    )
+    assert (await client.receive_json())["result"] == {"name": "Zoé"}
     await hass.async_block_till_done()
     assert hass.states.get("sensor.zoe_test_homework_to_do") is not None
+    registry = dr.async_get(hass)
+    zoe = registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e9")})
+    assert zoe is not None
+
     await hass.services.async_call(DOMAIN, "unfollow_child", {"child_id": "e9"}, blocking=True)
+    await hass.async_block_till_done()
     assert ("unfollow", "p1", "e9") in api["api"].calls
+    # The child's device and entities go with it.
+    assert registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e9")}) is None
+    assert hass.states.get("sensor.zoe_test_homework_to_do") is None
+    assert hass.states.get("todo.zoe_test_homework") is None
     with pytest.raises(HomeAssistantError):
         await hass.services.async_call(DOMAIN, "unfollow_child", {"child_id": "e9"}, blocking=True)
+
+    # Followed again: added back.
+    await client.send_json_auto_id(
+        {"type": "educartable/follow_child", "config_entry_id": entry.entry_id, "login": "CODE1", "password": "pw"}
+    )
+    await client.receive_json()
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.zoe_test_homework_to_do") is not None
+
+
+async def test_a_child_device_can_be_deleted_once_no_longer_followed(hass: HomeAssistant, api) -> None:
+    from homeassistant.helpers import device_registry as dr
+
+    from custom_components.educartable import async_remove_config_entry_device
+
+    entry = await _setup(hass)
+    registry = dr.async_get(hass)
+    alice = registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e1")})
+    account = registry.async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    assert not await async_remove_config_entry_device(hass, entry, alice)  # still followed
+    assert not await async_remove_config_entry_device(hass, entry, account)
+    ghost = registry.async_get_or_create(config_entry_id=entry.entry_id, identifiers={(DOMAIN, f"{entry.entry_id}_e5")})
+    assert await async_remove_config_entry_device(hass, entry, ghost)
+
+
+async def test_a_child_kept_when_the_list_of_children_fails(hass: HomeAssistant, api) -> None:
+    entry = await _setup(hass)
+    api["api"].pupils_fail = True
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    assert hass.states.get("sensor.alice_test_homework_to_do") is not None
+    assert entry.runtime_data.data.stale[:1] == ["pupils"]
 
 
 async def test_translation_offered_as_the_portal_app_does(hass: HomeAssistant, api) -> None:

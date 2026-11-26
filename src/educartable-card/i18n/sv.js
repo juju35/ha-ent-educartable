@@ -168,4 +168,11 @@ export default {
   delete_message: 'Ta bort meddelandet',
   delete_message_title: 'Ta bort det här meddelandet?',
   delete_message_text: '”{title}” tas bort: läraren ser det inte längre.',
+  follow_title: 'Följ ett barn',
+  follow_hint: 'Ange uppföljningskoden från skolan för att följa ytterligare ett barn på det här kontot.',
+  follow_login: 'Användarnamn',
+  follow_password: 'Lösenord',
+  follow_button: 'Följ',
+  follow_done: 'Du följer nu {name}s skolgång.',
+  deleting: 'Tar bort…',
 };

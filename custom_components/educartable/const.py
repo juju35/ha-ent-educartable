@@ -47,6 +47,8 @@ MESSAGES_KEPT: Final = 10
 LESSONS_KEPT: Final = 100
 # The catalogue of online exercises is read again after this long (seconds), as the portal's app does.
 EXERCISES_TTL: Final = 600
+# The family app's settings (hide the archives) are read again after this long (seconds).
+SETTINGS_TTL: Final = 3600
 NEWS_KEPT: Final = 5
 ACTIVITIES_KEPT: Final = 12
 NOTIFICATIONS_KEPT: Final = 20
@@ -68,7 +70,6 @@ SERVICE_READ_NOTIFICATIONS: Final = "mark_notifications_read"
 SERVICE_DELETE_COMMENT: Final = "delete_comment"
 SERVICE_DELETE_NOTIFICATION: Final = "delete_notification"
 SERVICE_DELETE_MESSAGE: Final = "delete_message"
-SERVICE_FOLLOW_CHILD: Final = "follow_child"
 SERVICE_UNFOLLOW_CHILD: Final = "unfollow_child"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
 ATTR_MESSAGE_ID: Final = "message_id"
@@ -85,8 +86,6 @@ ATTR_LIKED: Final = "liked"
 ATTR_NOTIFICATION_ID: Final = "notification_id"
 ATTR_COMMENT_ID: Final = "comment_id"
 ATTR_ATTACHMENTS: Final = "attachments"
-ATTR_LOGIN: Final = "login"
-ATTR_PASSWORD: Final = "password"
 # The panel's uploads waiting to be sent (hass.data key).
 UPLOADS: Final = f"{DOMAIN}_uploads"
 

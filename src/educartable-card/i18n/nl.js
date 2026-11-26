@@ -168,4 +168,11 @@ export default {
   delete_message: 'Bericht verwijderen',
   delete_message_title: 'Dit bericht verwijderen?',
   delete_message_text: '‘{title}’ wordt verwijderd: de leerkracht ziet het niet meer.',
+  follow_title: 'Een kind volgen',
+  follow_hint: 'Voer de volgcode van de school in om nog een kind te volgen op dit account.',
+  follow_login: 'Gebruikersnaam',
+  follow_password: 'Wachtwoord',
+  follow_button: 'Volgen',
+  follow_done: 'U volgt nu de schoolloopbaan van {name}.',
+  deleting: 'Verwijderen…',
 };

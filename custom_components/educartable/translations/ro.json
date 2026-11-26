@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Urmărește un copil",
-      "description": "Urmărește școlaritatea unui copil cu codul de urmărire dat de școală (un utilizator și o parolă).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Cont",
-          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
-        },
-        "login": {
-          "name": "Utilizator",
-          "description": "Utilizatorul codului de urmărire."
-        },
-        "password": {
-          "name": "Parolă",
-          "description": "Parola codului de urmărire."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Nu mai urmări un copil",
       "description": "Nu mai urmări școlaritatea unui copil pe acest cont.",

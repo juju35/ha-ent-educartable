@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Een kind volgen",
-      "description": "De schoolloopbaan van een kind volgen met de volgcode van de school (een gebruikersnaam en een wachtwoord).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Account",
-          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
-        },
-        "login": {
-          "name": "Gebruikersnaam",
-          "description": "De gebruikersnaam van de volgcode."
-        },
-        "password": {
-          "name": "Wachtwoord",
-          "description": "Het wachtwoord van de volgcode."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Een kind niet meer volgen",
       "description": "De schoolloopbaan van een kind niet meer volgen op dit account.",

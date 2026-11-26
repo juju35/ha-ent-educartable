@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Obserwuj dziecko",
-      "description": "Obserwuj naukę dziecka za pomocą kodu dostępu przekazanego przez szkołę (login i hasło).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Konto",
-          "description": "Konto Educartable. Zostaw puste, jeśli skonfigurowano tylko jedno."
-        },
-        "login": {
-          "name": "Login",
-          "description": "Login kodu dostępu."
-        },
-        "password": {
-          "name": "Hasło",
-          "description": "Hasło kodu dostępu."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Przestań obserwować dziecko",
       "description": "Przestań obserwować naukę dziecka na tym koncie.",

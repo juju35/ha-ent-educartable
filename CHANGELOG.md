@@ -4,7 +4,8 @@
 
 ### Features
 - Homework shows its online exercises (named from the portal's catalogue) and its revisions (dictation words, tables, a lesson, a poem to learn), with a link to do them on Educartable.
-- `educartable.follow_child` and `educartable.unfollow_child`: follow a child with the tracking code the school gives, or stop following one.
+- *Follow a child* in the panel's Settings tab, with the tracking code the school gives (sent straight to the integration, never through an action), and `educartable.unfollow_child` to stop following one.
+- A child no longer followed (here or on the portal) loses its device and its entities; a child's device left behind can be deleted from its page.
 - `educartable.delete_message`: delete a message you wrote to the teacher (*Delete the message* in the panel, with a confirmation).
 - `educartable.delete_notification`: delete a notification of the portal (bin next to it on the panel's home page).
 - Archived messages are hidden when *hide the archives* is set in the portal's family app.

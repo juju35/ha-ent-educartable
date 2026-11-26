@@ -241,24 +241,6 @@ delete_message:
       selector:
         text:
 
-follow_child:
-  fields:
-    config_entry_id:
-      required: false
-      selector:
-        config_entry:
-          integration: educartable
-    login:
-      required: true
-      example: "ABCD1234"
-      selector:
-        text:
-    password:
-      required: true
-      selector:
-        text:
-          type: password
-
 unfollow_child:
   fields:
     config_entry_id:

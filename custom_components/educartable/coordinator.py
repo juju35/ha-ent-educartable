@@ -45,6 +45,7 @@ from .const import (
     MIN_SCAN_INTERVAL,
     NEWS_KEPT,
     NOTIFICATIONS_KEPT,
+    SETTINGS_TTL,
 )
 from .secret import SecretNotFoundError, async_credentials
 
@@ -540,6 +541,8 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         self._document_files: dict[str, tuple[str, ...]] = {}
         # The catalogue of online exercises, kept a while as the portal's app does: (when, exercises by key).
         self._exercises: tuple[float, dict[str, dict[str, str]]] | None = None
+        # The family app's "hide the archives" setting, read again after a while: (when, value).
+        self._hide: tuple[float, bool] | None = None
 
     async def _async_update_data(self) -> EducartableData:
         try:
@@ -656,16 +659,22 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         return data
 
     async def _hide_archives(self, parent_id: str, previous: EducartableData) -> bool:
-        """The family app's "hide the archives" setting; the one read before when the portal does not answer."""
+        """The family app's "hide the archives" setting, read again every few minutes; the one read before when the
+        portal does not answer."""
+        now = time.monotonic()
+        if self._hide is not None and now - self._hide[0] < SETTINGS_TTL:
+            return self._hide[1]
         try:
             settings = await self.api.settings(parent_id)
         except EducartableUnavailableError:
             return bool(previous.account.get("hide_archives"))
         except EducartableError as err:
             _LOGGER.debug("No family app settings on this account: %s", err)
-            return False
+            settings = {}
         ui = settings.get("ui")
-        return bool(ui.get("hideArchives")) if isinstance(ui, dict) else False
+        hide = bool(ui.get("hideArchives")) if isinstance(ui, dict) else False
+        self._hide = (now, hide)
+        return hide
 
     async def _name_exercises(self, data: EducartableData) -> None:
         """Name the online exercises of the homework from the portal's catalogue; one it does not know is left out,
@@ -678,7 +687,9 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
             try:
                 self._exercises = (now, _exercise_catalogue(await self.api.exercises()))
             except EducartableError as err:
-                _LOGGER.debug("No exercise catalogue: %s", err)
+                # Said once: without the catalogue, the homework's exercises cannot be named and are left out.
+                level = logging.DEBUG if self._exercises else logging.WARNING
+                _LOGGER.log(level, "Educartable exercise catalogue not read, exercises left out: %s", err)
         catalogue = self._exercises[1] if self._exercises else {}
         for h in items:
             h["exercises"] = [catalogue[k] for k in h["exercises"] if isinstance(k, str) and k in catalogue]

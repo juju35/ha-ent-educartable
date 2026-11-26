@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Gyermek követése",
-      "description": "Egy gyermek tanulmányainak követése az iskolától kapott követési kóddal (felhasználónév és jelszó).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Fiók",
-          "description": "Az Educartable-fiók. Hagyd üresen, ha csak egy van beállítva."
-        },
-        "login": {
-          "name": "Felhasználónév",
-          "description": "A követési kód felhasználóneve."
-        },
-        "password": {
-          "name": "Jelszó",
-          "description": "A követési kód jelszava."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Gyermek követésének leállítása",
       "description": "Egy gyermek tanulmányainak követése leáll ezen a fiókon.",

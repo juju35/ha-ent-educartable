@@ -168,4 +168,11 @@ export default {
   delete_message: 'Dzēst ziņu',
   delete_message_title: 'Dzēst šo ziņu?',
   delete_message_text: '“{title}” tiks dzēsta: skolotājs to vairs neredzēs.',
+  follow_title: 'Sekot bērnam',
+  follow_hint: 'Ievadiet skolas izsniegto sekošanas kodu, lai šajā kontā sekotu vēl vienam bērnam.',
+  follow_login: 'Lietotājvārds',
+  follow_password: 'Parole',
+  follow_button: 'Sekot',
+  follow_done: 'Tagad jūs sekojat mācībām: {name}.',
+  deleting: 'Dzēš…',
 };

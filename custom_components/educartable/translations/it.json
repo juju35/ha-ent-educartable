@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Segui un figlio",
-      "description": "Segui il percorso scolastico di un figlio con il codice di accesso dato dalla scuola (un nome utente e una password).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Account",
-          "description": "L’account Educartable. Lascia vuoto se ne è configurato uno solo."
-        },
-        "login": {
-          "name": "Nome utente",
-          "description": "Il nome utente del codice di accesso."
-        },
-        "password": {
-          "name": "Password",
-          "description": "La password del codice di accesso."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Smetti di seguire un figlio",
       "description": "Smetti di seguire il percorso scolastico di un figlio su questo account.",

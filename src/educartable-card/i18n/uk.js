@@ -168,4 +168,11 @@ export default {
   delete_message: 'Видалити повідомлення',
   delete_message_title: 'Видалити це повідомлення?',
   delete_message_text: '«{title}» буде видалено: учитель більше його не побачить.',
+  follow_title: 'Стежити за дитиною',
+  follow_hint: 'Введіть код відстеження, який дала школа, щоб стежити ще за однією дитиною в цьому обліковому записі.',
+  follow_login: 'Логін',
+  follow_password: 'Пароль',
+  follow_button: 'Стежити',
+  follow_done: 'Тепер ви стежите за навчанням: {name}.',
+  deleting: 'Видалення…',
 };

@@ -169,4 +169,11 @@ export default {
   delete_message: 'Supprimer le message',
   delete_message_title: 'Supprimer ce message ?',
   delete_message_text: '« {title} » sera supprimé : l’enseignant n’y aura plus accès.',
+  follow_title: 'Suivre un enfant',
+  follow_hint: 'Saisissez le code de suivi donné par l’école pour suivre un enfant de plus sur ce compte.',
+  follow_login: 'Identifiant',
+  follow_password: 'Mot de passe',
+  follow_button: 'Suivre',
+  follow_done: 'Vous suivez maintenant la scolarité de {name}.',
+  deleting: 'Suppression…',
 };

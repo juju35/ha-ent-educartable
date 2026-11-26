@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Einem Kind folgen",
-      "description": "Der Schullaufbahn eines Kindes mit dem Zugangscode der Schule folgen (Benutzername und Passwort).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Konto",
-          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
-        },
-        "login": {
-          "name": "Benutzername",
-          "description": "Der Benutzername des Zugangscodes."
-        },
-        "password": {
-          "name": "Passwort",
-          "description": "Das Passwort des Zugangscodes."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Einem Kind nicht mehr folgen",
       "description": "Der Schullaufbahn eines Kindes in diesem Konto nicht mehr folgen.",

@@ -840,7 +840,7 @@ export class EducartablePanel extends HTMLElement {
     return '<div class="popup"><div class="popup-title">' + E.esc(t.delete_message_title) + '</div>' +
       '<div class="popup-text">' + E.esc(E.format(t.delete_message_text, { title: item.title || '—' })) + '</div>' +
       '<div class="popup-actions"><button class="act ghost" data-action="cancel">' + E.esc(t.cancel) + '</button>' +
-      '<button class="act" data-action="confirm"' + (c.busy ? ' disabled' : '') + '>' + E.esc(t.delete) + '</button></div></div>';
+      '<button class="act" data-action="confirm"' + (c.busy ? ' disabled' : '') + '>' + E.esc(c.busy ? t.deleting : t.delete) + '</button></div></div>';
   }
 
   _doDeleteMessage(data) {
@@ -966,7 +966,7 @@ export class EducartablePanel extends HTMLElement {
       s.accounts.map((acc) => this._box(acc.title,
         '<div class="form" data-entry="' + E.esc(acc.entry_id) + '"></div>' +
         (s.admin ? '<div class="popup-actions"><span class="msg"></span><button class="act" data-action="save" data-entry="' + E.esc(acc.entry_id) + '">' + E.esc(t.save) + '</button></div>' : ''),
-        true)).join('') + '</div>';
+        true) + (s.admin ? this._followBox(acc, t) : '')).join('') + '</div>';
     var labels = { scan_interval: t.settings_scan, homework_days: t.settings_days, notify_services: t.settings_notify, show_panel: t.settings_panel, panel_tabs: t.settings_tabs, hide_header: t.settings_hide_header };
     var helpers = { scan_interval: t.settings_scan_hint, notify_services: t.settings_notify_hint, hide_header: t.settings_hide_header_hint };
     s.accounts.forEach((acc) => {
@@ -1003,6 +1003,44 @@ export class EducartablePanel extends HTMLElement {
       });
       content.querySelector(`.form[data-entry="${CSS.escape(acc.entry_id)}"]`).appendChild(form);
     });
+  }
+
+  // Following one more child: the tracking code the school gives, sent straight to the integration (never as an action,
+  // whose data Home Assistant may keep in traces and logs).
+  _followBox(acc, t) {
+    var E = window.Educartable;
+    return this._box(t.follow_title,
+      '<div class="follow" data-entry="' + E.esc(acc.entry_id) + '"><div class="popup-text">' + E.esc(t.follow_hint) + '</div>' +
+      '<label class="signer-label">' + E.esc(t.follow_login) + '<input class="signer follow-login" type="text" autocomplete="off" spellcheck="false"></label>' +
+      '<label class="signer-label">' + E.esc(t.follow_password) + '<input class="signer follow-password" type="password" autocomplete="new-password"></label>' +
+      '<div class="popup-actions"><span class="msg"></span><button class="act" data-action="follow" data-entry="' + E.esc(acc.entry_id) + '">' + E.esc(t.follow_button) + '</button></div></div>',
+      true);
+  }
+
+  _follow(button) {
+    var E = window.Educartable;
+    var t = E.t(this._hass);
+    var box = button.closest('.follow');
+    var login = box.querySelector('.follow-login');
+    var password = box.querySelector('.follow-password');
+    var msg = box.querySelector('.msg');
+    if (!login.value.trim() || !password.value) return;
+    button.disabled = true;
+    this._hass
+      .callWS({ type: 'educartable/follow_child', config_entry_id: button.getAttribute('data-entry'), login: login.value.trim(), password: password.value })
+      .then((res) => {
+        login.value = '';
+        password.value = '';
+        msg.className = 'msg ok';
+        msg.textContent = E.format(t.follow_done, { name: res.name || '—' });
+      })
+      .catch((err) => {
+        msg.className = 'msg error-text';
+        msg.textContent = String(err?.message || err);
+      })
+      .finally(() => {
+        button.disabled = false;
+      });
   }
 
   _save(button) {
@@ -1099,6 +1137,9 @@ export class EducartablePanel extends HTMLElement {
     if (action === 'save') {
       ev.preventDefault();
       this._save(el);
+    } else if (action === 'follow') {
+      ev.preventDefault();
+      this._follow(el);
     } else if (!data) {
       return;
     } else if (action === 'refresh') this._refresh(data);

@@ -168,4 +168,11 @@ export default {
   delete_message: 'Обриши поруку',
   delete_message_title: 'Обрисати ову поруку?',
   delete_message_text: '„{title}“ ће бити обрисана: наставник је више неће видети.',
+  follow_title: 'Прати дете',
+  follow_hint: 'Унесите код за праћење који вам је дала школа да бисте пратили још једно дете на овом налогу.',
+  follow_login: 'Корисничко име',
+  follow_password: 'Лозинка',
+  follow_button: 'Прати',
+  follow_done: 'Сада пратите школовање: {name}.',
+  deleting: 'Брисање…',
 };

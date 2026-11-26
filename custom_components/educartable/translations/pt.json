@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Seguir um filho",
-      "description": "Seguir a escolaridade de um filho com o código de acompanhamento dado pela escola (um utilizador e uma palavra-passe).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Conta",
-          "description": "A conta Educartable. Deixe vazio quando só houver uma configurada."
-        },
-        "login": {
-          "name": "Utilizador",
-          "description": "O utilizador do código de acompanhamento."
-        },
-        "password": {
-          "name": "Palavra-passe",
-          "description": "A palavra-passe do código de acompanhamento."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Deixar de seguir um filho",
       "description": "Deixar de seguir a escolaridade de um filho nesta conta.",

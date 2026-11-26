@@ -168,4 +168,11 @@ export default {
   delete_message: 'Izbriši sporočilo',
   delete_message_title: 'Izbrišem to sporočilo?',
   delete_message_text: '»{title}« bo izbrisano: učitelj ga ne bo več videl.',
+  follow_title: 'Spremljaj otroka',
+  follow_hint: 'Vnesite kodo za spremljanje, ki vam jo je dala šola, da v tem računu spremljate še enega otroka.',
+  follow_login: 'Uporabniško ime',
+  follow_password: 'Geslo',
+  follow_button: 'Spremljaj',
+  follow_done: 'Zdaj spremljate šolanje: {name}.',
+  deleting: 'Brisanje…',
 };

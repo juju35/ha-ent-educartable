@@ -83,9 +83,6 @@
     "delete_message": {
       "service": "mdi:email-remove-outline"
     },
-    "follow_child": {
-      "service": "mdi:account-plus-outline"
-    },
     "unfollow_child": {
       "service": "mdi:account-minus-outline"
     }

@@ -169,4 +169,11 @@ export default {
   delete_message: 'Delete the message',
   delete_message_title: 'Delete this message?',
   delete_message_text: '“{title}” will be deleted: the teacher will no longer see it.',
+  follow_title: 'Follow a child',
+  follow_hint: 'Enter the tracking code the school gave you to follow one more child on this account.',
+  follow_login: 'Login',
+  follow_password: 'Password',
+  follow_button: 'Follow',
+  follow_done: 'You now follow {name}\'s schooling.',
+  deleting: 'Deleting…',
 };

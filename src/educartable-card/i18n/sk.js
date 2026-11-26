@@ -168,4 +168,11 @@ export default {
   delete_message: 'Odstrániť správu',
   delete_message_title: 'Odstrániť túto správu?',
   delete_message_text: '„{title}“ sa odstráni: učiteľ ju už neuvidí.',
+  follow_title: 'Sledovať dieťa',
+  follow_hint: 'Zadajte kód sledovania od školy, aby ste v tomto účte sledovali ďalšie dieťa.',
+  follow_login: 'Prihlasovacie meno',
+  follow_password: 'Heslo',
+  follow_button: 'Sledovať',
+  follow_done: 'Teraz sledujete školskú dochádzku: {name}.',
+  deleting: 'Odstraňuje sa…',
 };

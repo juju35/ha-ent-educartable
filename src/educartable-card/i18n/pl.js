@@ -168,4 +168,11 @@ export default {
   delete_message: 'Usuń wiadomość',
   delete_message_title: 'Usunąć tę wiadomość?',
   delete_message_text: '„{title}” zostanie usunięta: nauczyciel nie będzie jej już widział.',
+  follow_title: 'Obserwuj dziecko',
+  follow_hint: 'Wpisz kod dostępu ze szkoły, aby obserwować kolejne dziecko na tym koncie.',
+  follow_login: 'Login',
+  follow_password: 'Hasło',
+  follow_button: 'Obserwuj',
+  follow_done: 'Obserwujesz teraz naukę: {name}.',
+  deleting: 'Usuwanie…',
 };

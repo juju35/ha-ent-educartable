@@ -29,3 +29,4 @@ todo_items  # TodoListEntity API
 async_update_todo_item  # TodoListEntity API
 async_migrate_entry  # Home Assistant calls it on a config entry version change
 MINOR_VERSION  # read by Home Assistant
+async_remove_config_entry_device  # Home Assistant calls it from a device's page (custom_components/educartable/__init__.py)

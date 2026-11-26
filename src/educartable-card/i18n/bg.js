@@ -168,4 +168,11 @@ export default {
   delete_message: 'Изтриване на съобщението',
   delete_message_title: 'Да се изтрие ли това съобщение?',
   delete_message_text: '„{title}“ ще бъде изтрито: учителят вече няма да го вижда.',
+  follow_title: 'Следване на дете',
+  follow_hint: 'Въведете кода за проследяване от училището, за да следите още едно дете в този профил.',
+  follow_login: 'Потребителско име',
+  follow_password: 'Парола',
+  follow_button: 'Следване',
+  follow_done: 'Вече следите обучението на {name}.',
+  deleting: 'Изтриване…',
 };

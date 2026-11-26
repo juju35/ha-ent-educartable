@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Följ ett barn",
-      "description": "Följ ett barns skolgång med den uppföljningskod skolan gett (ett användarnamn och ett lösenord).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Konto",
-          "description": "Educartable-kontot. Lämna tomt när bara ett är konfigurerat."
-        },
-        "login": {
-          "name": "Användarnamn",
-          "description": "Uppföljningskodens användarnamn."
-        },
-        "password": {
-          "name": "Lösenord",
-          "description": "Uppföljningskodens lösenord."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Sluta följa ett barn",
       "description": "Sluta följa ett barns skolgång på det här kontot.",

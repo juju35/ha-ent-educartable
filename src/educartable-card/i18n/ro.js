@@ -168,4 +168,11 @@ export default {
   delete_message: 'Șterge mesajul',
   delete_message_title: 'Ștergeți acest mesaj?',
   delete_message_text: '„{title}” va fi șters: profesorul nu îl va mai vedea.',
+  follow_title: 'Urmărește un copil',
+  follow_hint: 'Introduceți codul de urmărire dat de școală pentru a urmări încă un copil pe acest cont.',
+  follow_login: 'Utilizator',
+  follow_password: 'Parolă',
+  follow_button: 'Urmărește',
+  follow_done: 'Acum urmăriți școlaritatea lui {name}.',
+  deleting: 'Se șterge…',
 };

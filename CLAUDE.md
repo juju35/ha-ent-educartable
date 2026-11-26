@@ -81,7 +81,9 @@ carries the new version, updated together in one commit:
   a homework's `games` (online exercises, named from the `forge.exercices.getAllDomainsProgressions` catalogue keyed `id`+`linkId`,
   unknown ones left out, cached 10 min) and `revisions` ({uid, title, type DICTEE|TABLES|LECONS|POESIES, templates[{code}]}),
   done in the portal's app; `educore/…/settings?app=EducartableFamily` → `ui.hideArchives` hides archived messages; follow a child
-  with the school's tracking code (`POST educore/…/pupils/follow` {login, password}, `DELETE …/pupils/unfollow/{id}`); delete a
+  with the school's tracking code (`POST educore/…/pupils/follow` {login, password}) from the panel's Settings tab through the
+  admin websocket `educartable/follow_child` — never an action, its data may land in traces and logs —, `DELETE …/pupils/unfollow/{id}`
+  (action `unfollow_child`); a child no longer in the pupils (read successfully) loses its device and entities; delete a
   message the family wrote (`DELETE educartable/…/messages/{id}/trash`) or a notification (`DELETE educore/…/notifications/{id}`);
   *Translate* only when the author (`user.lang`, `user.allow_translation`) allows it and writes in another language.
 - Not in the portal's family app, so not planned: the pupil's skills (only the livret). Left out on purpose: the app's own

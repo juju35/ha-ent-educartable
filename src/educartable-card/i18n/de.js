@@ -168,4 +168,11 @@ export default {
   delete_message: 'Nachricht löschen',
   delete_message_title: 'Diese Nachricht löschen?',
   delete_message_text: '„{title}“ wird gelöscht: Die Lehrkraft sieht sie nicht mehr.',
+  follow_title: 'Einem Kind folgen',
+  follow_hint: 'Geben Sie den Zugangscode der Schule ein, um einem weiteren Kind in diesem Konto zu folgen.',
+  follow_login: 'Benutzername',
+  follow_password: 'Passwort',
+  follow_button: 'Folgen',
+  follow_done: 'Sie folgen jetzt der Schullaufbahn von {name}.',
+  deleting: 'Wird gelöscht…',
 };

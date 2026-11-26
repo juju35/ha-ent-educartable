@@ -168,4 +168,11 @@ export default {
   delete_message: 'Elimina il messaggio',
   delete_message_title: 'Eliminare questo messaggio?',
   delete_message_text: '«{title}» verrà eliminato: l’insegnante non lo vedrà più.',
+  follow_title: 'Segui un figlio',
+  follow_hint: 'Inserisci il codice di accesso dato dalla scuola per seguire un altro figlio su questo account.',
+  follow_login: 'Nome utente',
+  follow_password: 'Password',
+  follow_button: 'Segui',
+  follow_done: 'Ora segui il percorso scolastico di {name}.',
+  deleting: 'Eliminazione…',
 };

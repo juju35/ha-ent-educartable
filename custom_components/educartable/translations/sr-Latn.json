@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Prati dete",
-      "description": "Praćenje školovanja deteta pomoću koda za praćenje koji je dala škola (korisničko ime i lozinka).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Nalog",
-          "description": "Educartable nalog. Ostavite prazno kada je podešen samo jedan."
-        },
-        "login": {
-          "name": "Korisničko ime",
-          "description": "Korisničko ime koda za praćenje."
-        },
-        "password": {
-          "name": "Lozinka",
-          "description": "Lozinka koda za praćenje."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Prestani da pratiš dete",
       "description": "Prestanak praćenja školovanja deteta na ovom nalogu.",

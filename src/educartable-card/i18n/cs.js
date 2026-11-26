@@ -168,4 +168,11 @@ export default {
   delete_message: 'Smazat zprávu',
   delete_message_title: 'Smazat tuto zprávu?',
   delete_message_text: '„{title}“ bude smazána: učitel ji už neuvidí.',
+  follow_title: 'Sledovat dítě',
+  follow_hint: 'Zadejte kód sledování od školy, abyste na tomto účtu sledovali další dítě.',
+  follow_login: 'Přihlašovací jméno',
+  follow_password: 'Heslo',
+  follow_button: 'Sledovat',
+  follow_done: 'Nyní sledujete školní docházku: {name}.',
+  deleting: 'Mazání…',
 };

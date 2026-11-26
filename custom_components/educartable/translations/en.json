@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Follow a child",
-      "description": "Follow a child's schooling with the tracking code the school gave (a login and a password).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Account",
-          "description": "The Educartable account. Leave empty when only one is configured."
-        },
-        "login": {
-          "name": "Login",
-          "description": "The login of the tracking code."
-        },
-        "password": {
-          "name": "Password",
-          "description": "The password of the tracking code."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Stop following a child",
       "description": "Stop following a child's schooling on this account.",

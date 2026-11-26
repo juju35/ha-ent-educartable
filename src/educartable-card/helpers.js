@@ -591,7 +591,7 @@ export function educartableItemStyles(accent) {
     '.file ha-icon { color: ' + accent + '; flex: none; }',
     '.file:hover { background: color-mix(in srgb, ' + accent + ' 10%, transparent); }',
     '.file:disabled { cursor: default; background: none; }',
-    'span.file { cursor: default; background: none; }',
+    'span.file, span.file:hover { cursor: default; background: none; }',
     '.file:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }',
     '@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }',
     '.error-text { color: color-mix(in srgb, var(--error-color, #db4437) 55%, var(--primary-text-color)); font-size: 13px; }',

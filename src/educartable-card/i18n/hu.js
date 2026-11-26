@@ -168,4 +168,11 @@ export default {
   delete_message: 'Üzenet törlése',
   delete_message_title: 'Törli ezt az üzenetet?',
   delete_message_text: 'A(z) „{title}” törlődik: a tanár többé nem látja.',
+  follow_title: 'Gyermek követése',
+  follow_hint: 'Adja meg az iskolától kapott követési kódot, hogy még egy gyermeket kövessen ezen a fiókon.',
+  follow_login: 'Felhasználónév',
+  follow_password: 'Jelszó',
+  follow_button: 'Követés',
+  follow_done: 'Mostantól követi {name} tanulmányait.',
+  deleting: 'Törlés…',
 };

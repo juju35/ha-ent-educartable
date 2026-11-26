@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Sledovať dieťa",
-      "description": "Sledovať školskú dochádzku dieťaťa pomocou kódu sledovania od školy (prihlasovacie meno a heslo).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Účet",
-          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
-        },
-        "login": {
-          "name": "Prihlasovacie meno",
-          "description": "Prihlasovacie meno kódu sledovania."
-        },
-        "password": {
-          "name": "Heslo",
-          "description": "Heslo kódu sledovania."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Prestať sledovať dieťa",
       "description": "Prestať sledovať školskú dochádzku dieťaťa v tomto účte.",

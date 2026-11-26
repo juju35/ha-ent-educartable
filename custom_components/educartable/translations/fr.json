@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Suivre un enfant",
-      "description": "Suivre la scolarité d’un enfant avec le code de suivi donné par l’école (un identifiant et un mot de passe).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Compte",
-          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
-        },
-        "login": {
-          "name": "Identifiant",
-          "description": "L’identifiant du code de suivi."
-        },
-        "password": {
-          "name": "Mot de passe",
-          "description": "Le mot de passe du code de suivi."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Ne plus suivre un enfant",
       "description": "Ne plus suivre la scolarité d’un enfant sur ce compte.",

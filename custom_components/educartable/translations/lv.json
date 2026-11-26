@@ -373,24 +373,6 @@
         }
       }
     },
-    "follow_child": {
-      "name": "Sekot bērnam",
-      "description": "Sekot bērna mācībām ar skolas izsniegto sekošanas kodu (lietotājvārds un parole).",
-      "fields": {
-        "config_entry_id": {
-          "name": "Konts",
-          "description": "Educartable konts. Atstājiet tukšu, ja iestatīts tikai viens."
-        },
-        "login": {
-          "name": "Lietotājvārds",
-          "description": "Sekošanas koda lietotājvārds."
-        },
-        "password": {
-          "name": "Parole",
-          "description": "Sekošanas koda parole."
-        }
-      }
-    },
     "unfollow_child": {
       "name": "Pārtraukt sekot bērnam",
       "description": "Pārtrauc sekot bērna mācībām šajā kontā.",
