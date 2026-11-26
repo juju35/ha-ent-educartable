@@ -39,6 +39,7 @@ from .const import (
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_MESSAGE,
     EVENT_NEW_NEWS,
+    LESSONS_KEPT,
     MESSAGES_KEPT,
     MIN_SCAN_INTERVAL,
     NEWS_KEPT,
@@ -173,6 +174,28 @@ def _links(raw: dict[str, Any]) -> list[dict[str, str]]:
 def _pupil_recipients(raw: dict[str, Any]) -> list[dict[str, Any]]:
     recipients = raw.get("recipients") or []
     return [r for r in recipients if isinstance(r, dict) and r.get("model") == "Pupil"]
+
+
+def _stale(data: EducartableData, previous: EducartableData, section: str, err: Exception) -> None:
+    """Keep what was read before for a section the portal did not give, and say so in the log."""
+    if section not in data.stale:
+        data.stale.append(section)
+    # A warning when it starts, then debug while it lasts: an outage does not fill the log.
+    level = logging.DEBUG if section in previous.stale else logging.WARNING
+    _LOGGER.log(level, "Educartable %s not updated, keeping the last read: %s", section, err)
+
+
+def _lesson_pupils(raw: dict[str, Any], pupils: list[dict[str, Any]]) -> set[str]:
+    """Ids of the family's pupils a lesson is for, as the portal's app filters its homework by child.
+
+    Its pupil recipients; without any, the pupils of its classroom; for a lesson naming neither, every child (the
+    app shows it when no child is picked).
+    """
+    ids = {p["id"] for p in pupils}
+    named = {_str(r.get("key")) for r in _pupil_recipients(raw)}
+    if not named and raw.get("scope_model") == "Classroom":
+        named = {p["id"] for p in pupils if p["classroom_id"] and p["classroom_id"] == _str(raw.get("scope_key"))}
+    return (named & ids) or ids
 
 
 def _children(raw: dict[str, Any]) -> list[str]:
@@ -478,29 +501,39 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
 
         try:
             data.pupils = [_pupil(p) for p in await self.api.pupils(parent_id)]
-        except EducartableUnavailableError:
-            data.pupils, _ = previous.pupils, data.stale.append("pupils")
+        except EducartableUnavailableError as err:
+            data.pupils = previous.pupils
+            _stale(data, previous, "pupils", err)
 
-        for pupil in data.pupils:
+        # One read for the whole family, shared out by each lesson's pupils: the portal's own `pupil_id`
+        # filter answers HTTP 500 (an unknown `pupil_recipient` column on its side).
+        lessons: list[dict[str, Any]] | None = None
+        if data.pupils:
             try:
-                raw = await self.api.lessons(parent_id, start, pupil_id=pupil["id"])
-                # Keep homework due within the window (and anything undated), newest cap applied client-side.
-                data.homework[pupil["id"]] = [
-                    _homework(h, pupil["id"]) for h in raw if (d := _due(h.get("date"))) is None or d <= cutoff
-                ]
-            except EducartableUnavailableError:
+                lessons = await self.api.lessons(parent_id, start, limit=LESSONS_KEPT)
+            except EducartableUnavailableError as err:
+                _stale(data, previous, "homework", err)
+        for pupil in data.pupils:
+            if lessons is None:
                 data.homework[pupil["id"]] = previous.homework.get(pupil["id"], [])
-                if "homework" not in data.stale:
-                    data.stale.append("homework")
+                continue
+            # Keep homework due within the window (and anything undated).
+            data.homework[pupil["id"]] = [
+                _homework(h, pupil["id"])
+                for h in lessons
+                if pupil["id"] in _lesson_pupils(h, data.pupils) and ((d := _due(h.get("date"))) is None or d <= cutoff)
+            ]
 
         try:
             data.carnet = [_message(m) for m in await self.api.carnet(parent_id)][:MESSAGES_KEPT]
-        except EducartableUnavailableError:
-            data.carnet, _ = previous.carnet, data.stale.append("carnet")
+        except EducartableUnavailableError as err:
+            data.carnet = previous.carnet
+            _stale(data, previous, "carnet", err)
         try:
             data.news = [_message(m) for m in await self.api.news(parent_id)][:NEWS_KEPT]
-        except EducartableUnavailableError:
-            data.news, _ = previous.news, data.stale.append("news")
+        except EducartableUnavailableError as err:
+            data.news = previous.news
+            _stale(data, previous, "news", err)
         await self._read_documents(parent_id, data, previous)
         data.activities = await self._optional(
             "activities", lambda: self.api.activities(parent_id, ACTIVITIES_KEPT), _activity, data, previous
@@ -543,8 +576,8 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
         """A part not every school has: its error shows nothing, a portal outage keeps what was read before."""
         try:
             raws = await read()
-        except EducartableUnavailableError:
-            data.stale.append(kind)
+        except EducartableUnavailableError as err:
+            _stale(data, previous, kind, err)
             return list(getattr(previous, kind))
         except EducartableError as err:
             _LOGGER.debug("No %s on this account: %s", kind, err)
@@ -575,8 +608,9 @@ class EducartableCoordinator(DataUpdateCoordinator[EducartableData]):
                         files[document["id"]] = ("attestation", _str(raw["id"]), _str(raw["hash"]))
                     document["file"] = document["id"] in files
                     documents.append(document)
-        except EducartableUnavailableError:
-            data.documents, _ = previous.documents, data.stale.append("documents")
+        except EducartableUnavailableError as err:
+            data.documents = previous.documents
+            _stale(data, previous, "documents", err)
             return
         # Still to sign first, then the newest.
         documents.sort(key=lambda d: d["date"] or d["year"] or "", reverse=True)

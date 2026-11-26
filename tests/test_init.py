@@ -36,6 +36,9 @@ class FakeApi:
         self.comment_list: list[dict[str, Any]] = []
         self.livret = True
         self.extra_pupils: list[dict[str, Any]] = []
+        self.extra_lessons: list[dict[str, Any]] = []
+        self.lessons_fail = False
+        self.lesson_limits: list[int] = []
 
     def update_credentials(self, username: str, password: str, totp: str | None = None) -> None:
         self.username, self.password = username, password
@@ -56,7 +59,10 @@ class FakeApi:
             *self.extra_pupils,
         ]
 
-    async def lessons(self, parent_id: str, start: str, *, pupil_id: str | None = None) -> list[dict[str, Any]]:
+    async def lessons(self, parent_id: str, start: str, *, limit: int = 30) -> list[dict[str, Any]]:
+        if self.lessons_fail:
+            raise EducartableUnavailableError("HTTP 500")
+        self.lesson_limits.append(limit)
         return [
             {
                 "id": "h1",
@@ -68,6 +74,7 @@ class FakeApi:
                 "recipients": [{"model": "Pupil", "key": "e1", "id": "r9", "checked": False}],
             },
             {"id": "h2", "title": "Lecture", "date": "2026-11-26", "achievement": "read", "achievements": [4]},
+            *self.extra_lessons,
         ]
 
     async def carnet(self, parent_id: str) -> list[dict[str, Any]]:
@@ -432,7 +439,8 @@ async def test_tick_homework_from_the_todo_list_and_the_websocket(hass: HomeAssi
     assert not (await client.receive_json())["success"]
 
 
-async def test_calendar_shows_the_homework(hass: HomeAssistant, api) -> None:
+async def test_calendar_shows_the_homework(hass: HomeAssistant, api, freezer) -> None:
+    freezer.move_to("2026-11-24 12:00:00+00:00")  # before the canned homework is due, whatever today is
     await _setup(hass)
     state = hass.states.get("calendar.educartable_parent_test_homework")
     assert state is not None
@@ -646,6 +654,49 @@ async def test_book_and_cancel_an_appointment(hass: HomeAssistant, api) -> None:
             )
         await hass.services.async_call(DOMAIN, "cancel_appointment", {"slot_id": "51"}, blocking=True)
         assert ("cancel_booking", "51") in api["api"].calls
+
+
+async def test_homework_read_once_and_shared_out_per_child(
+    hass: HomeAssistant, api, caplog: pytest.LogCaptureFixture
+) -> None:
+    await _setup(hass)
+    api["api"].extra_pupils.append({"id": "e2", "firstname": "Bob", "name": "Test", "classroom_id": 4})
+    api["api"].extra_lessons.append(
+        {
+            "id": "h3",
+            "title": "Tables",
+            "date": "2026-11-26",
+            "achievement": "check",
+            "achievements": [],
+            "recipients": [{"model": "Pupil", "key": "e2", "id": "r10", "checked": 0}],
+        }
+    )
+    api["api"].extra_lessons.append(
+        # No recipient: for the pupils of its classroom (Bob's), as the portal's app does.
+        {"id": "h4", "title": "Dictée", "date": "2026-11-26", "scope_model": "Classroom", "scope_key": 4}
+    )
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    # One read for the family (no per-pupil filter, which the portal answers with HTTP 500), as the app reads it.
+    assert api["api"].lesson_limits[-1] == 100
+    alice = hass.states.get("sensor.alice_test_homework_to_do")
+    bob = hass.states.get("sensor.bob_test_homework_to_do")
+    # h1 names Alice, h3 names Bob, h4 is Bob's classroom, h2 names nobody so it is for both.
+    assert [h["id"] for h in alice.attributes["homework"]] == ["h1", "h2"]
+    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3", "h4"]
+    assert hass.states.get("sensor.educartable_parent_test_last_update").attributes["stale"] == []
+
+    # The portal failing: the homework read before stays, the section is stale and the log says so once.
+    api["api"].lessons_fail = True
+    caplog.clear()
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    bob = hass.states.get("sensor.bob_test_homework_to_do")
+    assert [h["id"] for h in bob.attributes["homework"]] == ["h2", "h3", "h4"]
+    assert hass.states.get("sensor.educartable_parent_test_last_update").attributes["stale"] == ["homework"]
+    warnings = [r for r in caplog.records if r.levelname == "WARNING" and "homework not updated" in r.message]
+    assert len(warnings) == 1
+    caplog.clear()
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    assert not [r for r in caplog.records if r.levelname == "WARNING" and "homework not updated" in r.message]
 
 
 async def test_write_a_message_per_classroom(hass: HomeAssistant, api) -> None:
