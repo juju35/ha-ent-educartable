@@ -214,3 +214,60 @@ delete_comment:
       example: "90"
       selector:
         text:
+
+delete_notification:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    notification_id:
+      required: true
+      example: "678"
+      selector:
+        text:
+
+delete_message:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    message_id:
+      required: true
+      example: "12345"
+      selector:
+        text:
+
+follow_child:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    login:
+      required: true
+      example: "ABCD1234"
+      selector:
+        text:
+    password:
+      required: true
+      selector:
+        text:
+          type: password
+
+unfollow_child:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: educartable
+    child_id:
+      required: true
+      example: "12345"
+      selector:
+        text:

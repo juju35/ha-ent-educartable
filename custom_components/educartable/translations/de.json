@@ -344,6 +344,66 @@
           "description": "Die ID eines deiner Kommentare im Austausch."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Benachrichtigung löschen",
+      "description": "Eine Benachrichtigung des Portals löschen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "notification_id": {
+          "name": "Benachrichtigung",
+          "description": "Die ID der Benachrichtigung, aus dem Attribut notifications des Sensors Ungelesene Benachrichtigungen."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Nachricht löschen",
+      "description": "Eine Nachricht löschen, die Sie an die Lehrkraft geschrieben haben: Sie sieht sie nicht mehr.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "message_id": {
+          "name": "Mitteilung",
+          "description": "Die ID der Mitteilung, aus dem Attribut messages des Sensors Zu unterschreibendes Mitteilungsheft oder Neuigkeiten."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Einem Kind folgen",
+      "description": "Der Schullaufbahn eines Kindes mit dem Zugangscode der Schule folgen (Benutzername und Passwort).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "login": {
+          "name": "Benutzername",
+          "description": "Der Benutzername des Zugangscodes."
+        },
+        "password": {
+          "name": "Passwort",
+          "description": "Das Passwort des Zugangscodes."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Einem Kind nicht mehr folgen",
+      "description": "Der Schullaufbahn eines Kindes in diesem Konto nicht mehr folgen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Konto",
+          "description": "Das Educartable-Konto. Leer lassen, wenn nur eines eingerichtet ist."
+        },
+        "child_id": {
+          "name": "Kind",
+          "description": "Die ID des Kindes, aus dem Attribut child_id seines Sensors Hausaufgaben."
+        }
+      }
     }
   },
   "exceptions": {

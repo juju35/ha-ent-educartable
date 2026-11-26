@@ -344,6 +344,66 @@
           "description": "ID-ul unuia dintre comentariile tale din conversație."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Șterge o notificare",
+      "description": "Șterge o notificare a portalului.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "notification_id": {
+          "name": "Notificare",
+          "description": "Id-ul notificării, din atributul notifications al senzorului Notificări necitite."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Șterge un mesaj",
+      "description": "Șterge un mesaj pe care l-ați scris profesorului: acesta nu îl mai vede.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "message_id": {
+          "name": "Mesaj",
+          "description": "Id-ul mesajului, din atributul messages al senzorului Carnet de corespondență de semnat sau Noutăți."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Urmărește un copil",
+      "description": "Urmărește școlaritatea unui copil cu codul de urmărire dat de școală (un utilizator și o parolă).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "login": {
+          "name": "Utilizator",
+          "description": "Utilizatorul codului de urmărire."
+        },
+        "password": {
+          "name": "Parolă",
+          "description": "Parola codului de urmărire."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Nu mai urmări un copil",
+      "description": "Nu mai urmări școlaritatea unui copil pe acest cont.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Cont",
+          "description": "Contul Educartable. Lasă gol când este configurat unul singur."
+        },
+        "child_id": {
+          "name": "Copil",
+          "description": "Id-ul copilului, din atributul child_id al senzorului său Teme."
+        }
+      }
     }
   },
   "exceptions": {

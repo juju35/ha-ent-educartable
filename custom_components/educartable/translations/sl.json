@@ -344,6 +344,66 @@
           "description": "ID enega vaših komentarjev v pogovoru."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Izbriši obvestilo",
+      "description": "Izbriše obvestilo portala.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "notification_id": {
+          "name": "Obvestilo",
+          "description": "ID obvestila iz atributa notifications senzorja Neprebrana obvestila."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Izbriši sporočilo",
+      "description": "Izbriše sporočilo, ki ste ga napisali učitelju: učitelj ga ne vidi več.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "message_id": {
+          "name": "Sporočilo",
+          "description": "ID sporočila iz atributa messages senzorja Beležka za podpis ali Novice."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Spremljaj otroka",
+      "description": "Spremljanje šolanja otroka s kodo za spremljanje, ki jo je dala šola (uporabniško ime in geslo).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "login": {
+          "name": "Uporabniško ime",
+          "description": "Uporabniško ime kode za spremljanje."
+        },
+        "password": {
+          "name": "Geslo",
+          "description": "Geslo kode za spremljanje."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Prenehaj spremljati otroka",
+      "description": "Preneha spremljati šolanje otroka v tem računu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Račun",
+          "description": "Račun Educartable. Pustite prazno, če je nastavljen samo eden."
+        },
+        "child_id": {
+          "name": "Otrok",
+          "description": "ID otroka iz atributa child_id njegovega senzorja Domače naloge."
+        }
+      }
     }
   },
   "exceptions": {

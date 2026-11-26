@@ -39,6 +39,8 @@ class FakeApi:
         self.extra_lessons: list[dict[str, Any]] = []
         self.lessons_fail = False
         self.lesson_limits: list[int] = []
+        self.hide_archives = False
+        self.exercise_reads = 0
 
     def update_credentials(self, username: str, password: str, totp: str | None = None) -> None:
         self.username, self.password = username, password
@@ -72,6 +74,10 @@ class FakeApi:
                 "achievement": "check",
                 "achievements": [],
                 "recipients": [{"model": "Pupil", "key": "e1", "id": "r9", "checked": False}],
+                "games": [{"id": 5, "linkId": "L1"}, {"id": 6, "linkId": "L2"}],
+                "revisions": [
+                    {"uid": "u1", "title": "Mots de la semaine", "type": "DICTEE", "templates": [{"code": "REV_01"}]}
+                ],
             },
             {"id": "h2", "title": "Lecture", "date": "2026-11-26", "achievement": "read", "achievements": [4]},
             *self.extra_lessons,
@@ -229,6 +235,36 @@ class FakeApi:
 
     async def delete_comment(self, *args: Any) -> None:
         self.calls.append(("delete_comment", *args))
+
+    async def delete_notification(self, *args: Any) -> None:
+        self.calls.append(("delete_notification", *args))
+
+    async def delete_message(self, *args: Any) -> None:
+        self.calls.append(("delete_message", *args))
+
+    async def follow(self, parent_id: str, login: str, password: str) -> dict[str, Any]:
+        self.calls.append(("follow", parent_id, login, password))
+        if (login, password) != ("CODE1", "pw"):
+            raise EducartableError("HTTP 404")
+        self.extra_pupils.append({"id": "e9", "firstname": "Zoé", "name": "Test", "classroom_id": 3})
+        return {"id": "e9", "firstname": "Zoé"}
+
+    async def unfollow(self, parent_id: str, pupil_id: str) -> None:
+        self.calls.append(("unfollow", parent_id, pupil_id))
+        self.extra_pupils[:] = [p for p in self.extra_pupils if p["id"] != pupil_id]
+
+    async def settings(self, parent_id: str) -> dict[str, Any]:
+        return {"ui": {"hideArchives": self.hide_archives}, "notifications": {"mail": True}}
+
+    async def exercises(self) -> list[dict[str, Any]]:
+        self.exercise_reads += 1
+        return [
+            {
+                "id": "d1",
+                "title": "Français",
+                "children": [{"id": 5, "linkId": "L1", "title": "Les sons [ou]", "type": "QCM"}],
+            }
+        ]
 
     async def upload_target(self, parent_id: str) -> dict[str, Any]:
         return {"url": "https://upload.edumoov.com/x", "sig": "s", "payload": "p"}
@@ -858,3 +894,86 @@ async def test_translate_a_message(hass: HomeAssistant, api, hass_ws_client) -> 
     )
     await client.receive_json()
     assert len([c for c in api["api"].calls if c[0] == "translate"]) == 1  # kept
+
+
+async def test_homework_exercises_and_revisions(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    homework = hass.states.get("sensor.alice_test_homework_to_do").attributes["homework"]
+    h1 = next(h for h in homework if h["id"] == "h1")
+    # Named from the portal's catalogue; one it does not know (6/L2) is left out, as the app does.
+    assert h1["exercises"] == [{"title": "Les sons [ou]", "type": "QCM"}]
+    assert h1["revisions"] == [{"title": "Mots de la semaine", "category": "DICTEE", "games": 1}]
+    # The catalogue is kept a while: a refresh does not read it again.
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    assert api["api"].exercise_reads == 1
+
+
+async def test_archives_hidden_by_the_family_app_setting(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    api["api"].extra_carnet.append({"id": "c9", "title": "Old", "type": "info", "archived": True})
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    ids = [
+        m["id"] for m in hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
+    ]
+    assert "c9" in ids
+    api["api"].hide_archives = True
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    ids = [
+        m["id"] for m in hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
+    ]
+    assert "c9" not in ids
+
+
+async def test_delete_own_message_only(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    api["api"].extra_carnet.append({"id": "c7", "title": "Absence", "type": "info", "user_id": "p1", "body": "x"})
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    messages = hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
+    assert next(m for m in messages if m["id"] == "c7")["mine"]
+    assert not next(m for m in messages if m["id"] == "c1")["mine"]
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(DOMAIN, "delete_message", {"message_id": "c1"}, blocking=True)
+    await hass.services.async_call(DOMAIN, "delete_message", {"message_id": "c7"}, blocking=True)
+    assert ("delete_message", "p1", "c7") in api["api"].calls
+    messages = hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
+    assert "c7" not in [m["id"] for m in messages]
+
+
+async def test_delete_a_notification(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    await hass.services.async_call(DOMAIN, "delete_notification", {"notification_id": "1"}, blocking=True)
+    assert ("delete_notification", "p1", "1") in api["api"].calls
+    left = hass.states.get("sensor.educartable_parent_test_unread_notifications").attributes["notifications"]
+    assert "1" not in [n["id"] for n in left]
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(DOMAIN, "delete_notification", {"notification_id": "1"}, blocking=True)
+
+
+async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(DOMAIN, "follow_child", {"login": "BAD", "password": "x"}, blocking=True)
+    await hass.services.async_call(DOMAIN, "follow_child", {"login": "CODE1", "password": "pw"}, blocking=True)
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.zoe_test_homework_to_do") is not None
+    await hass.services.async_call(DOMAIN, "unfollow_child", {"child_id": "e9"}, blocking=True)
+    assert ("unfollow", "p1", "e9") in api["api"].calls
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(DOMAIN, "unfollow_child", {"child_id": "e9"}, blocking=True)
+
+
+async def test_translation_offered_as_the_portal_app_does(hass: HomeAssistant, api) -> None:
+    await _setup(hass)
+    api["api"].extra_carnet.extend(
+        [
+            {"id": "t1", "title": "A", "type": "info", "body": "x", "user": {"lang": "fr", "allow_translation": 0}},
+            {"id": "t2", "title": "B", "type": "info", "body": "x", "user": {"lang": "fr", "allow_translation": 1}},
+            {"id": "t3", "title": "C", "type": "info", "body": "", "user": {}},
+        ]
+    )
+    await hass.services.async_call(DOMAIN, "refresh", {}, blocking=True)
+    messages = hass.states.get("sensor.educartable_parent_test_liaison_book_to_sign").attributes["messages"]
+    by_id = {m["id"]: m for m in messages}
+    assert not by_id["t1"]["translatable"]
+    assert by_id["t2"]["translatable"] and by_id["t2"]["author_lang"] == "fr"
+    assert not by_id["t3"]["translatable"]

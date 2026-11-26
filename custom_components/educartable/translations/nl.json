@@ -344,6 +344,66 @@
           "description": "Het id van een van je reacties in het gesprek."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Melding verwijderen",
+      "description": "Een melding van het portaal verwijderen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "notification_id": {
+          "name": "Melding",
+          "description": "De id van de melding, uit het attribuut notifications van de sensor Ongelezen meldingen."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Bericht verwijderen",
+      "description": "Een bericht verwijderen dat u aan de leerkracht schreef: die ziet het niet meer.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "message_id": {
+          "name": "Bericht",
+          "description": "De id van het bericht, uit het attribuut messages van de sensor Heen-en-weerschrift te ondertekenen of Nieuws."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Een kind volgen",
+      "description": "De schoolloopbaan van een kind volgen met de volgcode van de school (een gebruikersnaam en een wachtwoord).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "login": {
+          "name": "Gebruikersnaam",
+          "description": "De gebruikersnaam van de volgcode."
+        },
+        "password": {
+          "name": "Wachtwoord",
+          "description": "Het wachtwoord van de volgcode."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Een kind niet meer volgen",
+      "description": "De schoolloopbaan van een kind niet meer volgen op dit account.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Het Educartable-account. Laat leeg als er maar één is ingesteld."
+        },
+        "child_id": {
+          "name": "Kind",
+          "description": "De id van het kind, uit het attribuut child_id van zijn sensor Huiswerk."
+        }
+      }
     }
   },
   "exceptions": {

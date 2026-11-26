@@ -37,9 +37,11 @@ from .const import (
     ATTR_CONFIG_ENTRY_ID,
     ATTR_DOCUMENT_ID,
     ATTR_LIKED,
+    ATTR_LOGIN,
     ATTR_MESSAGE_ID,
     ATTR_NAME,
     ATTR_NOTIFICATION_ID,
+    ATTR_PASSWORD,
     ATTR_SLOT_ID,
     ATTR_TEXT,
     ATTR_TITLE,
@@ -63,6 +65,9 @@ from .const import (
     SERVICE_BOOK,
     SERVICE_CANCEL_BOOKING,
     SERVICE_DELETE_COMMENT,
+    SERVICE_DELETE_MESSAGE,
+    SERVICE_DELETE_NOTIFICATION,
+    SERVICE_FOLLOW_CHILD,
     SERVICE_LIKE,
     SERVICE_MARK_READ,
     SERVICE_READ_NOTIFICATIONS,
@@ -70,6 +75,7 @@ from .const import (
     SERVICE_REPLY,
     SERVICE_SIGN,
     SERVICE_SIGN_DOCUMENT,
+    SERVICE_UNFOLLOW_CHILD,
     SERVICE_WRITE,
     UPLOADS,
 )
@@ -145,6 +151,23 @@ LIKE_SCHEMA = vol.Schema(
 )
 READ_NOTIFICATIONS_SCHEMA = vol.Schema(
     {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Optional(ATTR_NOTIFICATION_ID): MESSAGE_ID}
+)
+DELETE_NOTIFICATION_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_NOTIFICATION_ID): MESSAGE_ID}
+)
+DELETE_MESSAGE_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_MESSAGE_ID): MESSAGE_ID}
+)
+# The tracking code the school gives to follow a child: a login and a password.
+FOLLOW_CHILD_SCHEMA = vol.Schema(
+    {
+        vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
+        vol.Required(ATTR_LOGIN): vol.All(cv.string, vol.Strip, vol.Length(min=1)),
+        vol.Required(ATTR_PASSWORD): vol.All(cv.string, vol.Length(min=1)),
+    }
+)
+UNFOLLOW_CHILD_SCHEMA = vol.Schema(
+    {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string, vol.Required(ATTR_CHILD_ID): MESSAGE_ID}
 )
 DELETE_COMMENT_SCHEMA = vol.Schema(
     {
@@ -237,6 +260,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             DELETE_COMMENT_SCHEMA,
             lambda c, d: c.async_delete_comment(d[ATTR_MESSAGE_ID], d[ATTR_COMMENT_ID]),
         ),
+        SERVICE_DELETE_NOTIFICATION: (
+            DELETE_NOTIFICATION_SCHEMA,
+            lambda c, d: c.async_delete_notification(d[ATTR_NOTIFICATION_ID]),
+        ),
+        SERVICE_DELETE_MESSAGE: (DELETE_MESSAGE_SCHEMA, lambda c, d: c.async_delete_message(d[ATTR_MESSAGE_ID])),
+        SERVICE_FOLLOW_CHILD: (
+            FOLLOW_CHILD_SCHEMA,
+            lambda c, d: c.async_follow_child(d[ATTR_LOGIN], d[ATTR_PASSWORD]),
+        ),
+        SERVICE_UNFOLLOW_CHILD: (UNFOLLOW_CHILD_SCHEMA, lambda c, d: c.async_unfollow_child(d[ATTR_CHILD_ID])),
     }
     hass.services.async_register(DOMAIN, SERVICE_REFRESH, refresh, REFRESH_SCHEMA)
     # Every action on the portal is done with the parent's account: administrators only (a child's Home Assistant

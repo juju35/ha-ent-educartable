@@ -5,7 +5,8 @@ are plain REST with the access token as a Bearer header; surveys and appointment
 (POST <method> with {params, payload}, answered with {success, data, error}). Routes follow the portal's own web app
 (mobile.educartable.com): reads, the achievement of a message (sign, read, comment…), the done box of a homework, the
 private conversation of a message, new messages to the teacher, surveys, appointment slots, the pupil's livret
-(notebooks and attestations, signed as consulted) and the attachments (medias, livret PDFs).
+(notebooks and attestations, signed as consulted), the attachments (medias, livret PDFs), the online exercises and
+revisions of a homework, the children followed (tracking codes) and the family app's settings.
 """
 
 from __future__ import annotations
@@ -177,6 +178,18 @@ class EducartableApi:
         data = await self._get(f"{API_EDUCORE}/parent/{parent_id}/pupils")
         return data.get("data", []) if isinstance(data, dict) else []
 
+    async def settings(self, parent_id: str) -> dict[str, Any]:
+        """The family app's preferences on the portal (notifications, ui.hideArchives)."""
+        data = await self._get(f"{API_EDUCORE}/parent/{parent_id}/settings", {"app": "EducartableFamily"})
+        data = data.get("data", data) if isinstance(data, dict) else {}
+        family = data.get("EducartableFamily") if isinstance(data, dict) else None
+        return family if isinstance(family, dict) else {}
+
+    async def exercises(self) -> list[dict[str, Any]]:
+        """The catalogue of the portal's online exercises, as a tree of domains: the games a homework links to."""
+        data = await self.rpc("forge.exercices.getAllDomainsProgressions", {})
+        return data if isinstance(data, list) else []
+
     async def _messages(
         self,
         parent_id: str,
@@ -293,6 +306,23 @@ class EducartableApi:
         await self._request(
             "PUT", f"{API_EDUCORE}/parent/{parent_id}/notifications/close_all", params={"app": "Educartable"}
         )
+
+    async def delete_notification(self, parent_id: str, notification_id: str) -> None:
+        await self._request("DELETE", f"{API_EDUCORE}/parent/{parent_id}/notifications/{notification_id}")
+
+    async def delete_message(self, parent_id: str, message_id: str) -> None:
+        """Delete a message the family wrote: the teacher no longer sees it."""
+        await self._request("DELETE", f"{API_EDUCARTABLE}/parent/{parent_id}/messages/{message_id}/trash")
+
+    async def follow(self, parent_id: str, login: str, password: str) -> dict[str, Any]:
+        """Follow a child with the tracking code the school gives (a login and a password): the child is returned."""
+        data = await self._post(
+            f"{API_EDUCORE}/parent/{parent_id}/pupils/follow", {"login": login, "password": password}
+        )
+        return (data.get("data") or {}) if isinstance(data, dict) else {}
+
+    async def unfollow(self, parent_id: str, pupil_id: str) -> None:
+        await self._request("DELETE", f"{API_EDUCORE}/parent/{parent_id}/pupils/unfollow/{pupil_id}")
 
     async def delete_comment(self, parent_id: str, comment_id: str) -> None:
         """Delete one of the family's own comments (the portal keeps a "deleted" trace)."""

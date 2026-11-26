@@ -344,6 +344,66 @@
           "description": "L’identifiant de l’un de vos commentaires dans les échanges."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Supprimer une notification",
+      "description": "Supprimer une notification du portail.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "notification_id": {
+          "name": "Notification",
+          "description": "L’identifiant de la notification, dans l’attribut notifications du capteur Notifications non lues."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Supprimer un message",
+      "description": "Supprimer un message que vous avez écrit à l’enseignant : il ne le voit plus.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "message_id": {
+          "name": "Message",
+          "description": "L’identifiant du message, dans l’attribut messages du capteur Cahier de liaison à signer ou Actualités."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Suivre un enfant",
+      "description": "Suivre la scolarité d’un enfant avec le code de suivi donné par l’école (un identifiant et un mot de passe).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "login": {
+          "name": "Identifiant",
+          "description": "L’identifiant du code de suivi."
+        },
+        "password": {
+          "name": "Mot de passe",
+          "description": "Le mot de passe du code de suivi."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Ne plus suivre un enfant",
+      "description": "Ne plus suivre la scolarité d’un enfant sur ce compte.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Compte",
+          "description": "Le compte Educartable. Laisser vide s’il n’y en a qu’un."
+        },
+        "child_id": {
+          "name": "Enfant",
+          "description": "L’identifiant de l’enfant, dans l’attribut child_id de son capteur Devoirs à faire."
+        }
+      }
     }
   },
   "exceptions": {

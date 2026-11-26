@@ -344,6 +344,66 @@
           "description": "ID jedného z vašich komentárov v rozhovore."
         }
       }
+    },
+    "delete_notification": {
+      "name": "Odstrániť upozornenie",
+      "description": "Odstráni upozornenie portálu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "notification_id": {
+          "name": "Upozornenie",
+          "description": "ID upozornenia z atribútu notifications senzora Neprečítané upozornenia."
+        }
+      }
+    },
+    "delete_message": {
+      "name": "Odstrániť správu",
+      "description": "Odstráni správu, ktorú ste napísali učiteľovi: učiteľ ju už neuvidí.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "message_id": {
+          "name": "Správa",
+          "description": "ID správy z atribútu messages senzora Žiacka knižka na podpis alebo Novinky."
+        }
+      }
+    },
+    "follow_child": {
+      "name": "Sledovať dieťa",
+      "description": "Sledovať školskú dochádzku dieťaťa pomocou kódu sledovania od školy (prihlasovacie meno a heslo).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "login": {
+          "name": "Prihlasovacie meno",
+          "description": "Prihlasovacie meno kódu sledovania."
+        },
+        "password": {
+          "name": "Heslo",
+          "description": "Heslo kódu sledovania."
+        }
+      }
+    },
+    "unfollow_child": {
+      "name": "Prestať sledovať dieťa",
+      "description": "Prestať sledovať školskú dochádzku dieťaťa v tomto účte.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Účet",
+          "description": "Účet Educartable. Nechajte prázdne, ak je nastavený len jeden."
+        },
+        "child_id": {
+          "name": "Dieťa",
+          "description": "ID dieťaťa z atribútu child_id jeho senzora Domáce úlohy."
+        }
+      }
     }
   },
   "exceptions": {

@@ -516,3 +516,17 @@ test('a translation is asked in the user language', async () => {
   assert.deepEqual(plain(await E.educartableTranslate(hass, 'abc', 7, 'de')), { title: 'T', text: 'X' });
   assert.deepEqual(plain(calls), [{ type: 'educartable/translate', config_entry_id: 'abc', message_id: '7', language: 'de' }]);
 });
+
+test('a homework shows its online exercises and revisions', () => {
+  const t = E.educartableT({});
+  const hw = {
+    id: 'h1', title: 'Poésie', child_id: 'p1', due: '2026-11-27', done: false,
+    exercises: [{ title: 'Les sons <ou>', type: 'QCM' }],
+    revisions: [{ title: 'Mots', category: 'DICTEE', games: 1 }],
+  };
+  const row = E.educartableHomeworkRow(hw, t, 'en', { full: true, canAct: true });
+  assert.match(row, /Les sons &lt;ou&gt;/);
+  assert.match(row, /Mots · Dictation words/);
+  assert.match(row, /href="https:\/\/mobile\.educartable\.com\/"/);
+  assert.doesNotMatch(E.educartableHomeworkRow({ ...hw, exercises: [], revisions: [] }, t, 'en', { full: true }), /learning/);
+});
