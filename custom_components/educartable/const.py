@@ -43,6 +43,8 @@ DEFAULT_HOMEWORK_DAYS: Final = 14
 
 # Items kept in the attributes: enough for a card, small enough for the state machine.
 MESSAGES_KEPT: Final = 10
+# Homework read for the whole family at once: this many per child.
+LESSONS_PER_PUPIL: Final = 30
 NEWS_KEPT: Final = 5
 ACTIVITIES_KEPT: Final = 12
 NOTIFICATIONS_KEPT: Final = 20

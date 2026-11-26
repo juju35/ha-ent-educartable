@@ -182,24 +182,20 @@ class EducartableApi:
         parent_id: str,
         types: tuple[str, ...],
         *,
-        pupil_id: str | None = None,
         sort: str = "date",
         direction: str = "desc",
         start: str | None = None,
         limit: int = 30,
     ) -> list[dict[str, Any]]:
         params: dict[str, Any] = {"type": ",".join(types), "sort": sort, "direction": direction, "limit": limit}
-        if pupil_id is not None:
-            params["pupil_id"] = pupil_id
         if start is not None:
             params["start"] = start
         data = await self._get(f"{API_EDUCARTABLE}/parent/{parent_id}/messages", params)
         return data.get("data", []) if isinstance(data, dict) else []
 
-    async def lessons(self, parent_id: str, start: str, *, pupil_id: str | None = None) -> list[dict[str, Any]]:
-        return await self._messages(
-            parent_id, LESSON_TYPES, pupil_id=pupil_id, sort="date", direction="asc", start=start
-        )
+    async def lessons(self, parent_id: str, start: str, *, limit: int = 30) -> list[dict[str, Any]]:
+        """The family's homework from a day on. Each lesson names its pupils in its recipients."""
+        return await self._messages(parent_id, LESSON_TYPES, sort="date", direction="asc", start=start, limit=limit)
 
     async def carnet(self, parent_id: str) -> list[dict[str, Any]]:
         return await self._messages(parent_id, CARNET_TYPES, sort="visibility", direction="desc")

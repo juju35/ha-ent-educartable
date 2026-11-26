@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 - 2026-11-26
+
+### Fixes
+- Homework updates again: the portal now answers HTTP 500 when its messages are filtered by pupil, so the homework is read once for the family and shared out by each lesson's pupils (#14).
+- A part of the portal that could not be read (homework, liaison book, news…) is now written in the log: a warning when it starts, then debug while it lasts.
+
 ## 1.1.0 - 2026-11-24
 
 ### Features
