@@ -951,9 +951,15 @@ async def test_delete_a_notification(hass: HomeAssistant, api) -> None:
         await hass.services.async_call(DOMAIN, "delete_notification", {"notification_id": "1"}, blocking=True)
 
 
-async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api, hass_ws_client) -> None:
+def _device(hass: HomeAssistant, entry: MockConfigEntry, identifier: str) -> Any:
+    """A device of the account by its identifier (identifiers are only unique within a config entry)."""
     from homeassistant.helpers import device_registry as dr
 
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    return next((d for d in devices if (DOMAIN, identifier) in d.identifiers), None)
+
+
+async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api, hass_ws_client) -> None:
     entry = await _setup(hass)
     client = await hass_ws_client(hass)
     # The tracking code goes through the panel's websocket, never an action (whose data may be kept in traces).
@@ -968,15 +974,14 @@ async def test_follow_and_unfollow_a_child(hass: HomeAssistant, api, hass_ws_cli
     assert (await client.receive_json())["result"] == {"name": "Zoé"}
     await hass.async_block_till_done()
     assert hass.states.get("sensor.zoe_test_homework_to_do") is not None
-    registry = dr.async_get(hass)
-    zoe = registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e9")})
+    zoe = _device(hass, entry, f"{entry.entry_id}_e9")
     assert zoe is not None
 
     await hass.services.async_call(DOMAIN, "unfollow_child", {"child_id": "e9"}, blocking=True)
     await hass.async_block_till_done()
     assert ("unfollow", "p1", "e9") in api["api"].calls
     # The child's device and entities go with it.
-    assert registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e9")}) is None
+    assert _device(hass, entry, f"{entry.entry_id}_e9") is None
     assert hass.states.get("sensor.zoe_test_homework_to_do") is None
     assert hass.states.get("todo.zoe_test_homework") is None
     with pytest.raises(HomeAssistantError):
@@ -998,8 +1003,8 @@ async def test_a_child_device_can_be_deleted_once_no_longer_followed(hass: HomeA
 
     entry = await _setup(hass)
     registry = dr.async_get(hass)
-    alice = registry.async_get_device(identifiers={(DOMAIN, f"{entry.entry_id}_e1")})
-    account = registry.async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    alice = _device(hass, entry, f"{entry.entry_id}_e1")
+    account = _device(hass, entry, entry.entry_id)
     assert not await async_remove_config_entry_device(hass, entry, alice)  # still followed
     assert not await async_remove_config_entry_device(hass, entry, account)
     ghost = registry.async_get_or_create(config_entry_id=entry.entry_id, identifiers={(DOMAIN, f"{entry.entry_id}_e5")})
