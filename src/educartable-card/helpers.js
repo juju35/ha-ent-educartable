@@ -334,6 +334,8 @@ export function educartableFileBlob(hass, entryId, media) {
 // Opens an attachment in a new tab (PDF and images shown by the browser, other files downloaded).
 export function educartableOpenFile(hass, entryId, media) {
   var tab = window.open('', '_blank');
+  // The file opens in that tab later: cut its link back to this page (reverse tabnabbing).
+  if (tab) tab.opener = null;
   return educartableFileUrl(hass, entryId, media)
     .then((url) => {
       if (tab) tab.location.href = url;
