@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 - 2026-11-27
+
+### Fixes
+- Opening a document: the new tab no longer keeps a link back to the Home Assistant page (`opener` cut).
+
 ## 1.2.0 - 2026-11-26
 
 ### Features
